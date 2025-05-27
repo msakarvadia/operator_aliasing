@@ -16,9 +16,8 @@ def bar(data: list[int] | None = None) -> int | None:
         return sum(data)
     return None
 
-def test(word: str) --> int | None:
-    """ Hello world """
 
-    print("Hello World")
-
+def test(word: str) -> int | None:
+    """Hello world."""
+    print('Hello World: ', word)
     return 0
