@@ -15,3 +15,10 @@ def bar(data: list[int] | None = None) -> int | None:
     if data is not None:
         return sum(data)
     return None
+
+def test(word: str) --> int | None:
+    """ Hello world """
+
+    print("Hello World")
+
+    return 0
