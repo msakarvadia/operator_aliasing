@@ -21,6 +21,7 @@ classifiers = [
 ]
 dependencies = [
     "requests",
+    "neuraloperator",
 ]
 
 [project.urls]

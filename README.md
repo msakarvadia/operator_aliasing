@@ -1,18 +1,3 @@
-# Python Package Template Repo
-
-[![docs](https://github.com/gpauloski/python-template/actions/workflows/docs.yml/badge.svg)](https://github.com/gpauloski/python-template/actions)
-[![tests](https://github.com/gpauloski/python-template/actions/workflows/tests.yml/badge.svg)](https://github.com/gpauloski/python-template/actions)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/gpauloski/python-template/main.svg)](https://results.pre-commit.ci/latest/github/gpauloski/python-template/main)
-
-Python package template repo that provides:
-- Package, examples, and testing layout.
-- GitHub PR and Issue templates.
-- Example docs with MKDocs and GitHub Pages.
-- CI framework with `pre-commit` and `tox`.
-- GitHub actions for running tests and publishing packages.
-
-This package setup was based on [Anthony Sottile's project setup](https://www.youtube.com/watch?v=q8DkatMZvUs&list=PLWBKAf81pmOaP9naRiNAqug6EBnkPakvY) but deviates in some places (e.g., `pyproject.toml` and `ruff`).
-
 ## Setup Instructions
 
 1. Click the "Use this template" button at the top right of this page.
