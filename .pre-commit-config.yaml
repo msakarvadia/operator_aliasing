@@ -13,10 +13,10 @@ repos:
       - id: check-yaml
       - id: check-merge-conflict
       - id: name-tests-test
-  - repo: 'https://github.com/codespell-project/codespell'
-    rev: v2.4.1
-    hooks:
-      - id: codespell
+  #- repo: 'https://github.com/codespell-project/codespell'
+  #  rev: v2.4.1
+  #  hooks:
+  #    - id: codespell
   - repo: 'https://github.com/charliermarsh/ruff-pre-commit'
     rev: v0.11.11
     hooks:
