@@ -1,10 +1,10 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it as below.
 authors:
-  - family-names: Pauloski
-    given-names: Greg
-    orcid: https://orcid.org/0000-0002-6547-6902
+  - family-names: Sakarvadia
+    given-names: Mansi
+    orcid: https://orcid.org/XXXXX
 license: MIT
-repository-code: https://github.com/foobar-author/foobar
-title: FooBar
+repository-code: https://github.com/msakarvadia/operator_aliasing
+title: Operator Aliasing
 url: https://foobar.dev
