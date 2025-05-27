@@ -32,19 +32,15 @@ I recommend making a few other changes to the repo's setting on GitHub.
 
 ## Installation
 
-Install via pip:
-```
-$ pip install foobar
-```
 
 For local development:
 ```
-$ tox --devenv venv -e py310
-$ pre-commit install
-```
-or
-```
-$ pip install -e .
+git clone https://github.com/msakarvadia/operator_aliasing.git # swap url for clone via SSH
+cd operator_aliasing
+conda create -p env python==3.10 # we choose conda to manage env, but venv is another option
+conda activate env
+pip install -e .[dev]
+pre-commit install
 ```
 
 ## Additional README Sections
