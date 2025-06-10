@@ -3,7 +3,7 @@ requires = ["setuptools>=64.0", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "NeuralOperatorAliasing"
+name = "operator_aliasing"
 version = "0.1.0"
 authors = [
     {name = "Mansi Sakarvadia"},
