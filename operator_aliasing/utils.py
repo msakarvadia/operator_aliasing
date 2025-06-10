@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import neuralop
 import torch
 
 
@@ -46,3 +47,19 @@ def get_energy_curve(data: torch.Tensor) -> torch.Tensor:
     # Compute the mean energy curve across the entire batch (dimension 0).
     f_energy = torch.mean(f_energy, dim=0).to(cpu)
     return f_energy
+
+
+def get_model_preds(
+    test_loader: torch.utils.data.DataLoader,
+    model: torch.nn.Module,
+    data_transform: neuralop.data.transforms.DataProcessor,
+) -> torch.Tensor:
+    """Return model predictions."""
+    model_preds = []
+    for _idx, sample in enumerate(test_loader):  # resolution 128
+        # NOTE(MS): might want to pass data transform in here
+        model_input = data_transform.preprocess(sample)
+        with torch.no_grad():
+            out = model(**model_input)
+            model_preds.append(out)
+    return torch.cat(model_preds)
