@@ -3,50 +3,51 @@
 from __future__ import annotations
 
 import neuralop
+import numpy as np
 import torch
 
-
-def get_energy_curve(data: torch.Tensor) -> torch.Tensor:
-    """Energy Calculation used by Liangzhao."""
-    cpu = 'cpu'
-
-    # https://arxiv.org/pdf/2404.07200v2
-    # Calculates the energy spectrum curve for a batch of 2D arrays.
-    # data: The input data, expected to be a tensor of shape (B, H, W),
-    # where B is the batch size, and H, W are the height and width
-    #           of the 2D arrays.
-
-    data_f = (
-        torch.square(
-            torch.abs(torch.fft.fftshift(torch.fft.fft2(data), dim=(1, 2)))
-        )
-        / (data.size()[-1] * data.size()[-2]) ** 2
-    )
-    # The first division by (H*W) is a normalization
-    # related to Parseval's theorem.
-    # The second division by (H*W) makes the sum
-    # of the final `data_f` equal to
-    # the Mean Squared Value (or average energy per pixel)
-    # of the original array.
-
-    n_mode = (data.size()[-1] + 1) // 2
-    center = data.size()[-1] // 2
-
-    f_energy = []
-
-    for ii in range(n_mode):
-        d_f = data_f[
-            :, center - ii : center + ii + 1, center - ii : center + ii + 1
-        ]
-        d_f[:, 1:-1, 1:-1] = 0
-        # Sum the energy within the isolated shell over
-        # the spatial dimensions (H, W).
-        f_energy.append(torch.sum(d_f, dim=(1, 2)))
-
-    f_energy = torch.stack(f_energy, dim=-1)
-    # Compute the mean energy curve across the entire batch (dimension 0).
-    f_energy = torch.mean(f_energy, dim=0).to(cpu)
-    return f_energy
+# def get_energy_curve(data: torch.Tensor) -> torch.Tensor:
+#    """Energy Calculation used by Liangzhao."""
+#    cpu = 'cpu'
+#
+#    # https://arxiv.org/pdf/2404.07200v2
+#    # Calculates the energy spectrum curve for a batch of 2D arrays.
+#    # data: The input data, expected to be a tensor of shape (B, H, W),
+#    # where B is the batch size, and H, W are the height and width
+#    #           of the 2D arrays.
+#
+#    data_f = (
+#        torch.square(
+#            torch.abs(torch.fft.fftshift(torch.fft.fft2(data), dim=(1, 2)))
+#        )
+#        / (data.size()[-1] * data.size()[-2]) ** 2
+#    )
+#    # The first division by (H*W) is a normalization
+#    # related to Parseval's theorem.
+#    # The second division by (H*W) makes the sum
+#    # of the final `data_f` equal to
+#    # the Mean Squared Value (or average energy per pixel)
+#    # of the original array.
+#
+#    n_mode = (data.size()[-1] + 1) // 2
+#    center = data.size()[-1] // 2
+#
+#    f_energy = []
+#
+#    # NOTE(MS): this implementation is only good for odd length images
+#    for ii in range(n_mode):
+#        d_f = data_f[
+#            :, center - ii : center + ii + 1, center - ii : center + ii + 1
+#        ]
+#        d_f[:, 1:-1, 1:-1] = 0
+#        # Sum the energy within the isolated shell over
+#        # the spatial dimensions (H, W).
+#        f_energy.append(torch.sum(d_f, dim=(1, 2)))
+#
+#    f_energy = torch.stack(f_energy, dim=-1)
+#    # Compute the mean energy curve across the entire batch (dimension 0).
+#    f_energy = torch.mean(f_energy, dim=0).to(cpu)
+#    return f_energy
 
 
 def get_model_preds(
@@ -57,9 +58,68 @@ def get_model_preds(
     """Return model predictions."""
     model_preds = []
     for _idx, sample in enumerate(test_loader):  # resolution 128
-        # NOTE(MS): might want to pass data transform in here
         model_input = data_transform.preprocess(sample)
         with torch.no_grad():
             out = model(**model_input)
             model_preds.append(out)
     return torch.cat(model_preds)
+
+
+def generate_wavenumbers(n: int = 6) -> torch.tensor:
+    """Generate the wavenumbers."""
+    # n = 7  # Size of the square array
+    center = n // 2  # Center of the array
+    array = np.zeros((n, n), dtype=int)
+
+    # Fill values based on distance from the center
+    for i in range(n):
+        for j in range(n):
+            distance = max(abs(center - i), abs(center - j))
+            array[i, j] = distance
+
+    # For even-sized arrays, ensure the center area avoids 0 directly
+    if n % 2 == 0:
+        for i in range(n):
+            for j in range(n):
+                if i + j >= n:
+                    array[i, j] += 1
+    return array
+
+
+def get_energy_curve(
+    signal: torch.Tensor, normalize: bool = True
+) -> torch.Tensor:
+    """Calculate 2d spectrum of data."""
+    signal = signal.cpu()
+    t = signal.shape[0]
+    n_observations = signal.shape[-1]
+    signal = signal.view(t, n_observations, n_observations)
+
+    if normalize:
+        signal = torch.fft.fft2(signal, norm='ortho')
+    else:
+        signal = torch.fft.rfft2(
+            signal, s=(n_observations, n_observations), norm='backward'
+        )
+
+    # center FFT
+    centered_fft_signal = torch.fft.fftshift(signal)
+
+    # compute energy
+    energy = centered_fft_signal.abs() ** 2
+
+    # define wavenumbers
+    wave_numbers = generate_wavenumbers(n=n_observations)
+    max_wavenumber = n_observations // 2
+
+    # spectrum = torch.zeros((T, n_observations))
+    # for i in range(max_wavenumber):
+    #    energies = torch.where(torch.tensor(wave_numbers) == i, energy, 0)
+
+    spectrum = torch.zeros((t, n_observations // 2))
+    for j in range(1, max_wavenumber + 1):
+        ind = torch.where(torch.tensor(wave_numbers) == j)
+        spectrum[:, j - 1] = energy[:, ind[0], ind[1]].sum(dim=1)
+
+    spectrum = spectrum.mean(dim=0)
+    return spectrum
