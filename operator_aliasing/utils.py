@@ -87,10 +87,10 @@ def generate_wavenumbers(n: int = 6) -> torch.tensor:
 
 
 def get_energy_curve(
-    signal: torch.Tensor, normalize: bool = True
+    data: torch.Tensor, normalize: bool = True
 ) -> torch.Tensor:
     """Calculate 2d spectrum of data."""
-    signal = signal.cpu()
+    signal = data.cpu()
     t = signal.shape[0]
     n_observations = signal.shape[-1]
     signal = signal.view(t, n_observations, n_observations)
@@ -112,10 +112,6 @@ def get_energy_curve(
     wave_numbers = generate_wavenumbers(n=n_observations)
     max_wavenumber = n_observations // 2
 
-    # spectrum = torch.zeros((T, n_observations))
-    # for i in range(max_wavenumber):
-    #    energies = torch.where(torch.tensor(wave_numbers) == i, energy, 0)
-
     spectrum = torch.zeros((t, n_observations // 2))
     for j in range(1, max_wavenumber + 1):
         ind = torch.where(torch.tensor(wave_numbers) == j)
@@ -123,3 +119,19 @@ def get_energy_curve(
 
     spectrum = spectrum.mean(dim=0)
     return spectrum
+
+
+def get_2d_low_pass_filter(f: int, s: int) -> torch.Tensor:
+    """Return's low pass filter at limit f and size s.
+
+    f : the frequency limit (only allow freq < f)
+    s : dimention of image
+    """
+    if f > s // 2:
+        raise Exception(f'Max frequency of image is {s//2=}, so lower f')
+    # 1 = keep, 0 = get rid of
+    # central of shifted FFT image is lowest freqs
+    wave_numbers = generate_wavenumbers(s)
+
+    filt = torch.where(torch.tensor(wave_numbers) < f, 1, 0)
+    return filt.unsqueeze(dim=0)
