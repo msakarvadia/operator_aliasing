@@ -135,3 +135,31 @@ def get_2d_low_pass_filter(f: int, s: int) -> torch.Tensor:
 
     filt = torch.where(torch.tensor(wave_numbers) < f, 1, 0)
     return filt.unsqueeze(dim=0)
+
+
+def filter_batch(filt: torch.tensor, batch: torch.tensor) -> torch.Tensor:
+    """Apply (low-pass) filter to batch.
+
+    filt:
+            filter for the batch
+            (already centered i.e., torch.fft.fftshift)
+            dim: (channel x X_dim x Y_dim)
+    batch:
+            input batch
+            dim: (batch x channel x X_dim x Y_dim)
+    """
+    # fft batch
+    batch_fourier = torch.fft.fftn(batch, dim=(-2, -1))
+
+    # center batch
+    fourier_centered = torch.fft.fftshift(batch_fourier)
+
+    # apply filter
+    filtered_batch = fourier_centered * filt
+
+    # convert batch back to spatial domain
+    filtered_batch = torch.real(
+        torch.fft.ifftn(torch.fft.ifftshift(filtered_batch), dim=(-1, -2))
+    )
+
+    return filtered_batch
