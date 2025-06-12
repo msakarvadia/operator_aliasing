@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import neuralop
 import numpy as np
 import torch
 
@@ -53,12 +52,13 @@ import torch
 def get_model_preds(
     test_loader: torch.utils.data.DataLoader,
     model: torch.nn.Module,
-    data_transform: neuralop.data.transforms.DataProcessor,
+    # data_transform: neuralop.data.transforms.DataProcessor,
 ) -> torch.Tensor:
     """Return model predictions."""
     model_preds = []
     for _idx, sample in enumerate(test_loader):  # resolution 128
-        model_input = data_transform.preprocess(sample)
+        # model_input = data_transform.preprocess(sample)
+        model_input = sample
         with torch.no_grad():
             out = model(**model_input)
             model_preds.append(out)
