@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import torch
+from neuralop.data.datasets.tensor_dataset import TensorDataset
 
 # def get_energy_curve(data: torch.Tensor) -> torch.Tensor:
 #    """Energy Calculation used by Liangzhao."""
@@ -163,3 +164,44 @@ def filter_batch(filt: torch.tensor, batch: torch.tensor) -> torch.Tensor:
     )
 
     return filtered_batch
+
+
+def lowpass_filter_dataloader(
+    img_size: int,
+    filter_limit: int,
+    original_dataloader: torch.utils.data.Dataloader,
+    device: torch.device,
+) -> torch.utils.data.Dataloader:
+    """Filter all data in dataloader.
+
+    img_size: assume square img, len of x axis
+    filter_limit: frequencies > filter_lim excluded
+    original_dataloader: data to filter
+    """
+    x_data = []
+    y_data = []
+
+    # get filter
+    low_pass_filter = get_2d_low_pass_filter(filter_limit, img_size)
+    low_pass_filter = torch.tensor(low_pass_filter, device=device)
+
+    # filter x and y
+    for _idx, sample in enumerate(original_dataloader):  # resolution 128
+        x_data.append(filter_batch(low_pass_filter, sample['x'].to(device)))
+        y_data.append(filter_batch(low_pass_filter, sample['y'].to(device)))
+
+    # reformat filtered data into dataloader
+    filter_x = torch.cat(x_data)
+    filter_y = torch.cat(y_data)
+
+    filtered_dataset = TensorDataset(filter_x, filter_y)
+
+    dataloader = torch.utils.data.DataLoader(
+        filtered_dataset,
+        batch_size=original_dataloader.batch_size,
+        num_workers=original_dataloader.num_workers,
+        pin_memory=original_dataloader.pin_memory,
+        persistent_workers=original_dataloader.persistent_workers,
+    )
+
+    return dataloader
