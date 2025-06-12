@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 from neuralop.data.datasets.tensor_dataset import TensorDataset
-from neuralop.data.transforms import DataProcessor
+from neuralop.data.transforms.data_processors import DataProcessor
 
 # def get_energy_curve(data: torch.Tensor) -> torch.Tensor:
 #    """Energy Calculation used by Liangzhao."""
