@@ -192,8 +192,8 @@ def lowpass_filter_dataloader(
         y_data.append(filter_batch(low_pass_filter, sample['y'].to(device)))
 
     # reformat filtered data into dataloader
-    filter_x = torch.cat(x_data)
-    filter_y = torch.cat(y_data)
+    filter_x = torch.cat(x_data).to('cpu')
+    filter_y = torch.cat(y_data).to('cpu')
 
     filtered_dataset = TensorDataset(filter_x, filter_y)
 
