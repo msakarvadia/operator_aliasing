@@ -5,7 +5,6 @@ from __future__ import annotations
 import numpy as np
 import torch
 from neuralop.data.datasets.tensor_dataset import TensorDataset
-from neuralop.data.transforms.data_processors import DataProcessor
 
 # def get_energy_curve(data: torch.Tensor) -> torch.Tensor:
 #    """Energy Calculation used by Liangzhao."""
@@ -54,15 +53,15 @@ from neuralop.data.transforms.data_processors import DataProcessor
 def get_model_preds(
     test_loader: torch.utils.data.DataLoader,
     model: torch.nn.Module,
-    data_transform: DataProcessor,
+    device: torch.device,
+    # data_transform: DataProcessor,
 ) -> torch.Tensor:
     """Return model predictions."""
     model_preds = []
     for _idx, sample in enumerate(test_loader):  # resolution 128
-        # model_input = sample
-        model_input = data_transform.preprocess(sample)
+        model_input = sample['x'].to(device)
         with torch.no_grad():
-            out = model(**model_input)
+            out = model(model_input)
             model_preds.append(out)
     return torch.cat(model_preds)
 
@@ -188,6 +187,7 @@ def lowpass_filter_dataloader(
 
     # filter x and y
     for _idx, sample in enumerate(original_dataloader):  # resolution 128
+        # x_data.append(sample['x'])
         x_data.append(filter_batch(low_pass_filter, sample['x'].to(device)))
         y_data.append(filter_batch(low_pass_filter, sample['y'].to(device)))
 
