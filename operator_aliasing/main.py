@@ -6,11 +6,11 @@ import argparse
 
 import torch
 from neuralop.models import FNO
-from torch import nn
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 
 from operator_aliasing.train.train import train_model
+from operator_aliasing.train.utils import get_loss
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -51,6 +51,13 @@ if __name__ == '__main__':
         type=int,
         default=0,
         help='Random seed for reproducability.',
+    )
+    parser.add_argument(
+        '--loss_name',
+        type=str,
+        default='l1',
+        choices=['l1'],
+        help='Name of loss functions for training.',
     )
 
     # Data args
@@ -104,8 +111,7 @@ if __name__ == '__main__':
     args.test_dataloader = testing_set
 
     # Get Loss Function
-    loss = nn.L1Loss()
-    args.loss = loss
+    args.loss = get_loss(args.loss_name)
 
     # Train Model
     train_model(**vars(args))
