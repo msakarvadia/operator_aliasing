@@ -14,19 +14,18 @@ def get_parsl_config() -> Config:
     One experiment per GPU.
     Multiple experiment per node.
     """
-    provider = (
-        SlurmProvider(
-            launcher=SrunLauncher(
-                overrides='--gpus-per-node 4 -c 64'
-            ),  # Must supply GPUs and CPU per node
-            walltime='23:00:00',
-            nodes_per_block=2,  # how many nodes to request
-            scheduler_options="""#SBATCH -C gpu&hbm80g
-            #SBATCH --qos=regular
+    provider = SlurmProvider(
+        launcher=SrunLauncher(
+            overrides='--gpus-per-node 4 -c 64'
+        ),  # Must supply GPUs and CPU per node
+        walltime='00:05:00',
+        nodes_per_block=1,  # how many nodes to request
+        scheduler_options="""#SBATCH -C gpu&hbm80g
+            #SBATCH --qos=debug
             #SBATCH --mail-user=sakarvadia@uchicago.edu""",
-            # Switch to "-C cpu" for CPU partition
-            account='m1266',
-            worker_init="""
+        # Switch to "-C cpu" for CPU partition
+        account='m1266',
+        worker_init="""
 module load conda
 conda activate /pscratch/sd/m/mansisak/operator_aliasing/env/
 cd /pscratch/sd/m/mansisak/operator_aliasing/experiments/
@@ -37,7 +36,6 @@ nvidia-smi
 which python
 hostname
 pwd""",
-        ),
     )
 
     config = Config(
