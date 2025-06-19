@@ -24,7 +24,7 @@ def train_model(**train_args: typing.Any) -> Module:
     device = train_args['device']
     seed = train_args['seed']
     train_dataloader = train_args['train_dataloader']
-    test_dataloader = train_args['train_dataloader']
+    test_dataloader = train_args['test_dataloader']
     freq_print = 5
 
     # TODO(MS): test seeding!!
