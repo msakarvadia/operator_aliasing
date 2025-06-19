@@ -28,8 +28,8 @@ def get_parsl_config() -> Config:
             account='m1266',
             worker_init="""
 module load conda
-conda activate /pscratch/sd/m/mansisak/memorization/env/
-cd /pscratch/sd/m/mansisak/memorization/src/localize/
+conda activate /pscratch/sd/m/mansisak/operator_aliasing/env/
+cd /pscratch/sd/m/mansisak/operator_aliasing/experiments/
 
 # Print to stdout to for easier debugging
 module list
