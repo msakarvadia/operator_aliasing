@@ -8,10 +8,18 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 
+from ..utils import seed_everything
+from ..utils import seed_worker
+
 
 def get_data(**data_args: typing.Any) -> tuple[DataLoader, DataLoader]:
     """Get data w/ args."""
     batch_size = data_args['batch_size']
+    seed = data_args['seed']
+
+    seed_everything(seed)
+    g = torch.Generator()
+    g.manual_seed(seed)
 
     n_train = 100  # number of training samples
 
@@ -27,10 +35,14 @@ def get_data(**data_args: typing.Any) -> tuple[DataLoader, DataLoader]:
         TensorDataset(input_function_train, output_function_train),
         batch_size=batch_size,
         shuffle=True,
+        worker_init_fn=seed_worker,
+        generator=g,
     )
     testing_loader = DataLoader(
         TensorDataset(input_function_test, output_function_test),
         batch_size=batch_size,
         shuffle=False,
+        worker_init_fn=seed_worker,
+        generator=g,
     )
     return (training_loader, testing_loader)
