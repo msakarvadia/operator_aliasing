@@ -8,9 +8,10 @@ from neuralop.models import FNO
 from torch.nn import Module
 
 
-def get_model(model_name: str, **model_args: typing.Any) -> Module:
+def get_model(**model_args: typing.Any) -> Module:
     """Get model w/ args."""
     model = None
+    model_name = model_args['model_name']
     max_modes = model_args['max_modes']
     hidden_channels = model_args['hidden_channels']
     in_channels = model_args['in_channels']
