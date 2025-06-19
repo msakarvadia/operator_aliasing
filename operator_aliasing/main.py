@@ -5,9 +5,8 @@ from __future__ import annotations
 import argparse
 
 import torch
-from torch.utils.data import DataLoader
-from torch.utils.data import TensorDataset
 
+from operator_aliasing.data.utils import get_data
 from operator_aliasing.models.utils import get_model
 from operator_aliasing.train.train import train_model
 from operator_aliasing.train.utils import get_loss
@@ -109,30 +108,7 @@ if __name__ == '__main__':
     args.model = get_model(**vars(args))
 
     # Get DataLoaders
-    n_train = 100  # number of training samples
-
-    x_data = torch.rand((256, 1, 128, 128)).type(torch.float32)
-    y_data = torch.ones((256, 1, 128, 128)).type(torch.float32)
-
-    input_function_train = x_data[:n_train, :]
-    output_function_train = y_data[:n_train, :]
-    input_function_test = x_data[n_train:, :]
-    output_function_test = y_data[n_train:, :]
-
-    batch_size = args.batch_size
-
-    training_set = DataLoader(
-        TensorDataset(input_function_train, output_function_train),
-        batch_size=batch_size,
-        shuffle=True,
-    )
-    testing_set = DataLoader(
-        TensorDataset(input_function_test, output_function_test),
-        batch_size=batch_size,
-        shuffle=False,
-    )
-    args.train_dataloader = training_set
-    args.test_dataloader = testing_set
+    (args.train_dataloader, args.test_dataloader) = get_data(**vars(args))
 
     # Get Loss Function
     args.loss = get_loss(args.loss_name)
