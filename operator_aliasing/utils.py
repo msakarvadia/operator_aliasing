@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+
 import numpy as np
 import torch
 from neuralop.data.datasets.tensor_dataset import TensorDataset
@@ -206,3 +208,17 @@ def lowpass_filter_dataloader(
     )
 
     return dataloader
+
+
+def seed_everything(seed: int) -> None:
+    """Setting seeds for reproducability."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+
+def seed_worker(worker_id: int) -> None:
+    """Seeding dataloader."""
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
