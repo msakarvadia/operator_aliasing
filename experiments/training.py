@@ -15,10 +15,17 @@ def hello_world() -> str:
     return exec_str
 
 
+@bash_app
+def train() -> str:
+    """Train a model."""
+    exec_str = 'pwd; python main.py'
+    return exec_str
+
+
 if __name__ == '__main__':
     config = get_parsl_config()
     parsl.load(config)
 
-    future = hello_world()
+    future = train()
     print(f'Waiting for {future}')
     print(f'Got result {future.result()}')

@@ -28,7 +28,7 @@ def get_parsl_config() -> Config:
         worker_init="""
 module load conda
 conda activate /pscratch/sd/m/mansisak/operator_aliasing/env/
-cd /pscratch/sd/m/mansisak/operator_aliasing/experiments/
+cd /pscratch/sd/m/mansisak/operator_aliasing/operator_aliasing/
 
 # Print to stdout to for easier debugging
 module list
