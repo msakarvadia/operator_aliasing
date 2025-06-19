@@ -8,7 +8,7 @@ import torch
 from torch.nn import Module
 from torch.optim import AdamW
 
-from operator_aliasing.utils import seed_everything
+from ..utils import seed_everything
 
 
 def train_model(**train_args: typing.Any) -> Module:
