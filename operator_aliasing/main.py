@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 
 import torch
-from neuralop.models import FNO
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 
+from operator_aliasing.models.utils import get_model
 from operator_aliasing.train.train import train_model
 from operator_aliasing.train.utils import get_loss
 
@@ -68,21 +68,45 @@ if __name__ == '__main__':
         help='Batch Size.',
     )
 
+    # Model args
+    parser.add_argument(
+        '--max_modes',
+        type=int,
+        default=16,
+        help='FNO: max modes in spectral conv layer.',
+    )
+    parser.add_argument(
+        '--hidden_channels',
+        type=int,
+        default=32,
+        help='FNO: # of hidden channels.',
+    )
+    parser.add_argument(
+        '--in_channels',
+        type=int,
+        default=1,
+        help='FNO: input channel dim.',
+    )
+    parser.add_argument(
+        '--out_channels',
+        type=int,
+        default=1,
+        help='FNO: output channel dim.',
+    )
+    parser.add_argument(
+        '--model_name',
+        type=str,
+        default='FNO2D',
+        choices=['FNO2D'],
+        help='Type of model.',
+    )
+
     args = parser.parse_args()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     args.device = device
 
     # Get Model
-    max_modes = 16
-    starting_modes = (max_modes, max_modes)
-    model = FNO(
-        max_n_modes=(max_modes, max_modes),
-        n_modes=starting_modes,
-        hidden_channels=32,
-        in_channels=1,
-        out_channels=1,
-    ).to(device)
-    args.model = model
+    args.model = get_model(**vars(args))
 
     # Get DataLoaders
     n_train = 100  # number of training samples
