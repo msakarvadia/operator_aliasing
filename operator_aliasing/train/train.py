@@ -40,17 +40,17 @@ def train_model(**train_args: typing.Any) -> Module:
         optimizer, step_size=step_size, gamma=gamma
     )
     starting_epoch = 0
+    model = model.to(device)
 
     # load ckpt if it exists
     ckpt_dict = load_latest_ckpt(ckpt_path)
     if ckpt_dict:
-        # optimizer.load_state_dict(ckpt_dict["optimizer_state_dict"])
-        scheduler.load_state_dict(ckpt_dict['scheduler_state_dict'])
         model.load_state_dict(ckpt_dict['model_state_dict'])
+        optimizer.load_state_dict(ckpt_dict['optimizer_state_dict'])
+        scheduler.load_state_dict(ckpt_dict['scheduler_state_dict'])
         starting_epoch = ckpt_dict['epoch'] + 1
 
     # train model
-    model = model.to(device)
     for epoch in range(starting_epoch, epochs + 1):
         train_loss = 0.0
         for _step, (input_data, output_data) in enumerate(train_dataloader):
@@ -84,7 +84,7 @@ def train_model(**train_args: typing.Any) -> Module:
             ckpt_dict = {
                 'epoch': epoch,
                 'model_state_dict': model.to('cpu').state_dict(),
-                #'optimizer_state_dict': optimizer.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
                 'scheduler_state_dict': scheduler.state_dict(),
             }
             save_ckpt(ckpt_path, ckpt_dict)

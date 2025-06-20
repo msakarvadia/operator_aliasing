@@ -33,7 +33,8 @@ def load_latest_ckpt(ckpt_path: str) -> typing.Any:
         latest_ckpt = max(list_of_ckpts, key=os.path.getctime)
         print(f'Resuming training from {latest_ckpt}')
         ckpt_dict = torch.load(
-            latest_ckpt, weights_only=False, map_location=torch.device('cpu')
+            latest_ckpt,
+            weights_only=False,
         )
         return ckpt_dict
     else:
