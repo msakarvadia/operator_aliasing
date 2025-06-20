@@ -6,6 +6,7 @@ import glob
 import os
 import typing
 
+import pandas as pd
 import torch
 from torch import nn
 
@@ -22,6 +23,12 @@ def save_ckpt(ckpt_path: str, ckpt_dict: typing.Any) -> None:
     """Ckpt model during training."""
     if not os.path.exists(ckpt_path):
         os.makedirs(ckpt_path)
+
+    # save train stats as csv, not in PT ckpt obj
+    train_stats = ckpt_dict['train_stats']
+    train_stats.to_csv(f'{ckpt_path}/train_stats.csv', index=False)
+    ckpt_dict.pop('train_stats')
+
     ckpt_num = ckpt_dict['epoch']
     torch.save(ckpt_dict, f'{ckpt_path}/{ckpt_num}_ckpt.pth')
 
@@ -36,6 +43,10 @@ def load_latest_ckpt(ckpt_path: str) -> typing.Any:
             latest_ckpt,
             weights_only=False,
         )
+
+        # load and return train stats as dataframe
+        train_stats = pd.read_csv(f'{ckpt_path}/train_stats.csv')
+        ckpt_dict['train_stats'] = train_stats
         return ckpt_dict
     else:
         return None

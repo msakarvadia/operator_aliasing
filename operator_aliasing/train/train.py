@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import typing
 
+import pandas as pd
 import torch
 from torch.nn import Module
 from torch.optim import AdamW
@@ -32,7 +33,8 @@ def train_model(**train_args: typing.Any) -> Module:
     ckpt_freq = train_args['ckpt_freq']
 
     # training stats
-    # train_stats = pd.DataFrame()
+    columns = ['epoch', 'train_loss', *list(test_dataloaders.keys())]
+    train_stats = pd.DataFrame(columns=columns)
 
     # TODO(MS): test seeding!!
     seed_everything(seed)
@@ -52,6 +54,8 @@ def train_model(**train_args: typing.Any) -> Module:
         optimizer.load_state_dict(ckpt_dict['optimizer_state_dict'])
         scheduler.load_state_dict(ckpt_dict['scheduler_state_dict'])
         starting_epoch = ckpt_dict['epoch'] + 1
+        train_stats = ckpt_dict['train_stats']
+        print(train_stats)
 
     # train model
     for epoch in range(starting_epoch, epochs + 1):
@@ -73,8 +77,10 @@ def train_model(**train_args: typing.Any) -> Module:
         test_relative_l2 = test_dict
 
         # save train stats:
-        # train_stats.loc[-1] = {"epoch":epoch,
-        # "train_loss":train_loss} | test_dict
+        train_stats.loc[len(train_stats)] = {
+            'epoch': epoch,
+            'train_loss': train_loss,
+        } | test_dict
 
         if epoch % ckpt_freq == 0:
             ckpt_dict = {
@@ -82,6 +88,7 @@ def train_model(**train_args: typing.Any) -> Module:
                 'model_state_dict': model.to('cpu').state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'scheduler_state_dict': scheduler.state_dict(),
+                'train_stats': train_stats,
             }
             save_ckpt(ckpt_path, ckpt_dict)
             print(
