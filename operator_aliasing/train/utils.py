@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import glob
 import os
 import typing
 
@@ -25,4 +26,12 @@ def save_ckpt(ckpt_path: str, ckpt_dict: typing.Any) -> None:
     torch.save(ckpt_dict, f'{ckpt_path}/{ckpt_num}_ckpt.pth')
 
 
-# def load_latest_ckpt(ckpt_path:str) -> :
+def load_latest_ckpt(ckpt_path: str) -> typing.Any:
+    """Load ckpt if it exists."""
+    list_of_ckpts = glob.glob(f'{ckpt_path}/*.pth')
+    if list_of_ckpts:
+        latest_ckpt = max(list_of_ckpts, key=os.path.getctime)
+        ckpt_dict = torch.load(latest_ckpt)
+        return ckpt_dict
+    else:
+        return None
