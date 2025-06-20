@@ -66,19 +66,7 @@ def train_model(**train_args: typing.Any) -> Module:
         scheduler.step()
 
         # test model
-        with torch.no_grad():
-            model.eval()
-            test_relative_l2 = 0.0
-            for _step, (input_data, output_data) in enumerate(test_dataloader):
-                input_batch = input_data.to(device)
-                output_batch = output_data.to(device)
-                output_pred_batch = model(input_batch)
-                loss_f = (
-                    torch.mean(abs(output_pred_batch - output_batch))
-                    / torch.mean(abs(output_batch))
-                ) ** 0.5 * 100
-                test_relative_l2 += loss_f.item()
-            test_relative_l2 /= len(test_dataloader)
+        test_relative_l2 = test_model(model, test_dataloader, device)
 
         if epoch % ckpt_freq == 0:
             ckpt_dict = {
@@ -102,7 +90,24 @@ def train_model(**train_args: typing.Any) -> Module:
 
 
 # TODO(MS): make test function
-# def test_model():
+def test_model(
+    model: torch.nn.Module,
+    test_dataloader: torch.utils.data.Dataloader,
+    device: torch.device,
+) -> float:
+    """Test model."""
+    with torch.no_grad():
+        model.eval()
+        test_relative_l2 = 0.0
+        for _step, (input_data, output_data) in enumerate(test_dataloader):
+            input_batch = input_data.to(device)
+            output_batch = output_data.to(device)
+            output_pred_batch = model(input_batch)
+            loss_f = (
+                torch.mean(abs(output_pred_batch - output_batch))
+                / torch.mean(abs(output_batch))
+            ) ** 0.5 * 100
+            test_relative_l2 += loss_f.item()
+        test_relative_l2 /= len(test_dataloader)
 
-#    return
-# TODO(MS): make ckpting function
+    return test_relative_l2
