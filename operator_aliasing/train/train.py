@@ -8,6 +8,8 @@ import torch
 from torch.nn import Module
 from torch.optim import AdamW
 
+from operator_aliasing.train.utils import save_ckpt
+
 from ..utils import seed_everything
 
 
@@ -25,7 +27,8 @@ def train_model(**train_args: typing.Any) -> Module:
     seed = train_args['seed']
     train_dataloader = train_args['train_dataloader']
     test_dataloader = train_args['test_dataloader']
-    freq_print = 5
+    ckpt_path = 'ckpts'
+    ckpt_freq = 5
 
     # TODO(MS): test seeding!!
     seed_everything(seed)
@@ -67,7 +70,13 @@ def train_model(**train_args: typing.Any) -> Module:
                 test_relative_l2 += loss_f.item()
             test_relative_l2 /= len(test_dataloader)
 
-        if epoch % freq_print == 0:
+        if epoch % ckpt_freq == 0:
+            ckpt_dict = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+            }
+            save_ckpt(ckpt_path, ckpt_dict)
             print(
                 '######### Epoch:',
                 epoch,
