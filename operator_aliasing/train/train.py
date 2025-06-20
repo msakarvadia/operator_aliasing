@@ -8,6 +8,7 @@ import torch
 from torch.nn import Module
 from torch.optim import AdamW
 
+from operator_aliasing.train.utils import load_latest_ckpt
 from operator_aliasing.train.utils import save_ckpt
 
 from ..utils import seed_everything
@@ -38,10 +39,19 @@ def train_model(**train_args: typing.Any) -> Module:
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, step_size=step_size, gamma=gamma
     )
+    starting_epoch = 0
+
+    # load ckpt if it exists
+    ckpt_dict = load_latest_ckpt(ckpt_path)
+    if ckpt_dict:
+        # optimizer.load_state_dict(ckpt_dict["optimizer_state_dict"])
+        scheduler.load_state_dict(ckpt_dict['scheduler_state_dict'])
+        model.load_state_dict(ckpt_dict['model_state_dict'])
+        starting_epoch = ckpt_dict['epoch'] + 1
 
     # train model
     model = model.to(device)
-    for epoch in range(epochs):
+    for epoch in range(starting_epoch, epochs + 1):
         train_loss = 0.0
         for _step, (input_data, output_data) in enumerate(train_dataloader):
             input_batch = input_data.to(device)
@@ -73,8 +83,9 @@ def train_model(**train_args: typing.Any) -> Module:
         if epoch % ckpt_freq == 0:
             ckpt_dict = {
                 'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
+                'model_state_dict': model.to('cpu').state_dict(),
+                #'optimizer_state_dict': optimizer.state_dict(),
+                'scheduler_state_dict': scheduler.state_dict(),
             }
             save_ckpt(ckpt_path, ckpt_dict)
             print(
@@ -85,6 +96,7 @@ def train_model(**train_args: typing.Any) -> Module:
                 ' ######### Relative L1 Test Norm:',
                 test_relative_l2,
             )
+            model.to(device)
 
     return model.to('cpu')
 
