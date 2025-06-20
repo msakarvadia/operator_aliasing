@@ -59,6 +59,18 @@ if __name__ == '__main__':
         choices=['l1'],
         help='Name of loss functions for training.',
     )
+    parser.add_argument(
+        '--ckpt_path',
+        type=str,
+        default='ckpts',
+        help='Name of path to experiment ckpt folder.',
+    )
+    parser.add_argument(
+        '--ckpt_freq',
+        type=int,
+        default=5,
+        help='The number of epochs between ckpts.',
+    )
 
     # Data args
     parser.add_argument(

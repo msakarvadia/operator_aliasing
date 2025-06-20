@@ -28,8 +28,8 @@ def train_model(**train_args: typing.Any) -> Module:
     seed = train_args['seed']
     train_dataloader = train_args['train_dataloader']
     test_dataloader = train_args['test_dataloader']
-    ckpt_path = 'ckpts'
-    ckpt_freq = 5
+    ckpt_path = train_args['ckpt_path']
+    ckpt_freq = train_args['ckpt_freq']
 
     # TODO(MS): test seeding!!
     seed_everything(seed)
