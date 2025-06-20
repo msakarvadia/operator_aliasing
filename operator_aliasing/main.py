@@ -122,7 +122,7 @@ if __name__ == '__main__':
     args.model = get_model(**vars(args))
 
     # Get DataLoaders
-    (args.train_dataloader, args.test_dataloader) = get_data(**vars(args))
+    (args.train_dataloader, args.test_dataloaders) = get_data(**vars(args))
 
     # Get Loss Function
     args.loss = get_loss(args.loss_name)

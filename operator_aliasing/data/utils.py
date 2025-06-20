@@ -12,7 +12,9 @@ from ..utils import seed_everything
 from ..utils import seed_worker
 
 
-def get_data(**data_args: typing.Any) -> tuple[DataLoader, DataLoader]:
+def get_data(
+    **data_args: typing.Any,
+) -> tuple[DataLoader, dict[str, DataLoader]]:
     """Get data w/ args."""
     batch_size = data_args['batch_size']
     seed = data_args['seed']
@@ -45,4 +47,4 @@ def get_data(**data_args: typing.Any) -> tuple[DataLoader, DataLoader]:
         worker_init_fn=seed_worker,
         generator=g,
     )
-    return (training_loader, testing_loader)
+    return (training_loader, {'test': testing_loader})

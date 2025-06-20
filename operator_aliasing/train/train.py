@@ -27,9 +27,12 @@ def train_model(**train_args: typing.Any) -> Module:
     device = train_args['device']
     seed = train_args['seed']
     train_dataloader = train_args['train_dataloader']
-    test_dataloader = train_args['test_dataloader']
+    test_dataloaders = train_args['test_dataloaders']
     ckpt_path = train_args['ckpt_path']
     ckpt_freq = train_args['ckpt_freq']
+
+    # training stats
+    # train_stats = pd.DataFrame()
 
     # TODO(MS): test seeding!!
     seed_everything(seed)
@@ -66,7 +69,12 @@ def train_model(**train_args: typing.Any) -> Module:
         scheduler.step()
 
         # test model
-        test_relative_l2 = test_model(model, test_dataloader, device)
+        test_dict = test_model(model, test_dataloaders, device)
+        test_relative_l2 = test_dict
+
+        # save train stats:
+        # train_stats.loc[-1] = {"epoch":epoch,
+        # "train_loss":train_loss} | test_dict
 
         if epoch % ckpt_freq == 0:
             ckpt_dict = {
@@ -92,22 +100,24 @@ def train_model(**train_args: typing.Any) -> Module:
 # TODO(MS): make test function
 def test_model(
     model: torch.nn.Module,
-    test_dataloader: torch.utils.data.Dataloader,
+    test_dataloaders: dict[str, torch.utils.data.Dataloader],
     device: torch.device,
-) -> float:
+) -> dict[str, float]:
     """Test model."""
+    test_dict = {}
     with torch.no_grad():
         model.eval()
-        test_relative_l2 = 0.0
-        for _step, (input_data, output_data) in enumerate(test_dataloader):
-            input_batch = input_data.to(device)
-            output_batch = output_data.to(device)
-            output_pred_batch = model(input_batch)
-            loss_f = (
-                torch.mean(abs(output_pred_batch - output_batch))
-                / torch.mean(abs(output_batch))
-            ) ** 0.5 * 100
-            test_relative_l2 += loss_f.item()
-        test_relative_l2 /= len(test_dataloader)
-
-    return test_relative_l2
+        for test_label, test_dataloader in test_dataloaders.items():
+            test_relative_l2 = 0.0
+            for _step, (input_data, output_data) in enumerate(test_dataloader):
+                input_batch = input_data.to(device)
+                output_batch = output_data.to(device)
+                output_pred_batch = model(input_batch)
+                loss_f = (
+                    torch.mean(abs(output_pred_batch - output_batch))
+                    / torch.mean(abs(output_batch))
+                ) ** 0.5 * 100
+                test_relative_l2 += loss_f.item()
+            test_relative_l2 /= len(test_dataloader)
+            test_dict[test_label] = test_relative_l2
+    return test_dict
