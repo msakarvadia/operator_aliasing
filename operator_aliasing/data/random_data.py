@@ -6,7 +6,9 @@ import torch
 from torch.utils.data import TensorDataset
 
 
-def get_random_data(n_train: int = 100) -> TensorDataset:
+def get_random_data(
+    n_train: int = 100,
+) -> tuple[TensorDataset, dict[str, TensorDataset]]:
     """Small random dataset for testing purposes."""
     x_data = torch.rand((256, 1, 128, 128)).type(torch.float32)
     y_data = torch.ones((256, 1, 128, 128)).type(torch.float32)
@@ -19,4 +21,4 @@ def get_random_data(n_train: int = 100) -> TensorDataset:
     train_data = TensorDataset(input_function_train, output_function_train)
     test_data = TensorDataset(input_function_test, output_function_test)
 
-    return train_data, test_data
+    return train_data, {'test': test_data}

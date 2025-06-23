@@ -25,7 +25,7 @@ def get_data(
     g = torch.Generator()
     g.manual_seed(seed)
 
-    train_dataset, test_dataset = get_random_data(100)
+    train_dataset, test_datasets = get_random_data(100)
     train_dataset, test_datasets = get_darcy_data()
 
     training_loader = DataLoader(
