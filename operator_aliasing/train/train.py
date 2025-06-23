@@ -105,7 +105,6 @@ def train_model(**train_args: typing.Any) -> Module:
     return model.to('cpu')
 
 
-# TODO(MS): make test function
 def test_model(
     model: Module,
     test_dataloaders: dict[str, torch.utils.data.Dataloader],
