@@ -31,15 +31,19 @@ class RandomData(Dataset):
     """Small random dataset for testing purposes."""
 
     def __init__(
-        self, n_train: int = 100, transform: Compose = None, train: bool = True
+        self,
+        n_train: int = 100,
+        transform: Compose = None,
+        train: bool = True,
+        img_size: int = 16,
     ) -> None:
         """Initialize dataset."""
         self.n_train = n_train
         self.transform = transform
         self.train = train
 
-        x_data = torch.rand((256, 1, 16, 16)).type(torch.float32)
-        y_data = torch.ones((256, 1, 16, 16)).type(torch.float32)
+        x_data = torch.rand((256, 1, img_size, img_size)).type(torch.float32)
+        y_data = torch.ones((256, 1, img_size, img_size)).type(torch.float32)
         self.input_function = x_data[n_train:, :]
         self.output_function = y_data[n_train:, :]
         if self.train:

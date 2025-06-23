@@ -34,7 +34,10 @@ def get_dataset(
     # grab specific dataset
     if dataset_name == 'random':
         dataset = RandomData(
-            n_train=100, train=train, transform=data_transforms
+            n_train=100,
+            train=train,
+            transform=data_transforms,
+            img_size=img_size,
         )
     return dataset
 
@@ -58,35 +61,18 @@ def get_data(
         'train': True,
     }
     train_dataset = get_dataset(**train_kwargs)
-    test_kwargs = {
-        'dataset_name': 'random',
-        'filter_lim': 3,
-        'img_size': 16,
-        'downsample_dim': -1,
-        'train': False,
-    }
-    test_dataset = get_dataset(**test_kwargs)
-    """
-    filter_lim = 3
-    img_size = 16
-    downsample_dim = -1
-    # Handle data transformations
-    data_transforms = transforms.Compose(
-        [LowpassFilter2D(filter_lim, img_size), DownSample(downsample_dim)]
-    )
 
-    # train_dataset, test_datasets = get_random_data(100)
-    train_dataset = RandomData(
-        n_train=100, train=True, transform=data_transforms
-    )
-    test_dataset = RandomData(
-        n_train=100, train=False, transform=data_transforms
-    )
-    # train_dataset, test_datasets = get_darcy_data(data_transforms)
-    """
-
-    # NOTE(MS): how to handle different transforms for testing?
-    test_datasets = {'test': test_dataset}
+    test_datasets = {}
+    for lim in [3, 4, -1]:
+        test_kwargs = {
+            'dataset_name': 'random',
+            'filter_lim': lim,
+            'img_size': 16,
+            'downsample_dim': -1,
+            'train': False,
+        }
+        test_dataset = get_dataset(**test_kwargs)
+        test_datasets[f'test_filter_{lim}'] = test_dataset
 
     training_loader = DataLoader(
         train_dataset,
