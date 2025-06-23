@@ -1,4 +1,5 @@
 """Small random dataset for testing purposes."""
+# NOTE(MS): depricating support for random data
 
 from __future__ import annotations
 

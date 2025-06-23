@@ -8,7 +8,6 @@ import torch
 from torch.utils.data import DataLoader
 
 from operator_aliasing.data.darcy import get_darcy_data
-from operator_aliasing.data.random_data import get_random_data
 
 from ..utils import seed_everything
 from ..utils import seed_worker
@@ -25,7 +24,8 @@ def get_data(
     g = torch.Generator()
     g.manual_seed(seed)
 
-    train_dataset, test_datasets = get_random_data(100)
+    # NOTE(MS): depricating support for random data
+    # train_dataset, test_datasets = get_random_data(100)
     train_dataset, test_datasets = get_darcy_data()
 
     training_loader = DataLoader(
