@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision import transforms
 
+from operator_aliasing.data.darcy import DarcyData
 from operator_aliasing.data.random_data import RandomData
 from operator_aliasing.data.transforms import DownSample
 from operator_aliasing.data.transforms import LowpassFilter2D
@@ -33,12 +34,15 @@ def get_dataset(
 
     # grab specific dataset
     if dataset_name == 'random':
-        dataset = RandomData(
-            n_train=100,
-            train=train,
-            transform=data_transforms,
-            img_size=img_size,
-        )
+        data_class = RandomData
+    if dataset_name == 'darcy':
+        data_class = DarcyData
+    dataset = data_class(
+        n_train=100,
+        train=train,
+        transform=data_transforms,
+        img_size=img_size,
+    )
     return dataset
 
 
@@ -54,8 +58,8 @@ def get_data(
     g.manual_seed(seed)
 
     train_kwargs = {
-        'dataset_name': 'random',
-        'filter_lim': 3,
+        'dataset_name': 'darcy',
+        'filter_lim': -1,
         'img_size': 16,
         'downsample_dim': -1,
         'train': True,
@@ -65,7 +69,7 @@ def get_data(
     test_datasets = {}
     for lim in [3, 4, -1]:
         test_kwargs = {
-            'dataset_name': 'random',
+            'dataset_name': 'darcy',
             'filter_lim': lim,
             'img_size': 16,
             'downsample_dim': -1,
