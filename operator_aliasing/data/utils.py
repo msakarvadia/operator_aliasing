@@ -6,7 +6,8 @@ import typing
 
 import torch
 from torch.utils.data import DataLoader
-from torch.utils.data import TensorDataset
+
+from operator_aliasing.data.random_data import get_random_data
 
 from ..utils import seed_everything
 from ..utils import seed_worker
@@ -23,25 +24,17 @@ def get_data(
     g = torch.Generator()
     g.manual_seed(seed)
 
-    n_train = 100  # number of training samples
-
-    x_data = torch.rand((256, 1, 128, 128)).type(torch.float32)
-    y_data = torch.ones((256, 1, 128, 128)).type(torch.float32)
-
-    input_function_train = x_data[:n_train, :]
-    output_function_train = y_data[:n_train, :]
-    input_function_test = x_data[n_train:, :]
-    output_function_test = y_data[n_train:, :]
+    train_dataset, test_dataset = get_random_data(100)
 
     training_loader = DataLoader(
-        TensorDataset(input_function_train, output_function_train),
+        train_dataset,
         batch_size=batch_size,
         shuffle=True,
         worker_init_fn=seed_worker,
         generator=g,
     )
     testing_loader = DataLoader(
-        TensorDataset(input_function_test, output_function_test),
+        test_dataset,
         batch_size=batch_size,
         shuffle=False,
         worker_init_fn=seed_worker,
