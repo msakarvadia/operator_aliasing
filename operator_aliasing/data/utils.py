@@ -57,24 +57,17 @@ def get_data(
     g = torch.Generator()
     g.manual_seed(seed)
 
-    train_kwargs = {
-        'dataset_name': 'darcy',
-        'filter_lim': -1,
-        'img_size': 16,
-        'downsample_dim': -1,
-        'train': True,
-    }
-    train_dataset = get_dataset(**train_kwargs)
+    # set train specific kwarg
+    data_args['train'] = True
+    train_dataset = get_dataset(**data_args)
 
     test_datasets = {}
     for lim in [3, 4, -1]:
-        test_kwargs = {
-            'dataset_name': 'darcy',
-            'filter_lim': lim,
-            'img_size': 16,
-            'downsample_dim': -1,
-            'train': False,
-        }
+        test_kwargs = data_args
+        # set test specific kwargs
+        test_kwargs['train'] = False
+        test_kwargs['filter_lim'] = lim
+
         test_dataset = get_dataset(**test_kwargs)
         test_datasets[f'test_filter_{lim}'] = test_dataset
 

@@ -79,6 +79,35 @@ if __name__ == '__main__':
         default=16,
         help='Batch Size.',
     )
+    parser.add_argument(
+        '--dataset_name',
+        type=str,
+        default='darcy',
+        choices=['darcy', 'random'],
+        help='Training Datasets',
+    )
+    parser.add_argument(
+        '--img_size',
+        type=int,
+        default=16,
+        help='Resolution of training data.',
+    )
+    parser.add_argument(
+        '--filter_lim',
+        type=int,
+        default=-1,
+        help="""lowpass filter limit.
+            -1 = no low pass filter applied to data,
+            n = freq above n are filtered""",
+    )
+    parser.add_argument(
+        '--downsample_dim',
+        type=int,
+        default=-1,
+        help="""X/Y dim to downsample img to.
+            -1 = no downsample.
+            n = downsample to n x n img.""",
+    )
 
     # Model args
     parser.add_argument(
