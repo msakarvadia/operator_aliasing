@@ -73,7 +73,7 @@ def train_model(**train_args: typing.Any) -> Module:
         scheduler.step()
 
         # test model
-        test_dict = test_model(model, test_dataloaders, device)
+        test_dict = test_model(model, test_dataloaders, device, loss)
         test_relative_l2 = test_dict
 
         # save train stats:
@@ -96,7 +96,8 @@ def train_model(**train_args: typing.Any) -> Module:
                 epoch,
                 ' ######### Train Loss:',
                 train_loss,
-                ' ######### Relative L1 Test Norm:',
+                ' ######### Test Loss:',
+                #' ######### Relative L1 Test Norm:',
                 test_relative_l2,
             )
             model.to(device)
@@ -106,9 +107,10 @@ def train_model(**train_args: typing.Any) -> Module:
 
 # TODO(MS): make test function
 def test_model(
-    model: torch.nn.Module,
+    model: Module,
     test_dataloaders: dict[str, torch.utils.data.Dataloader],
     device: torch.device,
+    loss: Module,
 ) -> dict[str, float]:
     """Test model."""
     test_dict = {}
@@ -120,10 +122,13 @@ def test_model(
                 input_batch = batch['x'].to(device)
                 output_batch = batch['y'].to(device)
                 output_pred_batch = model(input_batch)
+                loss_f = loss(output_pred_batch, output_batch)
+                """
                 loss_f = (
                     torch.mean(abs(output_pred_batch - output_batch))
                     / torch.mean(abs(output_batch))
                 ) ** 0.5 * 100
+                """
                 test_relative_l2 += loss_f.item()
             test_relative_l2 /= len(test_dataloader)
             test_dict[test_label] = test_relative_l2
