@@ -60,9 +60,9 @@ def train_model(**train_args: typing.Any) -> Module:
     # train model
     for epoch in range(starting_epoch, epochs + 1):
         train_loss = 0.0
-        for _step, (input_data, output_data) in enumerate(train_dataloader):
-            input_batch = input_data.to(device)
-            output_batch = output_data.to(device)
+        for _step, batch in enumerate(train_dataloader):
+            input_batch = batch['x'].to(device)
+            output_batch = batch['y'].to(device)
             optimizer.zero_grad()
             output_pred_batch = model(input_batch)
             loss_f = loss(output_pred_batch, output_batch)
@@ -116,9 +116,9 @@ def test_model(
         model.eval()
         for test_label, test_dataloader in test_dataloaders.items():
             test_relative_l2 = 0.0
-            for _step, (input_data, output_data) in enumerate(test_dataloader):
-                input_batch = input_data.to(device)
-                output_batch = output_data.to(device)
+            for _step, batch in enumerate(test_dataloader):
+                input_batch = batch['x'].to(device)
+                output_batch = batch['y'].to(device)
                 output_pred_batch = model(input_batch)
                 loss_f = (
                     torch.mean(abs(output_pred_batch - output_batch))
