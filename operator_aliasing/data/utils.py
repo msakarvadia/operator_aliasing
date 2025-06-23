@@ -62,14 +62,19 @@ def get_data(
     train_dataset = get_dataset(**data_args)
 
     test_datasets = {}
-    for lim in [3, 4, -1]:
-        test_kwargs = data_args
-        # set test specific kwargs
-        test_kwargs['train'] = False
-        test_kwargs['filter_lim'] = lim
+    for downsample in [-1, 8, 11]:
+        for lim in [-1, 5]:
+            # do not test on downsampled unfiltered data
+            if lim == -1 and downsample != -1:
+                continue
+            test_kwargs = data_args
+            # set test specific kwargs
+            test_kwargs['train'] = False
+            test_kwargs['filter_lim'] = lim
+            test_kwargs['downsample_dim'] = downsample
 
-        test_dataset = get_dataset(**test_kwargs)
-        test_datasets[f'test_filter_{lim}'] = test_dataset
+            test_dataset = get_dataset(**test_kwargs)
+            test_datasets[f'test_{lim=}_{downsample=}'] = test_dataset
 
     training_loader = DataLoader(
         train_dataset,

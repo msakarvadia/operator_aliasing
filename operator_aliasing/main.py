@@ -89,7 +89,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--img_size',
         type=int,
-        default=16,
+        default=32,
         help='Resolution of training data.',
     )
     parser.add_argument(

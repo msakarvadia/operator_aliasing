@@ -67,18 +67,22 @@ class DownSample:
         if self.out_size == -1:
             return {'x': model_input, 'y': label}
 
+        # NOTE(MS): because we downsample 0 img at a time
+        # we must first exapand the batch dim
+        # then collapse the batch dim to be compatible
+        # w/ interpolate & also dataloader
         downsample_input = f.interpolate(
-            model_input,
+            model_input.unsqueeze(0),
             size=(self.out_size, self.out_size),
             mode='bicubic',
             antialias=True,
-        )
+        )[0]
 
         downsample_label = f.interpolate(
-            model_input,
+            label.unsqueeze(0),
             size=(self.out_size, self.out_size),
             mode='bicubic',
             antialias=True,
-        )
+        )[0]
 
         return {'x': downsample_input, 'y': downsample_label}
