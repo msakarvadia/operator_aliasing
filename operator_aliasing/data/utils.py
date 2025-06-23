@@ -22,18 +22,20 @@ def get_data(
     """Get data w/ args."""
     batch_size = data_args['batch_size']
     seed = data_args['seed']
+    filter_lim = 3
+    img_size = 16
+    downsample_dim = -1
 
     seed_everything(seed)
     g = torch.Generator()
     g.manual_seed(seed)
 
-    # NOTE(MS): depricating support for random data
-    # train_dataset, test_datasets = get_random_data(100)
-    filter_lim = 3
-    img_size = 16
+    # Handle data transformations
     data_transforms = transforms.Compose(
-        [LowpassFilter2D(filter_lim, img_size), DownSample(-1)]
+        [LowpassFilter2D(filter_lim, img_size), DownSample(downsample_dim)]
     )
+
+    # train_dataset, test_datasets = get_random_data(100)
     train_dataset = RandomData(
         n_train=100, train=True, transform=data_transforms
     )
@@ -42,6 +44,7 @@ def get_data(
     )
     # train_dataset, test_datasets = get_darcy_data(data_transforms)
 
+    # NOTE(MS): how to handle different transforms for testing?
     test_datasets = {'test': test_dataset}
 
     training_loader = DataLoader(
@@ -62,4 +65,3 @@ def get_data(
             generator=g,
         )
     return (training_loader, testing_loaders)
-    # return (training_loader, {'test': testing_loader})
