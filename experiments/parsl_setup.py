@@ -18,7 +18,7 @@ def get_parsl_config() -> Config:
         launcher=SrunLauncher(
             overrides='--gpus-per-node 4 -c 64'
         ),  # Must supply GPUs and CPU per node
-        walltime='00:05:00',
+        walltime='00:30:00',
         nodes_per_block=1,  # how many nodes to request
         scheduler_options="""#SBATCH -C gpu&hbm80g
             #SBATCH --qos=debug

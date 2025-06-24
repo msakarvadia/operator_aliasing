@@ -19,8 +19,8 @@ def hello_world() -> str:
 def train(filter_lim: int, downsample_dim: int) -> str:
     """Train a model."""
     exec_str = f"""pwd;
-    python main.py --filter_lim {filter_lim} \n
-    --downsample_dim {downsample_dim} \n
+    python main.py --filter_lim {filter_lim} \
+    --downsample_dim {downsample_dim} \
     --ckpt_path ckpts/{downsample_dim}_{filter_lim}/
     """
     return exec_str
@@ -31,8 +31,8 @@ if __name__ == '__main__':
     parsl.load(config)
 
     train_args = []
-    for downsample_dim in [-1, 8, 11]:
-        for filter_lim in [-1, 5]:
+    for downsample_dim in [-1, 5, 6, 8, 9, 11]:
+        for filter_lim in [-1, 5, 4, 3]:
             # don't downsample unfiltered data
             if filter_lim == -1 and downsample_dim != -1:
                 continue
