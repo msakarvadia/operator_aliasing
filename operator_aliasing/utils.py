@@ -60,6 +60,7 @@ def get_model_preds(
 ) -> torch.Tensor:
     """Return model predictions."""
     model_preds = []
+    model = model.to(device)
     for _idx, sample in enumerate(test_loader):  # resolution 128
         model_input = sample['x'].to(device)
         with torch.no_grad():

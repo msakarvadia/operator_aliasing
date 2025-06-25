@@ -31,8 +31,8 @@ if __name__ == '__main__':
     parsl.load(config)
 
     train_args = []
-    for downsample_dim in [-1, 5, 6, 8, 9, 11]:
-        for filter_lim in [-1, 5, 4, 3]:
+    for downsample_dim in [-1, 6, 8, 10, 12]:
+        for filter_lim in [-1, 10, 5, 4, 3]:
             # don't downsample unfiltered data
             if filter_lim == -1 and downsample_dim != -1:
                 continue
