@@ -131,3 +131,6 @@ dmypy.json
 # parsl
 runinfo/
 *cmd_parsl*
+
+#ckpts
+*ckpt*
