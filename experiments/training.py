@@ -30,7 +30,7 @@ def train(filter_lim: int, downsample_dim: int) -> str:
     --ckpt_path ckpts/{downsample_dim}_{filter_lim} \
     --dataset_name darcy_pdebench \
     --img_size 128 \
-    --ckpt_path darcy_pdebench_ckpts \
+    --ckpt_path darcy_pdebench_ckpts/{downsample_dim}_{filter_lim} \
     """
     return exec_str
 
