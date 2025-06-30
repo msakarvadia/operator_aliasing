@@ -53,18 +53,16 @@ def get_dataset(
     if dataset_name == 'darcy_pdebench':
         dataset = DarcyPDEBench(
             filename='2D_DarcyFlow_beta0.01_Train.hdf5',
-            initial_step=1,
+            # initial_step=1,
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/DarcyFlow/',
-            reduced_resolution=1,
-            reduced_resolution_t=1,
-            reduced_batch=1,
+            # reduced_resolution=1,
+            # reduced_resolution_t=1,
+            # reduced_batch=1,
             train=train,
-            #if_test=False,
-            test_ratio=0.1,
+            # test_ratio=0.1,
             num_samples_max=-1,
             transform=data_transforms,
-            )
-
+        )
 
     return dataset
 
@@ -85,6 +83,7 @@ def get_data(
     train_dataset = get_dataset(**data_args)
 
     test_datasets = {}
+    """
     for downsample in [-1, 8, 11]:
         for lim in [-1, 5]:
             # do not test on downsampled unfiltered data
@@ -98,6 +97,11 @@ def get_data(
 
             test_dataset = get_dataset(**test_kwargs)
             test_datasets[f'test_{lim=}_{downsample=}'] = test_dataset
+    """
+    test_kwargs = data_args
+    test_kwargs['train'] = False
+    test_dataset = get_dataset(**test_kwargs)
+    test_datasets['test'] = test_dataset
 
     training_loader = DataLoader(
         train_dataset,

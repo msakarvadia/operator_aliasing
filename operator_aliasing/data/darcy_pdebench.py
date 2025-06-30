@@ -2,46 +2,39 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import h5py
+import numpy as np
 import torch
-from neuralop.data.datasets.darcy import DarcyDataset
-from neuralop.utils import get_project_root
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose
 
-import math as mt
-from pathlib import Path
-import numpy as np
-
-import h5py
-import torch
-from torch.utils.data import Dataset
-
 # https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/utils.py
 
+
 class DarcyPDEBench(Dataset):
+    """Darcy Dataset from PDE Bench."""
+
     def __init__(
         self,
-        filename,
-        initial_step=1,
-        saved_folder='../data/',
-        reduced_resolution=1,
-        reduced_resolution_t=1,
-        reduced_batch=1,
-        #if_test=False,
+        filename: str,
+        saved_folder: str = '../data/',
         train: bool = True,
-        test_ratio=0.1,
-        num_samples_max=-1,
+        num_samples_max: int = -1,
         transform: Compose = None,
     ):
-        """:param filename: filename that contains the dataset
+        """Initialize data.
+
+        :param filename: filename that contains the dataset
         :type filename: STR
-        :param filenum: array containing indices of filename included in the dataset
-        :type filenum: ARRAY
-        :param initial_step: time steps taken as initial condition, defaults to 10
-        :type initial_step: INT, optional
 
         """
         self.transform = transform
+        initial_step = 1
+        reduced_resolution = 1
+        reduced_batch = 1
+        test_ratio = 0.1
 
         # Define path to files
         root_path = Path(Path(saved_folder).resolve()) / filename
@@ -56,23 +49,8 @@ class DarcyPDEBench(Dataset):
                 _data = np.array(
                     f['tensor'], dtype=np.float32
                 )  # batch, time, x,...
-                if len(_data.shape) == 3:  # 1D
-                    _data = _data[
-                        ::reduced_batch,
-                        ::reduced_resolution_t,
-                        ::reduced_resolution,
-                    ]
-                    ## convert to [x1, ..., xd, t, v]
-                    _data = np.transpose(_data[:, :, :], (0, 2, 1))
-                    self.data = _data[:, :, :, None]  # batch, x, t, ch
-
-                    self.grid = np.array(
-                        f['x-coordinate'], dtype=np.float32
-                    )
-                    self.grid = torch.tensor(
-                        self.grid[::reduced_resolution], dtype=torch.float
-                    ).unsqueeze(-1)
-                if len(_data.shape) == 4:  # 2D Darcy flow
+                four = 4
+                if len(_data.shape) == four:  # 2D Darcy flow
                     # u: label
                     _data = _data[
                         ::reduced_batch,
@@ -99,18 +77,22 @@ class DarcyPDEBench(Dataset):
                     _data = np.transpose(_data[:, :, :, :], (0, 2, 3, 1))
                     self.data = np.concatenate([_data, self.data], axis=-1)
                     self.data = self.data[
-                        :, :, :, :,  #None
+                        :,
+                        :,
+                        :,
+                        :,  # None
                     ]  # batch, x, y, t, ch
 
                     x = np.array(f['x-coordinate'], dtype=np.float32)
                     y = np.array(f['y-coordinate'], dtype=np.float32)
                     x = torch.tensor(x, dtype=torch.float)
                     y = torch.tensor(y, dtype=torch.float)
+                    """
                     X, Y = torch.meshgrid(x, y, indexing='ij')
                     self.grid = torch.stack((X, Y), axis=-1)[
                         ::reduced_resolution, ::reduced_resolution
                     ]
-
+                    """
 
         if num_samples_max > 0:
             num_samples_max = min(num_samples_max, self.data.shape[0])
@@ -132,17 +114,19 @@ class DarcyPDEBench(Dataset):
             else torch.tensor(self.data)
         )
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Returns len of dataset."""
         return len(self.data)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
+        """Get single sample at idx."""
         unsqueeze_dim = 0
-        if type(idx) != int:
+        if type(idx) is not int:
             unsqueeze_dim = 1
         sample = {
-            "x": self.data[idx, :, :, 0].unsqueeze(unsqueeze_dim),
-            "y": self.data[idx, ..., 1].unsqueeze(unsqueeze_dim),
-            #self.grid,
+            'x': self.data[idx, :, :, 0].unsqueeze(unsqueeze_dim),
+            'y': self.data[idx, ..., 1].unsqueeze(unsqueeze_dim),
+            # self.grid,
         }
 
         if self.transform:
