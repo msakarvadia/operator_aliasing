@@ -28,7 +28,7 @@ class DarcyData(Dataset):
         data = DarcyDataset(
             root_dir=root_dir,
             n_train=n_train,
-            n_tests=[32, 32, 32, 32],
+            n_tests=[100, 100, 100, 100],
             batch_size=16,
             test_batch_sizes=[16, 16, 16, 16],
             train_resolution=img_size,  # change res to download different data

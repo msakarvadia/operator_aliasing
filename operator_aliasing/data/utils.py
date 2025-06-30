@@ -45,7 +45,7 @@ def get_dataset(
     if dataset_name == 'darcy':
         data_class = DarcyData
         dataset = data_class(
-            n_train=100,
+            n_train=1000,
             train=train,
             transform=data_transforms,
             img_size=img_size,
