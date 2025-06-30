@@ -83,7 +83,7 @@ if __name__ == '__main__':
         '--dataset_name',
         type=str,
         default='darcy',
-        choices=['darcy', 'random'],
+        choices=['darcy', 'random', "darcy_pdebench"],
         help='Training Datasets',
     )
     parser.add_argument(

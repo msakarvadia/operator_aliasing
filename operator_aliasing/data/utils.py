@@ -10,6 +10,7 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 
 from operator_aliasing.data.darcy import DarcyData
+from operator_aliasing.data.darcy_pdebench import DarcyPDEBench
 from operator_aliasing.data.random_data import RandomData
 from operator_aliasing.data.transforms import DownSample
 from operator_aliasing.data.transforms import LowpassFilter2D
@@ -35,14 +36,36 @@ def get_dataset(
     # grab specific dataset
     if dataset_name == 'random':
         data_class = RandomData
+        dataset = data_class(
+            n_train=100,
+            train=train,
+            transform=data_transforms,
+            img_size=img_size,
+        )
     if dataset_name == 'darcy':
         data_class = DarcyData
-    dataset = data_class(
-        n_train=100,
-        train=train,
-        transform=data_transforms,
-        img_size=img_size,
-    )
+        dataset = data_class(
+            n_train=100,
+            train=train,
+            transform=data_transforms,
+            img_size=img_size,
+        )
+    if dataset_name == 'darcy_pdebench':
+        dataset = DarcyPDEBench(
+            filename='2D_DarcyFlow_beta0.01_Train.hdf5',
+            initial_step=1,
+            saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/DarcyFlow/',
+            reduced_resolution=1,
+            reduced_resolution_t=1,
+            reduced_batch=1,
+            train=train,
+            #if_test=False,
+            test_ratio=0.1,
+            num_samples_max=-1,
+            transform=data_transforms,
+            )
+
+
     return dataset
 
 
