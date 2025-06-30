@@ -20,7 +20,7 @@ def get_parsl_config() -> Config:
         ),  # Must supply GPUs and CPU per node
         walltime='00:30:00',
         nodes_per_block=1,  # how many nodes to request
-        scheduler_options="""#SBATCH -C gpu&hbm80g
+        scheduler_options="""#SBATCH -C gpu&hbm40g
             #SBATCH --qos=debug
             #SBATCH --mail-user=sakarvadia@uchicago.edu""",
         # Switch to "-C cpu" for CPU partition
