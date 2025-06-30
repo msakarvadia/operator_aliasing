@@ -91,7 +91,6 @@ if __name__ == '__main__':
             }
             train_args.append(training_args)
 
-    print(len(train_args))
     futures = [train(**args) for args in train_args]
     for future in futures:
         print(f'Waiting for {future}')
