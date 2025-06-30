@@ -55,37 +55,43 @@ if __name__ == '__main__':
 
     train_args = []
     if args.dataset_name == 'darcy':
+        fixed_lim = 3
+        # study effect of downsampling
         for downsample_dim in [-1, 6, 8, 12]:
-            for filter_lim in [-1, 10, 5, 4, 3]:
-                # don't downsample unfiltered data
-                if filter_lim == -1 and downsample_dim != -1:
-                    continue
-                train_args.append(
-                    {
-                        'dataset_name': args.dataset_name,
-                        'downsample_dim': downsample_dim,
-                        'filter_lim': filter_lim,
-                    }
-                )
+            training_args = {
+                'dataset_name': args.dataset_name,
+                'downsample_dim': downsample_dim,
+                'filter_lim': fixed_lim,
+            }
+            train_args.append(training_args)
+        # study effect of filtering
+        for filter_lim in [-1, 10, 5, 4, 3]:
+            training_args = {
+                'dataset_name': args.dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': filter_lim,
+            }
+            train_args.append(training_args)
     if args.dataset_name == 'darcy_pdebench':
         fixed_lim = 8
+        # study effect of downsampling
         for downsample_dim in [16, 32, 64, -1]:
-            for filter_lim in [8, 16, 32, -1]:
-                # only downsample filtered data @ 8
-                if filter_lim != fixed_lim and downsample_dim != -1:
-                    continue
-                # only filter non downsampled data
-                if downsample_dim != -1 and filter_lim != -1:
-                    continue
-                train_args.append(
-                    {
-                        'dataset_name': args.dataset_name,
-                        'downsample_dim': downsample_dim,
-                        'filter_lim': filter_lim,
-                    }
-                )
+            training_args = {
+                'dataset_name': args.dataset_name,
+                'downsample_dim': downsample_dim,
+                'filter_lim': fixed_lim,
+            }
+            train_args.append(training_args)
+        # study effect of filtering
+        for filter_lim in [8, 16, 32, -1]:
+            training_args = {
+                'dataset_name': args.dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': filter_lim,
+            }
+            train_args.append(training_args)
 
-    print(train_args)
+    print(len(train_args))
     futures = [train(**args) for args in train_args]
     for future in futures:
         print(f'Waiting for {future}')
