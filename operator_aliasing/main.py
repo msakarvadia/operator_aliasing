@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--epochs',
         type=int,
-        default=50,
+        default=500,
         help='Number of training Epochs.',
     )
     parser.add_argument(
@@ -83,7 +83,7 @@ if __name__ == '__main__':
         '--dataset_name',
         type=str,
         default='darcy',
-        choices=['darcy', 'random', "darcy_pdebench"],
+        choices=['darcy', 'random', 'darcy_pdebench'],
         help='Training Datasets',
     )
     parser.add_argument(
