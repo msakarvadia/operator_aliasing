@@ -18,12 +18,9 @@ def get_parsl_config() -> Config:
         launcher=SrunLauncher(
             overrides='--gpus-per-node 4 -c 64'
         ),  # Must supply GPUs and CPU per node
-        walltime='00:30:00',
-        nodes_per_block=1,  # how many nodes to request
-        scheduler_options="""#SBATCH -C gpu&hbm40g
-            #SBATCH --qos=debug
-            #SBATCH --mail-user=sakarvadia@uchicago.edu""",
-        # Switch to "-C cpu" for CPU partition
+        walltime='00:60:00',
+        nodes_per_block=2,  # how many nodes to request
+        scheduler_options="#SBATCH -C gpu&hbm40g\n#SBATCH --qos=regular\n#SBATCH --mail-user=sakarvadia@uchicago.edu",
         account='m1266',
         worker_init="""
 module load conda
@@ -42,7 +39,7 @@ pwd""",
         executors=[
             HighThroughputExecutor(
                 label='train_fno',
-                available_accelerators=4,  # number of GPUs
+                available_accelerators=['1', '2', '3', '4'],  # number of GPUs
                 max_workers_per_node=4,
                 cpu_affinity='block',
                 provider=provider,
