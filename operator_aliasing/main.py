@@ -56,8 +56,15 @@ if __name__ == '__main__':
         '--loss_name',
         type=str,
         default='l1',
-        choices=['l1'],
+        choices=['l1', 'darcy_pinn'],
         help='Name of loss functions for training.',
+    )
+    parser.add_argument(
+        '--pinn_loss_weight',
+        type=float,
+        default=0.5,
+        help="""Ratio of PINNs loss term
+        weighting to data-driven loss term weighting.""",
     )
     parser.add_argument(
         '--ckpt_path',
@@ -154,7 +161,7 @@ if __name__ == '__main__':
     (args.train_dataloader, args.test_dataloaders) = get_data(**vars(args))
 
     # Get Loss Function
-    args.loss = get_loss(args.loss_name)
+    args.loss = get_loss(args.loss_name, args.pinn_loss_weight)
 
     # Train Model
     train_model(**vars(args))
