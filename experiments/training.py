@@ -30,10 +30,34 @@ def train(dataset_name: str, filter_lim: int, downsample_dim: int) -> str:
         exec_str = f"""pwd;
         python main.py --filter_lim {filter_lim} \
         --downsample_dim {downsample_dim} \
-        --ckpt_path ckpts/{downsample_dim}_{filter_lim} \
         --dataset_name darcy_pdebench \
         --img_size 128 \
         --ckpt_path darcy_pdebench_ckpts/{downsample_dim}_{filter_lim} \
+        """
+    return exec_str
+
+
+@bash_app
+def train_w_pinn_loss(
+    dataset_name: str, filter_lim: int, downsample_dim: int
+) -> str:
+    """Train a model."""
+    if dataset_name == 'darcy':
+        exec_str = f"""pwd;
+        python main.py --filter_lim {filter_lim} \
+        --downsample_dim {downsample_dim} \
+        --ckpt_path ckpts/pinn_loss/{downsample_dim}_{filter_lim} \
+        --loss_name darcy_pinn \
+        """
+    if dataset_name == 'darcy_pdebench':
+        ckpt_path = 'darcy_pdebench_ckpts/pinn_loss/'
+        exec_str = f"""pwd;
+        python main.py --filter_lim {filter_lim} \
+        --downsample_dim {downsample_dim} \
+        --dataset_name darcy_pdebench \
+        --img_size 128 \
+        --ckpt_path {ckpt_path}/{downsample_dim}_{filter_lim} \
+        --loss_name darcy_pinn \
         """
     return exec_str
 
@@ -92,6 +116,9 @@ if __name__ == '__main__':
             train_args.append(training_args)
 
     futures = [train(**args) for args in train_args]
+    pinn_futures = [train_w_pinn_loss(**args) for args in train_args]
+
+    futures = futures + pinn_futures
     for future in futures:
         print(f'Waiting for {future}')
         print(f'Got result {future.result()}')
