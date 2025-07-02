@@ -18,9 +18,11 @@ def get_parsl_config() -> Config:
         launcher=SrunLauncher(
             overrides='--gpus-per-node 4 -c 64'
         ),  # Must supply GPUs and CPU per node
-        walltime='02:30:00',
+        walltime='00:10:00',
         nodes_per_block=1,  # how many nodes to request
-        scheduler_options='#SBATCH -C gpu&hbm40g\n#SBATCH --qos=regular\n#SBATCH --mail-user=sakarvadia@uchicago.edu',
+        min_blocks=0,
+        max_blocks=1,
+        scheduler_options='#SBATCH -C gpu&hbm40g\n#SBATCH --qos=debug\n#SBATCH --mail-user=sakarvadia@uchicago.edu',
         account='m1266',
         worker_init="""
 module load conda
