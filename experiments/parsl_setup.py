@@ -41,7 +41,7 @@ pwd""",
         executors=[
             HighThroughputExecutor(
                 label='train_fno',
-                available_accelerators=['1', '2', '3', '4'],  # number of GPUs
+                available_accelerators=4,  # number of GPUs
                 max_workers_per_node=4,
                 cpu_affinity='block',
                 provider=provider,
