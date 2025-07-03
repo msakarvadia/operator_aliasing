@@ -72,6 +72,25 @@ if __name__ == '__main__':
         choices=['darcy', 'darcy_pdebench'],
         help='Name of training data.',
     )
+    parser.add_argument(
+        '--queue',
+        type=str,
+        default='debug',
+        choices=['debug', 'regular'],
+        help='Name of slurm queue we want to run in.',
+    )
+    parser.add_argument(
+        '--walltime',
+        type=str,
+        default='00:30:00',
+        help='HH:MM:SS length of job. Check you cluster queue limits.',
+    )
+    parser.add_argument(
+        '--num_nodes',
+        type=int,
+        default=1,
+        help='Number of nodes in your job.',
+    )
     args = parser.parse_args()
 
     train_args = []
@@ -112,7 +131,9 @@ if __name__ == '__main__':
             }
             train_args.append(training_args)
 
-    config = get_parsl_config()
+    config = get_parsl_config(
+        walltime=args.walltime, queue=args.queue, num_nodes=args.num_nodes
+    )
     with parsl.load(config):
         futures = [train(**args) for args in train_args]
         pinn_futures = [train_w_pinn_loss(**args) for args in train_args]
