@@ -63,51 +63,6 @@ def train(**kwargs: typing.Any) -> str:
     return exec_str
 
 
-@bash_app
-def train_w_pinn_loss(**kwargs: typing.Any) -> str:
-    """Train a model w/ PINN loss."""
-    filter_lim = kwargs['filter_lim']
-    downsample_dim = kwargs['downsample_dim']
-    dataset_name = kwargs['dataset_name']
-    lr = kwargs['lr']
-    wd = kwargs['weight_decay']
-    step_size = kwargs['step_size']
-    gamma = kwargs['gamma']
-
-    arg_path = '_'.join(map(str, list(kwargs.values())))
-    # Need to remove any . or / to
-    # ensure a single continuous file path
-    arg_path = arg_path.replace('.', '')
-    ckpt_name = arg_path.replace('/', '')
-
-    if dataset_name == 'darcy':
-        exec_str = f"""pwd;
-        python main.py --filter_lim {filter_lim} \
-        --downsample_dim {downsample_dim} \
-        --lr {lr} \
-        --weight_decay {wd} \
-        --step_size {step_size} \
-        --gamma {gamma} \
-        --ckpt_path ckpts/pinn_loss/{ckpt_name} \
-        --loss_name darcy_pinn \
-        """
-    if dataset_name == 'darcy_pdebench':
-        ckpt_path = 'darcy_pdebench_ckpts/pinn_loss/'
-        exec_str = f"""pwd;
-        python main.py --filter_lim {filter_lim} \
-        --downsample_dim {downsample_dim} \
-        --dataset_name darcy_pdebench \
-        --lr {lr} \
-        --weight_decay {wd} \
-        --step_size {step_size} \
-        --gamma {gamma} \
-        --img_size 128 \
-        --ckpt_path {ckpt_path}/{ckpt_name} \
-        --loss_name darcy_pinn \
-        """
-    return exec_str
-
-
 if __name__ == '__main__':
     # Get args
     parser = argparse.ArgumentParser()
@@ -171,9 +126,9 @@ if __name__ == '__main__':
     for train_arg in train_args:
         for loss_name in ['l1', 'darcy_pinn']:
             for lr in [1e-2, 1e-3, 1e-5]:
-                for wd in [1e-6, 1e-7, 1e-8, 1e-9]:
-                    for step_size in [15, 20, 25]:
-                        for gamma in [0.25, 0.5, 0.1]:
+                for wd in [1e-7, 1e-8, 1e-9]:
+                    for step_size in [15]:
+                        for gamma in [0.5]:
                             experiment_args = train_arg.copy()
                             hp_args = {
                                 'lr': lr,
