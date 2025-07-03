@@ -24,7 +24,7 @@ def get_parsl_config(
         nodes_per_block=num_nodes,  # how many nodes to request
         min_blocks=0,
         max_blocks=1,
-        scheduler_options=f'#SBATCH -C gpu&hbm40g\n#SBATCH --qos={queue}\n#SBATCH --mail-user=sakarvadia@uchicago.edu',
+        scheduler_options=f'#SBATCH -C gpu&hbm40g\n#SBATCH --qos={queue}\n#SBATCH --mail-user=sakarvadia@uchicago.edu',  # noqa
         account='m1266',
         worker_init="""
 module load conda
