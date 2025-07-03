@@ -8,7 +8,9 @@ from parsl.launchers import SrunLauncher
 from parsl.providers import SlurmProvider
 
 
-def get_parsl_config() -> Config:
+def get_parsl_config(
+    walltime: str = '00:30:00', queue: str = 'debug', num_nodes: int = 1
+) -> Config:
     """Initialize Parsl config.
 
     One experiment per GPU.
@@ -18,11 +20,11 @@ def get_parsl_config() -> Config:
         launcher=SrunLauncher(
             overrides='--gpus-per-node 4 -c 64'
         ),  # Must supply GPUs and CPU per node
-        walltime='02:30:00',
-        nodes_per_block=1,  # how many nodes to request
+        walltime=walltime,
+        nodes_per_block=num_nodes,  # how many nodes to request
         min_blocks=0,
         max_blocks=1,
-        scheduler_options='#SBATCH -C gpu&hbm40g\n#SBATCH --qos=regular\n#SBATCH --mail-user=sakarvadia@uchicago.edu',
+        scheduler_options=f'#SBATCH -C gpu&hbm40g\n#SBATCH --qos={queue}\n#SBATCH --mail-user=sakarvadia@uchicago.edu',
         account='m1266',
         worker_init="""
 module load conda
