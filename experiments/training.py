@@ -74,9 +74,6 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    config = get_parsl_config()
-    parsl.load(config)
-
     train_args = []
     if args.dataset_name == 'darcy':
         fixed_lim = 3
@@ -115,10 +112,12 @@ if __name__ == '__main__':
             }
             train_args.append(training_args)
 
-    futures = [train(**args) for args in train_args]
-    pinn_futures = [train_w_pinn_loss(**args) for args in train_args]
+    config = get_parsl_config()
+    with parsl.load(config):
+        futures = [train(**args) for args in train_args]
+        pinn_futures = [train_w_pinn_loss(**args) for args in train_args]
 
-    futures = futures + pinn_futures
-    for future in futures:
-        print(f'Waiting for {future}')
-        print(f'Got result {future.result()}')
+        futures = futures + pinn_futures
+        for future in futures:
+            print(f'Waiting for {future}')
+            print(f'Got result {future.result()}')
