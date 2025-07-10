@@ -6,7 +6,7 @@ import argparse
 import typing
 
 import parsl
-from get_training_args import get_train_args
+from get_train_args import get_train_args
 from parsl.app.app import bash_app
 from parsl_setup import get_parsl_config
 
