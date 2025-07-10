@@ -28,8 +28,16 @@ def get_dataset(
     img_size = data_args['img_size']
     downsample_dim = data_args['downsample_dim']
     train = data_args['train']
+
+    # NOTE(MS): change filter size if downsampling
+    # filter_size = img_size
+    # if downsample_dim != -1:
+    #    filter_size = downsample_dim
+
     # Handle data transformations
     data_transforms = transforms.Compose(
+        # NOTE (MS): downsample before filter
+        # [DownSample(downsample_dim),LowpassFilter2D(filter_lim, filter_size)]
         [LowpassFilter2D(filter_lim, img_size), DownSample(downsample_dim)]
     )
 

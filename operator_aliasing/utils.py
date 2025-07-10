@@ -61,11 +61,12 @@ def get_model_preds(
     """Return model predictions."""
     model_preds = []
     model = model.to(device)
-    for _idx, sample in enumerate(test_loader):  # resolution 128
-        model_input = sample['x'].to(device)
-        with torch.no_grad():
-            out = model(model_input)
-            model_preds.append(out)
+    with torch.no_grad():
+        for _idx, sample in enumerate(test_loader):  # resolution 128
+            model_input = sample['x'].to(device)
+            with torch.no_grad():
+                out = model(model_input)
+                model_preds.append(out)
     return torch.cat(model_preds)
 
 
