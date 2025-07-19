@@ -78,15 +78,6 @@ if __name__ == '__main__':
         default=5,
         help='The number of epochs between ckpts.',
     )
-    parser.add_argument(
-        '--train_type',
-        type=str,
-        default='at_once',
-        choices=['autoregressive', 'at_once'],
-        help="""Train/test loop style.
-                Autoregressive for time varying PDEs (NS, Burgers).
-                At-once for Darcy.""",
-    )
 
     # Data args
     parser.add_argument(
@@ -127,9 +118,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '--initial_steps',
         type=int,
-        default=10,
+        default=1,
         help="""Number of initial steps in sequence to provide for inference.
             Only relavent for time-varying PDEs like NS or burgers.
+            if initial_steps>1, train autoregressively
             """,
     )
 

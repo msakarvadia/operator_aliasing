@@ -31,7 +31,6 @@ def train_model(**train_args: typing.Any) -> Module:
     test_dataloaders = train_args['test_dataloaders']
     ckpt_path = train_args['ckpt_path']
     # ckpt_freq = train_args['ckpt_freq']
-    # train_type = train_args['train_type']
     initial_steps = train_args['initial_steps']
 
     # training stats
@@ -70,7 +69,7 @@ def train_model(**train_args: typing.Any) -> Module:
             input_batch = batch['x'].to(device)
             output_batch = batch['y'].to(device)
             optimizer.zero_grad()
-            if train_args['train_type'] != 'autoregressive':
+            if initial_steps == 1:
                 # for Darcy flow
                 output_pred_batch = model(input_batch)
                 loss_f = loss(output_pred_batch, output_batch)
@@ -87,7 +86,13 @@ def train_model(**train_args: typing.Any) -> Module:
         scheduler.step()
 
         # test model
-        test_dict = test_model(model, test_dataloaders, device, loss)
+        test_dict = test_model(
+            model,
+            test_dataloaders,
+            device,
+            loss,
+            initial_steps,
+        )
         test_relative_l2 = test_dict
 
         # save train stats:
@@ -135,23 +140,19 @@ def autoregressive_loop(
         # Extract target at current time step
         output_at_time_step = output_batch[:, t : t + 1, ...].squeeze()
 
-        print(f'Step {t}')
         # Model run
         model_input = input_batch.reshape(batch_size, -1, img_size, img_size)
         output_pred_batch = model(model_input)
-        print(f'{output_pred_batch.shape=}, {output_at_time_step.shape=}')
 
         # Loss calculation
         loss_f += loss(output_pred_batch, output_at_time_step)
 
         # Concatenate the prediction at the current
         # time step to be used as input for the next time step
-        print(f'Pre concat {input_batch.shape}')
         input_batch = torch.cat(
             (input_batch[:, 1:, ...], output_pred_batch.unsqueeze(dim=1)),
             dim=1,
         )
-        print(f'Post concat {input_batch.shape}')
     return loss_f
 
 
@@ -160,6 +161,7 @@ def test_model(
     test_dataloaders: dict[str, torch.utils.data.Dataloader],
     device: torch.device,
     loss: Module,
+    initial_steps: int,
 ) -> dict[str, float]:
     """Test model."""
     test_dict = {}
@@ -170,8 +172,15 @@ def test_model(
             for _step, batch in enumerate(test_dataloader):
                 input_batch = batch['x'].to(device)
                 output_batch = batch['y'].to(device)
-                output_pred_batch = model(input_batch)
-                loss_f = loss(output_pred_batch, output_batch)
+                # output_pred_batch = model(input_batch)
+                # loss_f = loss(output_pred_batch, output_batch)
+                if initial_steps == 1:
+                    output_pred_batch = model(input_batch)
+                    loss_f = loss(output_pred_batch, output_batch)
+                else:
+                    loss_f = autoregressive_loop(
+                        input_batch, output_batch, initial_steps, model, loss
+                    )
                 """
                 loss_f = (
                     torch.mean(abs(output_pred_batch - output_batch))
