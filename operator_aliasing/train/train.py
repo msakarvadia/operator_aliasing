@@ -133,10 +133,12 @@ def autoregressive_loop(
     t_train = output_batch.shape[1]  # number of time steps
     for t in range(initial_steps, t_train):
         # Extract target at current time step
-        output_at_time_step = output_batch[:, t : t + 1, ...]
+        output_at_time_step = output_batch[:, t : t + 1, ...].squeeze()
 
+        print(f'Step {t}')
         # Model run
         output_pred_batch = model(input_batch)
+        print(f'{output_pred_batch.shape=}, {output_at_time_step.shape=}')
 
         # Loss calculation
         loss_f += loss(output_pred_batch, output_at_time_step)
