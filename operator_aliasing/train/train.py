@@ -132,6 +132,7 @@ def autoregressive_loop(
     loss: Module,
 ) -> int:
     """Autoregressive training loop for time-varying PDE training."""
+    # adapted from: https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/train.py
     img_size = input_batch.shape[-1]
     batch_size = input_batch.shape[0]
     loss_f = 0
