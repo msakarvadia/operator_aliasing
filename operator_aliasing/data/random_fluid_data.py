@@ -49,14 +49,6 @@ class RandomFluidData(Dataset):
         model_input = self.input_function[idx, : self.init_steps, ...]
         label = self.input_function[idx, ...]
 
-        model_input = torch.reshape(
-            model_input,
-            (
-                self.init_steps * self.num_channels,
-                self.img_size,
-                self.img_size,
-            ),
-        )
         # TODO(MS): make Y-data in terms of X-data
         sample = {'x': model_input, 'y': label}
 

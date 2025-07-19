@@ -127,9 +127,9 @@ def autoregressive_loop(
     loss: Module,
 ) -> int:
     """Autoregressive training loop for time-varying PDE training."""
+    img_size = input_batch.shape[-1]
+    batch_size = input_batch.shape[0]
     loss_f = 0
-    # Initialize the prediction tensor
-    pred = input_batch[:, :initial_steps, ...]
     t_train = output_batch.shape[1]  # number of time steps
     for t in range(initial_steps, t_train):
         # Extract target at current time step
@@ -137,21 +137,21 @@ def autoregressive_loop(
 
         print(f'Step {t}')
         # Model run
-        output_pred_batch = model(input_batch)
+        model_input = input_batch.reshape(batch_size, -1, img_size, img_size)
+        output_pred_batch = model(model_input)
         print(f'{output_pred_batch.shape=}, {output_at_time_step.shape=}')
 
         # Loss calculation
         loss_f += loss(output_pred_batch, output_at_time_step)
 
-        # Concatenate the prediction at current time step into the
-        # prediction tensor
-        pred = torch.cat((pred, output_pred_batch), 1)
-
         # Concatenate the prediction at the current
         # time step to be used as input for the next time step
+        print(f'Pre concat {input_batch.shape}')
         input_batch = torch.cat(
-            (input_batch[:, 1:, ...], output_pred_batch), dim=1
+            (input_batch[:, 1:, ...], output_pred_batch.unsqueeze(dim=1)),
+            dim=1,
         )
+        print(f'Post concat {input_batch.shape}')
     return loss_f
 
 
