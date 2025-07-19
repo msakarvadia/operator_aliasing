@@ -20,8 +20,8 @@ def train_model(**train_args: typing.Any) -> Module:
     # set up trianing args
     model = train_args['model']
     epochs = train_args['epochs']
-    lr = train_args['lr']
-    weight_decay = train_args['weight_decay']
+    # lr = train_args['lr']
+    # weight_decay = train_args['weight_decay']
     gamma = train_args['gamma']
     step_size = train_args['step_size']
     loss = train_args['loss']
@@ -30,7 +30,9 @@ def train_model(**train_args: typing.Any) -> Module:
     train_dataloader = train_args['train_dataloader']
     test_dataloaders = train_args['test_dataloaders']
     ckpt_path = train_args['ckpt_path']
-    ckpt_freq = train_args['ckpt_freq']
+    # ckpt_freq = train_args['ckpt_freq']
+    # train_type = train_args['train_type']
+    initial_steps = train_args['initial_steps']
 
     # training stats
     columns = ['epoch', 'train_loss', *list(test_dataloaders.keys())]
@@ -40,7 +42,11 @@ def train_model(**train_args: typing.Any) -> Module:
     seed_everything(seed)
 
     # set up optimizer and scheduler
-    optimizer = AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    optimizer = AdamW(
+        model.parameters(),
+        lr=train_args['lr'],
+        weight_decay=train_args['weight_decay'],
+    )
     scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, step_size=step_size, gamma=gamma
     )
@@ -64,8 +70,16 @@ def train_model(**train_args: typing.Any) -> Module:
             input_batch = batch['x'].to(device)
             output_batch = batch['y'].to(device)
             optimizer.zero_grad()
-            output_pred_batch = model(input_batch)
-            loss_f = loss(output_pred_batch, output_batch)
+            if train_args['train_type'] != 'autoregressive':
+                # for Darcy flow
+                output_pred_batch = model(input_batch)
+                loss_f = loss(output_pred_batch, output_batch)
+            else:
+                # Autoregressive loop for NS and burgers
+                loss_f = autoregressive_loop(
+                    input_batch, output_batch, initial_steps, model, loss
+                )
+
             loss_f.backward()
             optimizer.step()
             train_loss += loss_f.item()
@@ -82,7 +96,7 @@ def train_model(**train_args: typing.Any) -> Module:
             'train_loss': train_loss,
         } | test_dict
 
-        if epoch % ckpt_freq == 0:
+        if epoch % train_args['ckpt_freq'] == 0:
             ckpt_dict = {
                 'epoch': epoch,
                 'model_state_dict': model.to('cpu').state_dict(),
@@ -103,6 +117,40 @@ def train_model(**train_args: typing.Any) -> Module:
             model.to(device)
 
     return model.to('cpu')
+
+
+def autoregressive_loop(
+    input_batch: torch.Tensor,
+    output_batch: torch.tensor,
+    initial_steps: int,
+    model: Module,
+    loss: Module,
+) -> int:
+    """Autoregressive training loop for time-varying PDE training."""
+    loss_f = 0
+    # Initialize the prediction tensor
+    pred = input_batch[:, :initial_steps, ...]
+    t_train = output_batch.shape[1]  # number of time steps
+    for t in range(initial_steps, t_train):
+        # Extract target at current time step
+        output_at_time_step = output_batch[:, t : t + 1, ...]
+
+        # Model run
+        output_pred_batch = model(input_batch)
+
+        # Loss calculation
+        loss_f += loss(output_pred_batch, output_at_time_step)
+
+        # Concatenate the prediction at current time step into the
+        # prediction tensor
+        pred = torch.cat((pred, output_pred_batch), 1)
+
+        # Concatenate the prediction at the current
+        # time step to be used as input for the next time step
+        input_batch = torch.cat(
+            (input_batch[:, 1:, ...], output_pred_batch), dim=1
+        )
+    return loss_f
 
 
 def test_model(

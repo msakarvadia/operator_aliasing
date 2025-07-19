@@ -78,6 +78,15 @@ if __name__ == '__main__':
         default=5,
         help='The number of epochs between ckpts.',
     )
+    parser.add_argument(
+        '--train_type',
+        type=str,
+        default='at_once',
+        choices=['autoregressive', 'at_once'],
+        help="""Train/test loop style.
+                Autoregressive for time varying PDEs (NS, Burgers).
+                At-once for Darcy.""",
+    )
 
     # Data args
     parser.add_argument(
@@ -90,7 +99,7 @@ if __name__ == '__main__':
         '--dataset_name',
         type=str,
         default='darcy',
-        choices=['darcy', 'random', 'darcy_pdebench'],
+        choices=['darcy', 'random', 'darcy_pdebench', 'random_fluid'],
         help='Training Datasets',
     )
     parser.add_argument(
@@ -114,6 +123,14 @@ if __name__ == '__main__':
         help="""X/Y dim to downsample img to.
             -1 = no downsample.
             n = downsample to n x n img.""",
+    )
+    parser.add_argument(
+        '--initial_steps',
+        type=int,
+        default=10,
+        help="""Number of initial steps in sequence to provide for inference.
+            Only relavent for time-varying PDEs like NS or burgers.
+            """,
     )
 
     # Model args

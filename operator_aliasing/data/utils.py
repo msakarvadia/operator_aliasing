@@ -12,6 +12,7 @@ from torchvision import transforms
 from operator_aliasing.data.darcy import DarcyData
 from operator_aliasing.data.darcy_pdebench import DarcyPDEBench
 from operator_aliasing.data.random_data import RandomData
+from operator_aliasing.data.random_fluid_data import RandomFluidData
 from operator_aliasing.data.transforms import DownSample
 from operator_aliasing.data.transforms import LowpassFilter2D
 
@@ -28,6 +29,7 @@ def get_dataset(
     img_size = data_args['img_size']
     downsample_dim = data_args['downsample_dim']
     train = data_args['train']
+    initial_steps = data_args['initial_steps']
 
     # NOTE(MS): change filter size if downsampling
     # filter_size = img_size
@@ -49,6 +51,16 @@ def get_dataset(
             train=train,
             transform=data_transforms,
             img_size=img_size,
+        )
+    if dataset_name == 'random_fluid':
+        data_class = RandomFluidData
+        dataset = data_class(
+            n_train=100,
+            train=train,
+            # TODO(MS): add in compatible data transforms
+            transform=None,
+            img_size=img_size,
+            initial_steps=initial_steps,
         )
     if dataset_name == 'darcy':
         data_class = DarcyData
