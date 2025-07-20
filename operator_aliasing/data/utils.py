@@ -50,7 +50,7 @@ def get_dataset(
     # grab specific dataset
     if dataset_name == 'random_fluid':
         data_class: typing.Any = RandomFluidData
-        dataset: typing.Any = data_class(
+        dataset = data_class(
             n_train=100,
             train=train,
             # TODO(MS): add in compatible data transforms
