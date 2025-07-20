@@ -154,7 +154,7 @@ if __name__ == '__main__':
         '--model_name',
         type=str,
         default='FNO2D',
-        choices=['FNO2D'],
+        choices=['FNO2D', 'FNO1D'],
         help='Type of model.',
     )
 

@@ -18,12 +18,14 @@ def get_model(**model_args: typing.Any) -> Module:
     out_channels = model_args['out_channels']
 
     if model_name == 'FNO2D':
-        starting_modes = (max_modes, max_modes)
-        model = FNO(
-            n_modes=starting_modes,
-            hidden_channels=hidden_channels,
-            in_channels=in_channels,
-            out_channels=out_channels,
-        )
+        starting_modes: typing.Any = (max_modes, max_modes)
+    if model_name == 'FNO1D':
+        starting_modes = (max_modes,)
+    model = FNO(
+        n_modes=starting_modes,
+        hidden_channels=hidden_channels,
+        in_channels=in_channels,
+        out_channels=out_channels,
+    )
 
     return model
