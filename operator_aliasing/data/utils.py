@@ -44,7 +44,10 @@ def get_dataset(
     data_transforms = transforms.Compose(
         # NOTE (MS): downsample before filter
         # [DownSample(downsample_dim),LowpassFilter2D(filter_lim, filter_size)]
-        [LowpassFilter2D(filter_lim, img_size), DownSample(downsample_dim)]
+        [
+            LowpassFilter2D(filter_lim, img_size),
+            DownSample(downsample_dim, n_spatial_dims),
+        ]
     )
 
     # grab specific dataset

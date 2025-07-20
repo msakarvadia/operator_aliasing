@@ -52,10 +52,15 @@ class DownSample:
         out_size: x/y dim of downsampled obj
     """
 
-    def __init__(self, out_size: int) -> None:
-        """Initialize downsample transform."""
+    def __init__(self, out_size: int, n_dim: int) -> None:
+        """Initialize downsample transform.
+
+        outsize: resized spatial dim
+        n_dim: number of spatial dims
+        """
         assert isinstance(out_size, int)
         self.out_size = out_size
+        self.n_dim = n_dim
 
     def __call__(
         self, sample: dict[str, torch.Tensor]
@@ -67,54 +72,34 @@ class DownSample:
         if self.out_size == -1:
             return {'x': model_input, 'y': label}
 
-        shape = (self.out_size, self.out_size)
         time_dim = model_input.shape[0]
-        if time_dim != 1:
+        shape = tuple([self.out_size] * self.n_dim)
+        antialias = self.n_dim > 1
+        mode = 'bicubic' if self.n_dim > 1 else 'linear'
+        if time_dim == 1:
             # 4 dim: time x channels x Xdim x Ydim
             # 3 dim: channels x Xdim x Ydim
-            # shape = (model_input.shape[1],) + shape
-            label_time_dim = label.shape[0]
-            channel_dim = model_input.shape[1]
-            spatial_dim = model_input.shape[2]
 
-            # collapse time x channel dim:
-            print(f'{model_input.shape=}')
-            model_input = torch.reshape(
-                model_input, (time_dim * channel_dim, spatial_dim, spatial_dim)
-            )
-            label = torch.reshape(
-                label, (label_time_dim * channel_dim, spatial_dim, spatial_dim)
-            )
+            # NOTE(MS): because we downsample 1 img at a time
+            # we must first exapand the batch dim
+            # then collapse the batch dim to be compatible
+            # w/ interpolate & also dataloader
+            model_input = model_input.unsqueeze(0)
+            label = label.unsqueeze(0)
 
-        # NOTE(MS): because we downsample 1 img at a time
-        # we must first exapand the batch dim
-        # then collapse the batch dim to be compatible
-        # w/ interpolate & also dataloader
         downsample_input = f.interpolate(
-            model_input.unsqueeze(0),
+            model_input,
             size=shape,
-            mode='bicubic',
-            antialias=True,
-        )[0]
+            mode=mode,
+            antialias=antialias,
+        )
 
         downsample_label = f.interpolate(
-            label.unsqueeze(0),
+            label,
             size=shape,
-            mode='bicubic',
-            antialias=True,
-        )[0]
-
-        if time_dim != 1:
-            # 4 dim: time x channels x Xdim x Ydim
-            # uncollapse time x channel dim:
-            downsample_input = torch.reshape(
-                downsample_input,
-                (time_dim, channel_dim, self.out_size, self.out_size),
-            )
-            downsample_label = torch.reshape(
-                downsample_label,
-                (label_time_dim, channel_dim, self.out_size, self.out_size),
-            )
+            mode=mode,
+            antialias=antialias,
+        )
 
         print(f'{downsample_input.shape=}')
         return {'x': downsample_input, 'y': downsample_label}
