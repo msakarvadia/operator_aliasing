@@ -67,22 +67,54 @@ class DownSample:
         if self.out_size == -1:
             return {'x': model_input, 'y': label}
 
-        # NOTE(MS): because we downsample 0 img at a time
+        shape = (self.out_size, self.out_size)
+        time_dim = model_input.shape[0]
+        if time_dim != 1:
+            # 4 dim: time x channels x Xdim x Ydim
+            # 3 dim: channels x Xdim x Ydim
+            # shape = (model_input.shape[1],) + shape
+            label_time_dim = label.shape[0]
+            channel_dim = model_input.shape[1]
+            spatial_dim = model_input.shape[2]
+
+            # collapse time x channel dim:
+            print(f'{model_input.shape=}')
+            model_input = torch.reshape(
+                model_input, (time_dim * channel_dim, spatial_dim, spatial_dim)
+            )
+            label = torch.reshape(
+                label, (label_time_dim * channel_dim, spatial_dim, spatial_dim)
+            )
+
+        # NOTE(MS): because we downsample 1 img at a time
         # we must first exapand the batch dim
         # then collapse the batch dim to be compatible
         # w/ interpolate & also dataloader
         downsample_input = f.interpolate(
             model_input.unsqueeze(0),
-            size=(self.out_size, self.out_size),
+            size=shape,
             mode='bicubic',
             antialias=True,
         )[0]
 
         downsample_label = f.interpolate(
             label.unsqueeze(0),
-            size=(self.out_size, self.out_size),
+            size=shape,
             mode='bicubic',
             antialias=True,
         )[0]
 
+        if time_dim != 1:
+            # 4 dim: time x channels x Xdim x Ydim
+            # uncollapse time x channel dim:
+            downsample_input = torch.reshape(
+                downsample_input,
+                (time_dim, channel_dim, self.out_size, self.out_size),
+            )
+            downsample_label = torch.reshape(
+                downsample_label,
+                (label_time_dim, channel_dim, self.out_size, self.out_size),
+            )
+
+        print(f'{downsample_input.shape=}')
         return {'x': downsample_input, 'y': downsample_label}

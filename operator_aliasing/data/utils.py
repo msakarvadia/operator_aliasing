@@ -54,7 +54,7 @@ def get_dataset(
             n_train=100,
             train=train,
             # TODO(MS): add in compatible data transforms
-            transform=None,
+            transform=data_transforms,
             # img_size=img_size,
             initial_steps=initial_steps,
             n_spatial_dims=n_spatial_dims,
