@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import typing
+
 import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose
@@ -20,22 +22,28 @@ class RandomFluidData(Dataset):
         n_train: int = 100,
         transform: Compose = None,
         train: bool = True,
-        img_size: int = 16,
+        # img_size: int = 16,
         initial_steps: int = 10,
+        n_spatial_dims: int = 2,
     ) -> None:
         """Initialize dataset."""
         self.n_train = n_train
         self.transform = transform
         self.train = train
-        self.img_size = img_size
-
         self.init_steps = initial_steps
+        self.img_size = 16  # img_size
         self.total_steps = 21
         self.num_channels = 4
 
-        x_data = torch.rand(
-            (256, self.total_steps, self.num_channels, img_size, img_size)
-        ).type(torch.float32)
+        shape: typing.Any = (
+            256,
+            self.total_steps,
+            self.num_channels,
+        )
+        for _dim in range(n_spatial_dims):
+            shape += (self.img_size,)
+        x_data = torch.rand(shape).type(torch.float32)
+
         self.input_function = x_data[n_train:, :]
         if self.train:
             self.input_function = x_data[:n_train, :]

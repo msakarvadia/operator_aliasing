@@ -30,6 +30,10 @@ def get_dataset(
     downsample_dim = data_args['downsample_dim']
     train = data_args['train']
     initial_steps = data_args['initial_steps']
+    model_name = data_args['model_name']
+    n_spatial_dims = 2
+    if '1D' in model_name:
+        n_spatial_dims = 1
 
     # NOTE(MS): change filter size if downsampling
     # filter_size = img_size
@@ -44,6 +48,17 @@ def get_dataset(
     )
 
     # grab specific dataset
+    if dataset_name == 'random_fluid':
+        data_class: typing.Any = RandomFluidData
+        dataset: typing.Any = data_class(
+            n_train=100,
+            train=train,
+            # TODO(MS): add in compatible data transforms
+            transform=None,
+            # img_size=img_size,
+            initial_steps=initial_steps,
+            n_spatial_dims=n_spatial_dims,
+        )
     if dataset_name == 'random':
         data_class = RandomData
         dataset = data_class(
@@ -51,16 +66,6 @@ def get_dataset(
             train=train,
             transform=data_transforms,
             img_size=img_size,
-        )
-    if dataset_name == 'random_fluid':
-        data_class = RandomFluidData
-        dataset = data_class(
-            n_train=100,
-            train=train,
-            # TODO(MS): add in compatible data transforms
-            transform=None,
-            img_size=img_size,
-            initial_steps=initial_steps,
         )
     if dataset_name == 'darcy':
         data_class = DarcyData

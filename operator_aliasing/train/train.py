@@ -137,12 +137,16 @@ def autoregressive_loop(
     batch_size = input_batch.shape[0]
     loss_f = 0
     t_train = output_batch.shape[1]  # number of time steps
+    shape: typing.Any = (batch_size, -1)
+    for _dim in range(model.n_dim):
+        shape += (img_size,)
+
     for t in range(initial_steps, t_train):
         # Extract target at current time step
         output_at_time_step = output_batch[:, t : t + 1, ...].squeeze()
 
         # Model run
-        model_input = input_batch.reshape(batch_size, -1, img_size, img_size)
+        model_input = torch.reshape(input_batch, shape)
         output_pred_batch = model(model_input)
 
         # Loss calculation
