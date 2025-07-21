@@ -32,7 +32,7 @@ class BurgersPDEBench(Dataset):
         """Initialize data."""
         self.transform = transform
         reduced_resolution = 1
-        reduced_resolution_t = 1
+        reduced_resolution_t = 2
         reduced_batch = 1
         test_ratio = 0.1
         num_samples_max = -1
@@ -55,12 +55,8 @@ class BurgersPDEBench(Dataset):
                     ::reduced_resolution_t,
                     ::reduced_resolution,
                 ]
-                ## convert to [x1, ..., xd, t, v]
-                _data = np.transpose(_data[:, :, :], (0, 2, 1))
-                self.data = _data[:, :, :, None]  # batch, x, t, ch
-
                 # batch, time, channel, x,
-                self.data = np.transpose(self.data, (0, 2, 3, 1))
+                self.data = _data[:, :, None, :]
 
         if num_samples_max > 0:
             num_samples_max = min(num_samples_max, self.data.shape[0])
