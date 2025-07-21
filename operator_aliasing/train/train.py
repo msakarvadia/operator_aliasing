@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 from torch.nn import Module
 from torch.optim import AdamW
+from tqdm import tqdm
 
 from operator_aliasing.train.utils import load_latest_ckpt
 from operator_aliasing.train.utils import save_ckpt
@@ -65,7 +66,7 @@ def train_model(**train_args: typing.Any) -> Module:
     # train model
     for epoch in range(starting_epoch, epochs + 1):
         train_loss = 0.0
-        for _step, batch in enumerate(train_dataloader):
+        for _step, batch in enumerate(tqdm(train_dataloader)):
             input_batch = batch['x'].to(device)
             output_batch = batch['y'].to(device)
             optimizer.zero_grad()
