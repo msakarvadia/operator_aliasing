@@ -3,6 +3,7 @@
 # https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/utils.py
 from __future__ import annotations
 
+import typing
 from pathlib import Path
 
 import h5py
@@ -27,6 +28,7 @@ class NSPDEBench(Dataset):
         # test_ratio=0.1,
         # num_samples_max=-1,
         transform: Compose = None,
+        **kwargs: typing.Any,
     ):
         """Initialize data.
 
@@ -36,7 +38,14 @@ class NSPDEBench(Dataset):
         """
         self.transform = transform
         self.initial_step = initial_step
-        reduced_resolution = 1
+        # downsample data
+        img_size = kwargs['img_size']
+        spatial_dim = 128  # from the real data TODO(MS): check for real data
+        if spatial_dim % img_size != 0:
+            raise Exception(f"""Desired img_size should
+                be a factor of the data's {spatial_dim=}
+                """)
+        reduced_resolution = spatial_dim // img_size
         reduced_resolution_t = 1
         reduced_batch = 1
         test_ratio = 0.1
@@ -52,6 +61,7 @@ class NSPDEBench(Dataset):
                 keys.sort()
                 if 'tensor' not in keys:
                     _data = np.array(f['density'], dtype=np.float32)
+                    print(f'{_data.shape=}')
                     # batch, time, x,...
 
                     # density

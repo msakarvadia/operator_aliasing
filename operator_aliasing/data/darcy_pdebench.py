@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import typing
 from pathlib import Path
 
 import h5py
@@ -23,6 +24,7 @@ class DarcyPDEBench(Dataset):
         train: bool = True,
         num_samples_max: int = -1,
         transform: Compose = None,
+        **kwargs: typing.Any,
     ):
         """Initialize data.
 
@@ -32,7 +34,14 @@ class DarcyPDEBench(Dataset):
         """
         self.transform = transform
         initial_step = 1
-        reduced_resolution = 1
+        # downsample data
+        img_size = kwargs['img_size']
+        spatial_dim = 128  # from the real data TODO(MS): check for real data
+        if spatial_dim % img_size != 0:
+            raise Exception(f"""Desired img_size should
+                be a factor of the data's {spatial_dim=}
+                """)
+        reduced_resolution = spatial_dim // img_size
         reduced_batch = 1
         test_ratio = 0.1
 

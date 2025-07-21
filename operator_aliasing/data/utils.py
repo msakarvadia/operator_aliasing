@@ -89,6 +89,7 @@ def get_dataset(
             train=train,
             num_samples_max=-1,
             transform=data_transforms,
+            img_size=img_size,
         )
     if dataset_name == 'burgers_pdebench':
         dataset = BurgersPDEBench(
@@ -98,6 +99,7 @@ def get_dataset(
             # reduced_resolution=1,
             train=train,
             transform=data_transforms,
+            img_size=img_size,
         )
     if dataset_name == 'ns_pdebench':
         dataset = NSPDEBench(
@@ -107,6 +109,7 @@ def get_dataset(
             # reduced_resolution=1,
             train=train,
             transform=data_transforms,
+            img_size=img_size,
         )
 
     return dataset
