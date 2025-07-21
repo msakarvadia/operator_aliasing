@@ -13,13 +13,15 @@ from torch import nn
 from .pinn_losses import DarcyDataAndPinnsLoss
 
 
-def get_loss(loss_name: str, pinn_loss_weight: float) -> nn.Module:
+def get_loss(
+    loss_name: str, pinn_loss_weight: float, darcy_forcing_term: float
+) -> nn.Module:
     """Get loss functions."""
     loss = None
     if loss_name == 'l1':
         loss = nn.L1Loss()
     if loss_name == 'darcy_pinn':
-        loss = DarcyDataAndPinnsLoss(pinn_loss_weight)
+        loss = DarcyDataAndPinnsLoss(pinn_loss_weight, darcy_forcing_term)
     return loss
 
 

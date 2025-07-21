@@ -131,6 +131,15 @@ if __name__ == '__main__':
             if initial_steps>1, train autoregressively
             """,
     )
+    parser.add_argument(
+        '--darcy_forcing_term',
+        type=float,
+        default=1.0,
+        choices=[0.01, 0.1, 1.0, 10.0, 100.0],
+        help="""Forcing term for Darcy flow.
+            PDEBench various forcing terms (beta).
+            """,
+    )
 
     # Model args
     parser.add_argument(
@@ -177,7 +186,9 @@ if __name__ == '__main__':
     (args.train_dataloader, args.test_dataloaders) = get_data(**vars(args))
 
     # Get Loss Function
-    args.loss = get_loss(args.loss_name, args.pinn_loss_weight)
+    args.loss = get_loss(
+        args.loss_name, args.pinn_loss_weight, args.darcy_forcing_term
+    )
 
     # Train Model
     train_model(**vars(args))

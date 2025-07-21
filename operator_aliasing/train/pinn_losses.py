@@ -116,7 +116,9 @@ def fdm_darcy(u: torch.Tensor, a: torch.Tensor, d: int = 1) -> torch.Tensor:
 class DarcyDataAndPinnsLoss(nn.Module):
     """Data+Pinns Loss for Darcy flow."""
 
-    def __init__(self, pinn_loss_weight: float) -> None:
+    def __init__(
+        self, pinn_loss_weight: float, darcy_forcing_term: float
+    ) -> None:
         """Initialize loss.
 
         pinn_loss_weight: ratio of data vs. pinn loss
@@ -125,6 +127,7 @@ class DarcyDataAndPinnsLoss(nn.Module):
         self.L1 = nn.L1Loss()
         self.lploss = LpLoss(size_average=True)
         self.pinn_loss_weight = pinn_loss_weight
+        self.darcy_forcing_term = darcy_forcing_term
 
     def forward(
         self, model_pred: torch.Tensor, ground_truth: torch.Tensor
@@ -141,7 +144,7 @@ class DarcyDataAndPinnsLoss(nn.Module):
         u = model_pred.reshape(batchsize, size, size)
         a = ground_truth.reshape(batchsize, size, size)
         du = fdm_darcy(u, a)
-        f = torch.ones(du.shape, device=u.device)
+        f = torch.ones(du.shape, device=u.device) * self.darcy_forcing_term
         pinn_loss = self.lploss.rel(du, f)
 
         return (

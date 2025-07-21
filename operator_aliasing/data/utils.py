@@ -33,6 +33,7 @@ def get_dataset(
     train = data_args['train']
     initial_steps = data_args['initial_steps']
     model_name = data_args['model_name']
+    darcy_forcing_term = data_args['darcy_forcing_term']
     n_spatial_dims = 2
     if '1D' in model_name:
         n_spatial_dims = 1
@@ -82,7 +83,7 @@ def get_dataset(
         )
     if dataset_name == 'darcy_pdebench':
         dataset = DarcyPDEBench(
-            filename='2D_DarcyFlow_beta0.01_Train.hdf5',
+            filename=f'2D_DarcyFlow_beta{darcy_forcing_term}_Train.hdf5',
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/DarcyFlow/',
             # reduced_resolution=1,
             train=train,
