@@ -143,7 +143,8 @@ def autoregressive_loop(
 
     for t in range(initial_steps, t_train):
         # Extract target at current time step
-        output_at_time_step = output_batch[:, t : t + 1, ...].squeeze()
+        # squeeze out time dim
+        output_at_time_step = output_batch[:, t : t + 1, ...].squeeze(dim=1)
 
         # Model run
         model_input = torch.reshape(input_batch, shape)
