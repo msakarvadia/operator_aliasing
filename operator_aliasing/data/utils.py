@@ -9,8 +9,10 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 from torchvision import transforms
 
+from operator_aliasing.data.burgers_pdebench import BurgersPDEBench
 from operator_aliasing.data.darcy import DarcyData
 from operator_aliasing.data.darcy_pdebench import DarcyPDEBench
+from operator_aliasing.data.ns_pdebench import NSPDEBench
 from operator_aliasing.data.random_data import RandomData
 from operator_aliasing.data.random_fluid_data import RandomFluidData
 from operator_aliasing.data.transforms import DownSample
@@ -81,14 +83,28 @@ def get_dataset(
     if dataset_name == 'darcy_pdebench':
         dataset = DarcyPDEBench(
             filename='2D_DarcyFlow_beta0.01_Train.hdf5',
-            # initial_step=1,
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/DarcyFlow/',
             # reduced_resolution=1,
-            # reduced_resolution_t=1,
-            # reduced_batch=1,
             train=train,
-            # test_ratio=0.1,
             num_samples_max=-1,
+            transform=data_transforms,
+        )
+    if dataset_name == 'burgers_pdebench':
+        dataset = BurgersPDEBench(
+            filename='1D_Burgers_Sols_Nu1.0.hdf5',
+            initial_step=10,
+            saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/1D/Burgers/Train/',
+            # reduced_resolution=1,
+            train=train,
+            transform=data_transforms,
+        )
+    if dataset_name == 'ns_pdebench':
+        dataset = NSPDEBench(
+            filename='2D_CFD_Rand_M0.1_Eta0.1_Zeta0.1_periodic_128_Train.hdf5',
+            initial_step=10,
+            saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/CFD/2D_Train_Rand/',
+            # reduced_resolution=1,
+            train=train,
             transform=data_transforms,
         )
 

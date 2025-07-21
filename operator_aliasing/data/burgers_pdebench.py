@@ -24,7 +24,7 @@ class BurgersPDEBench(Dataset):
         # reduced_resolution=1,
         # reduced_resolution_t=1,
         # reduced_batch=1,
-        if_test: bool = False,
+        train: bool = False,
         # test_ratio=0.1,
         # num_samples_max=-1,
         transform: Compose = None,
@@ -68,10 +68,10 @@ class BurgersPDEBench(Dataset):
             num_samples_max = self.data.shape[0]
 
         test_idx = int(num_samples_max * test_ratio)
-        if if_test:
-            self.data = self.data[:test_idx]
-        else:
+        if train:
             self.data = self.data[test_idx:num_samples_max]
+        else:
+            self.data = self.data[:test_idx]
 
         # Time steps used as initial conditions
         self.initial_step = initial_step
