@@ -3,7 +3,6 @@
 # https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/utils.py
 from __future__ import annotations
 
-import math as mt
 from pathlib import Path
 
 import h5py
@@ -54,75 +53,50 @@ class NSPDEBench(Dataset):
                 if 'tensor' not in keys:
                     _data = np.array(f['density'], dtype=np.float32)
                     # batch, time, x,...
-                    idx_cfd = _data.shape
 
-                    self.data = np.zeros(
-                        [
-                            idx_cfd[0] // reduced_batch,
-                            idx_cfd[2] // reduced_resolution,
-                            idx_cfd[3] // reduced_resolution,
-                            mt.ceil(idx_cfd[1] / reduced_resolution_t),
-                            4,
-                        ],
-                        dtype=np.float32,
-                    )
                     # density
-                    _data = _data[
+                    density = _data[
                         ::reduced_batch,
                         ::reduced_resolution_t,
                         ::reduced_resolution,
                         ::reduced_resolution,
                     ]
-                    ## convert to [x1, ..., xd, t, v]
-                    _data = np.transpose(_data, (0, 2, 3, 1))
-                    self.data[..., 0] = _data  # batch, x, t, ch
                     print('loaded density')
                     # pressure
                     _data = np.array(
                         f['pressure'], dtype=np.float32
                     )  # batch, time, x,...
-                    _data = _data[
+                    pressure = _data[
                         ::reduced_batch,
                         ::reduced_resolution_t,
                         ::reduced_resolution,
                         ::reduced_resolution,
                     ]
-                    ## convert to [x1, ..., xd, t, v]
-                    _data = np.transpose(_data, (0, 2, 3, 1))
-                    self.data[..., 1] = _data  # batch, x, t, ch
                     print('loaded pressure')
                     # Vx
                     _data = np.array(
                         f['Vx'], dtype=np.float32
                     )  # batch, time, x,...
-                    _data = _data[
+                    vx = _data[
                         ::reduced_batch,
                         ::reduced_resolution_t,
                         ::reduced_resolution,
                         ::reduced_resolution,
                     ]
-                    ## convert to [x1, ..., xd, t, v]
-                    _data = np.transpose(_data, (0, 2, 3, 1))
-                    self.data[..., 2] = _data  # batch, x, t, ch
                     print('loaded Vx')
                     # Vy
                     _data = np.array(
                         f['Vy'], dtype=np.float32
                     )  # batch, time, x,...
-                    _data = _data[
+                    vy = _data[
                         ::reduced_batch,
                         ::reduced_resolution_t,
                         ::reduced_resolution,
                         ::reduced_resolution,
                     ]
-                    ## convert to [x1, ..., xd, t, v]
-                    _data = np.transpose(_data, (0, 2, 3, 1))
-
-                    self.data[..., 3] = _data  # batch, x, t, ch
                     print('loaded Vy')
 
-                    # batch, time, channel, x, y
-                    self.data = np.transpose(self.data, (0, 3, 4, 1, 2))
+                    self.data = np.stack([density, pressure, vx, vy], axis=2)
 
         if num_samples_max > 0:
             num_samples_max = min(num_samples_max, self.data.shape[0])
