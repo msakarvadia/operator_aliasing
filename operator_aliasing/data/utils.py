@@ -16,7 +16,7 @@ from operator_aliasing.data.ns_pdebench import NSPDEBench
 from operator_aliasing.data.random_data import RandomData
 from operator_aliasing.data.random_fluid_data import RandomFluidData
 from operator_aliasing.data.transforms import DownSample
-from operator_aliasing.data.transforms import LowpassFilter2D
+from operator_aliasing.data.transforms import LowpassFilter
 
 from ..utils import seed_everything
 from ..utils import seed_worker
@@ -48,7 +48,7 @@ def get_dataset(
         # NOTE (MS): downsample before filter
         # [DownSample(downsample_dim),LowpassFilter2D(filter_lim, filter_size)]
         [
-            LowpassFilter2D(filter_lim, img_size),
+            LowpassFilter(filter_lim, img_size, n_spatial_dims),
             DownSample(downsample_dim, n_spatial_dims),
         ]
     )
