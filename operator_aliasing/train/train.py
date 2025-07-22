@@ -144,19 +144,16 @@ def autoregressive_loop(
     for _dim in range(model.n_dim):
         shape += (img_size,)
 
-    for t in range(initial_steps, t_train):
+    all_model_preds = []
+    for _t in range(initial_steps, t_train):
         # Extract target at current time step
         # squeeze out time dim
-        output_at_time_step = output_batch[:, t : t + 1, ...].squeeze(dim=1)
+        # output_at_time_step = output_batch[:, t : t + 1, ...].squeeze(dim=1)
 
         # Model run
         model_input = torch.reshape(input_batch, shape)
         output_pred_batch = model(model_input)
-
-        # Loss calculation
-        loss_f += loss(
-            output_pred_batch, output_at_time_step, model_input=model_input
-        )
+        all_model_preds.append(output_pred_batch)
 
         # Concatenate the prediction at the current
         # time step to be used as input for the next time step
@@ -164,6 +161,16 @@ def autoregressive_loop(
             (input_batch[:, 1:, ...], output_pred_batch.unsqueeze(dim=1)),
             dim=1,
         )
+
+    all_model_preds = torch.stack(all_model_preds, dim=1)
+    output_at_last_n_steps = output_batch[:, initial_steps:, ...]
+    # Loss calculation
+    loss_f = loss(
+        all_model_preds,
+        output_at_last_n_steps,
+        model_input=model_input,
+        # output_pred_batch, output_at_time_step, model_input=model_input
+    )
     return loss_f
 
 
