@@ -73,7 +73,9 @@ def train_model(**train_args: typing.Any) -> Module:
             if initial_steps == 1:
                 # for Darcy flow
                 output_pred_batch = model(input_batch)
-                loss_f = loss(output_pred_batch, output_batch)
+                loss_f = loss(
+                    output_pred_batch, output_batch, model_input=input_batch
+                )
             else:
                 # Autoregressive loop for NS and burgers
                 loss_f = autoregressive_loop(
@@ -152,7 +154,9 @@ def autoregressive_loop(
         output_pred_batch = model(model_input)
 
         # Loss calculation
-        loss_f += loss(output_pred_batch, output_at_time_step)
+        loss_f += loss(
+            output_pred_batch, output_at_time_step, model_input=model_input
+        )
 
         # Concatenate the prediction at the current
         # time step to be used as input for the next time step
@@ -183,7 +187,11 @@ def test_model(
                 # loss_f = loss(output_pred_batch, output_batch)
                 if initial_steps == 1:
                     output_pred_batch = model(input_batch)
-                    loss_f = loss(output_pred_batch, output_batch)
+                    loss_f = loss(
+                        output_pred_batch,
+                        output_batch,
+                        model_input=input_batch,
+                    )
                 else:
                     loss_f = autoregressive_loop(
                         input_batch, output_batch, initial_steps, model, loss

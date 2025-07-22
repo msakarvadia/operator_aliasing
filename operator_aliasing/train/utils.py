@@ -11,6 +11,7 @@ import torch
 from torch import nn
 
 from .pinn_losses import DarcyDataAndPinnsLoss
+from .pinn_losses import L1Loss
 
 
 def get_loss(
@@ -19,7 +20,7 @@ def get_loss(
     """Get loss functions."""
     loss = None
     if loss_name == 'l1':
-        loss = nn.L1Loss()
+        loss = L1Loss()
     if loss_name == 'darcy_pinn':
         loss = DarcyDataAndPinnsLoss(pinn_loss_weight, darcy_forcing_term)
     return loss

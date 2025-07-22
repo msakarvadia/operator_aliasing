@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import typing
+
 import torch
 from torch import nn
 
@@ -113,6 +115,30 @@ def fdm_darcy(u: torch.Tensor, a: torch.Tensor, d: int = 1) -> torch.Tensor:
 #    return loss_f
 
 
+class L1Loss(nn.Module):
+    """Data Loss."""
+
+    def __init__(
+        self,
+    ) -> None:
+        """Initialize loss."""
+        super().__init__()
+        self.L1 = nn.L1Loss()
+
+    def forward(
+        self,
+        model_pred: torch.Tensor,
+        ground_truth: torch.Tensor,
+        **kwargs: typing.Any,
+    ) -> float:
+        """Loss calculation.
+
+        model_pred shape: batch_size x 1 (no time) x X_dim x Y_dim
+        ground_truth shape: same as model pred
+        """
+        return self.L1(model_pred, ground_truth)
+
+
 class DarcyDataAndPinnsLoss(nn.Module):
     """Data+Pinns Loss for Darcy flow."""
 
@@ -130,7 +156,10 @@ class DarcyDataAndPinnsLoss(nn.Module):
         self.darcy_forcing_term = darcy_forcing_term
 
     def forward(
-        self, model_pred: torch.Tensor, ground_truth: torch.Tensor
+        self,
+        model_pred: torch.Tensor,
+        ground_truth: torch.Tensor,
+        model_input: torch.Tensor,
     ) -> float:
         """Loss calculation.
 
@@ -142,7 +171,7 @@ class DarcyDataAndPinnsLoss(nn.Module):
         batchsize = model_pred.size(0)
         size = ground_truth.size(-1)
         u = model_pred.reshape(batchsize, size, size)
-        a = ground_truth.reshape(batchsize, size, size)
+        a = model_input.reshape(batchsize, size, size)
         du = fdm_darcy(u, a)
         f = torch.ones(du.shape, device=u.device) * self.darcy_forcing_term
         pinn_loss = self.lploss.rel(du, f)
