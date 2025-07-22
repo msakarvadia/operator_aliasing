@@ -146,10 +146,6 @@ def autoregressive_loop(
 
     all_model_preds = []
     for _t in range(initial_steps, t_train):
-        # Extract target at current time step
-        # squeeze out time dim
-        # output_at_time_step = output_batch[:, t : t + 1, ...].squeeze(dim=1)
-
         # Model run
         model_input = torch.reshape(input_batch, shape)
         output_pred_batch = model(model_input)
@@ -162,6 +158,7 @@ def autoregressive_loop(
             dim=1,
         )
 
+    # stack all model preds
     all_model_preds = torch.stack(all_model_preds, dim=1)
     output_at_last_n_steps = output_batch[:, initial_steps:, ...]
     # Loss calculation
