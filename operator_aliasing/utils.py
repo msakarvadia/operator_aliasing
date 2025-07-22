@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import typing
 
 import numpy as np
 import torch
@@ -91,6 +92,26 @@ def generate_wavenumbers(n: int = 6) -> torch.tensor:
     return array
 
 
+def generate_wavenumbers_1d(n: int = 6) -> torch.tensor:
+    """Generate the wavenumbers."""
+    # n = 7  # Size of the square array
+    center = n // 2  # Center of the array
+    array = np.zeros((n), dtype=int)
+
+    # Fill values based on distance from the center
+    for i in range(n):
+        distance = abs(center - i)
+        array[i] = distance
+
+    # For even-sized arrays, ensure the center area avoids 0 directly
+    if n % 2 == 0:
+        for i in range(n):
+            if i >= center:
+                array[i] += 1
+
+    return array
+
+
 def get_energy_curve(
     data: torch.Tensor, normalize: bool = True
 ) -> torch.Tensor:
@@ -126,6 +147,59 @@ def get_energy_curve(
     return spectrum
 
 
+def get_energy_curve_1d(
+    data: torch.Tensor, normalize: bool = True
+) -> torch.Tensor:
+    """Calculate 1d spectrum of data."""
+    signal = data.cpu()
+    t = signal.shape[0]
+    n_observations = signal.shape[-1]
+    signal = signal.view(t, n_observations)
+
+    if normalize:
+        signal = torch.fft.fftn(signal, norm='ortho')
+    else:
+        signal = torch.fft.rfftn(
+            signal,
+            s=(n_observations),
+            norm='backward',
+        )
+
+    # center FFT
+    centered_fft_signal = torch.fft.fftshift(signal)
+
+    # compute energy
+    energy = centered_fft_signal.abs() ** 2
+
+    # define wavenumbers
+    wave_numbers = generate_wavenumbers_1d(n=n_observations)
+    max_wavenumber = n_observations // 2
+
+    spectrum = torch.zeros((t, n_observations // 2))
+    for j in range(1, max_wavenumber + 1):
+        ind = torch.where(torch.tensor(wave_numbers) == j)
+        spectrum[:, j - 1] = energy[:, ind[0]].sum(dim=1)
+
+    spectrum = spectrum.mean(dim=0)
+    return spectrum
+
+
+def get_1d_low_pass_filter(f: int, s: int) -> torch.Tensor:
+    """Return's low pass filter at limit f and size s.
+
+    f : the frequency limit (only allow freq < f)
+    s : dimention of image
+    """
+    if f > s // 2:
+        raise Exception(f'Max frequency of image is {s//2=}, so lower f')
+    # 1 = keep, 0 = get rid of
+    # central of shifted FFT image is lowest freqs
+    wave_numbers = generate_wavenumbers_1d(s)
+
+    filt = torch.where(torch.tensor(wave_numbers) < f, 1, 0)
+    return filt.unsqueeze(dim=0)
+
+
 def get_2d_low_pass_filter(f: int, s: int) -> torch.Tensor:
     """Return's low pass filter at limit f and size s.
 
@@ -142,19 +216,27 @@ def get_2d_low_pass_filter(f: int, s: int) -> torch.Tensor:
     return filt.unsqueeze(dim=0)
 
 
-def filter_batch(filt: torch.tensor, batch: torch.tensor) -> torch.Tensor:
+def filter_batch(
+    filt: torch.tensor, batch: torch.tensor, ndim: int
+) -> torch.Tensor:
     """Apply (low-pass) filter to batch.
 
     filt:
             filter for the batch
             (already centered i.e., torch.fft.fftshift)
-            dim: (channel x X_dim x Y_dim)
+            dim: (channel x X_dim x Y_dim) 2D
     batch:
             input batch
-            dim: (batch x channel x X_dim x Y_dim)
+            dim: (batch x channel x X_dim x Y_dim ) 2D
+    ndim:
+            number of spatial dimentions
+
     """
+    dim: typing.Any = (-2, -1)
+    if ndim == 1:
+        dim = -1
     # fft batch
-    batch_fourier = torch.fft.fftn(batch, dim=(-2, -1))
+    batch_fourier = torch.fft.fftn(batch, dim=dim)
 
     # center batch
     fourier_centered = torch.fft.fftshift(batch_fourier)
@@ -164,7 +246,7 @@ def filter_batch(filt: torch.tensor, batch: torch.tensor) -> torch.Tensor:
 
     # convert batch back to spatial domain
     filtered_batch = torch.real(
-        torch.fft.ifftn(torch.fft.ifftshift(filtered_batch), dim=(-1, -2))
+        torch.fft.ifftn(torch.fft.ifftshift(filtered_batch), dim=dim)
     )
 
     return filtered_batch
@@ -175,25 +257,34 @@ def lowpass_filter_dataloader(
     filter_limit: int,
     original_dataloader: torch.utils.data.Dataloader,
     device: torch.device,
+    ndim: int,
 ) -> torch.utils.data.Dataloader:
     """Filter all data in dataloader.
 
     img_size: assume square img, len of x axis
     filter_limit: frequencies > filter_lim excluded
     original_dataloader: data to filter
+    ndim: number of spatial dimentions
     """
     x_data = []
     y_data = []
 
     # get filter
-    low_pass_filter = get_2d_low_pass_filter(filter_limit, img_size)
+    if ndim == 1:
+        low_pass_filter = get_1d_low_pass_filter(filter_limit, img_size)
+    else:
+        low_pass_filter = get_2d_low_pass_filter(filter_limit, img_size)
     low_pass_filter = torch.tensor(low_pass_filter, device=device)
 
     # filter x and y
     for _idx, sample in enumerate(original_dataloader):  # resolution 128
         # x_data.append(sample['x'])
-        x_data.append(filter_batch(low_pass_filter, sample['x'].to(device)))
-        y_data.append(filter_batch(low_pass_filter, sample['y'].to(device)))
+        x_data.append(
+            filter_batch(low_pass_filter, sample['x'].to(device), ndim)
+        )
+        y_data.append(
+            filter_batch(low_pass_filter, sample['y'].to(device), ndim)
+        )
 
     # reformat filtered data into dataloader
     filter_x = torch.cat(x_data).to('cpu')
