@@ -114,5 +114,4 @@ class DownSample:
             antialias=antialias,
         )
 
-        print(f'{downsample_input.shape=}')
         return {'x': downsample_input, 'y': downsample_label}
