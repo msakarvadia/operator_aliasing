@@ -6,28 +6,41 @@ import torch
 import torch.nn.functional as f
 
 from operator_aliasing.utils import filter_batch
+from operator_aliasing.utils import get_1d_low_pass_filter
 from operator_aliasing.utils import get_2d_low_pass_filter
 
 
-class LowpassFilter2D:
+class LowpassFilter:
     """Lowpass filter the image.
 
     Args:
         filter_limit: frequencies > filter_lim excluded
     """
 
-    def __init__(self, filter_limit: int, img_size: int) -> None:
-        """Initialize filter transform."""
+    def __init__(self, filter_limit: int, img_size: int, n_dim: int) -> None:
+        """Initialize filter transform.
+
+        filter_limit: number of frequencies to keep
+        n_dim: number of spatial dimentions
+        """
         assert isinstance(filter_limit, int)
         assert isinstance(img_size, int)
         self.filter_limit = filter_limit
         self.img_size = img_size
+        self.n_dim = n_dim
 
         # assert that filter limit is less than half img_size
         assert self.filter_limit <= self.img_size // 2
 
         # get filter
-        self.filter = get_2d_low_pass_filter(self.filter_limit, self.img_size)
+        if n_dim == 1:
+            self.filter = get_1d_low_pass_filter(
+                self.filter_limit, self.img_size
+            )
+        else:
+            self.filter = get_2d_low_pass_filter(
+                self.filter_limit, self.img_size
+            )
 
     def __call__(
         self, sample: dict[str, torch.Tensor]
@@ -39,8 +52,8 @@ class LowpassFilter2D:
         if self.filter_limit == -1:
             return {'x': model_input, 'y': label}
 
-        filter_input = filter_batch(self.filter, model_input)
-        filter_label = filter_batch(self.filter, label)
+        filter_input = filter_batch(self.filter, model_input, self.n_dim)
+        filter_label = filter_batch(self.filter, label, self.n_dim)
 
         return {'x': filter_input, 'y': filter_label}
 
