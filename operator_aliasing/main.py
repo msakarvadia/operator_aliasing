@@ -140,6 +140,28 @@ if __name__ == '__main__':
             PDEBench various forcing terms (beta).
             """,
     )
+    parser.add_argument(
+        '--burger_viscosity',
+        type=float,
+        default=1.0,
+        choices=[
+            0.001,
+            0.002,
+            0.004,
+            0.01,
+            0.02,
+            0.04,
+            0.1,
+            0.2,
+            0.4,
+            1.0,
+            2.0,
+            4.0,
+        ],
+        help="""Viscosity for burgers eqation.
+            PDEBench various viscosity terms (nu).
+            """,
+    )
 
     # Model args
     parser.add_argument(

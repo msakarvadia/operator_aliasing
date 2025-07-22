@@ -34,6 +34,8 @@ def get_dataset(
     initial_steps = data_args['initial_steps']
     model_name = data_args['model_name']
     darcy_forcing_term = data_args['darcy_forcing_term']
+    burger_viscosity = data_args['burger_viscosity']
+
     n_spatial_dims = 2
     if '1D' in model_name:
         n_spatial_dims = 1
@@ -93,7 +95,7 @@ def get_dataset(
         )
     if dataset_name == 'burgers_pdebench':
         dataset = BurgersPDEBench(
-            filename='1D_Burgers_Sols_Nu1.0.hdf5',
+            filename=f'1D_Burgers_Sols_Nu{burger_viscosity}.hdf5',
             initial_step=10,
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/1D/Burgers/Train/',
             # reduced_resolution=1,
