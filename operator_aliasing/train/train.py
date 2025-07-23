@@ -165,7 +165,7 @@ def autoregressive_loop(
     loss_f = loss(
         all_model_preds,
         output_at_last_n_steps,
-        model_input=model_input,
+        model_input=input_batch,
         # output_pred_batch, output_at_time_step, model_input=model_input
     )
     return loss_f

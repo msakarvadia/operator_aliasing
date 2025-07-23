@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import typing
 
+import numpy as np
 import torch
 from torch import nn
 
@@ -78,7 +79,7 @@ def fdm_darcy(u: torch.Tensor, a: torch.Tensor, d: int = 1) -> torch.Tensor:
     """Finite Difference Method.
 
     u = model pred
-    a = label
+    a = diffusivity constant (model input)
     """
     batchsize = u.size(0)
     size = u.size(1)
@@ -98,6 +99,106 @@ def fdm_darcy(u: torch.Tensor, a: torch.Tensor, d: int = 1) -> torch.Tensor:
     auyy = (auy[:, 1:-1, 2:] - auy[:, 1:-1, :-2]) / (2 * dy)
     du = -(auxx + auyy)
     return du
+
+
+def fdm_burgers(u: torch.Tensor, v: float, d: int = 1) -> torch.Tensor:
+    """Finite Difference method.
+
+    u = model pred (across multiple time points)
+    v = viscosity
+    """
+    batchsize = u.size(0)
+    nt = u.size(1)
+    nx = u.size(-1)
+
+    u = u.reshape(batchsize, nt, nx)
+    dt = d / (nt - 1)
+
+    u_h = torch.fft.fft(u, dim=2)
+    # Wavenumbers in y-direction
+    k_max = nx // 2
+    k_x = torch.cat(
+        (
+            torch.arange(start=0, end=k_max, step=1, device=u.device),
+            torch.arange(start=-k_max, end=0, step=1, device=u.device),
+        ),
+        0,
+    ).reshape(1, 1, nx)
+    ux_h = 2j * np.pi * k_x * u_h
+    uxx_h = 2j * np.pi * k_x * ux_h
+    ux = torch.fft.irfft(ux_h[:, :, : k_max + 1], dim=2, n=nx)
+    uxx = torch.fft.irfft(uxx_h[:, :, : k_max + 1], dim=2, n=nx)
+    ut = (u[:, 2:, :] - u[:, :-2, :]) / (2 * dt)
+    du = ut + (ux * u - v * uxx)[:, 1:-1, :]
+    return du
+
+
+# NOTE(MS): Reformatting original loss
+# to be a torch.nn.module below.
+# def PINO_loss(u, u0, v):
+#    batchsize = u.size(0)
+#    nt = u.size(1)
+#    nx = u.size(2)
+#
+#    u = u.reshape(batchsize, nt, nx)
+
+#    index_t = torch.zeros(nx,).long()
+#    index_x = torch.tensor(range(nx)).long()
+#    boundary_u = u[:, index_t, index_x]
+#    loss_u = F.mse_loss(boundary_u, u0)
+#
+#    du = fdm_burgers(u, v)[:, :, :]
+#    f = torch.zeros(du.shape, device=u.device)
+#    loss_f = F.mse_loss(du, f)
+
+#    return loss_u, loss_f
+
+
+class BurgersDataAndPinnsLoss(nn.Module):
+    """Data+Pinns Loss for Burgers flow."""
+
+    def __init__(self, viscosity: float) -> None:
+        """Initialize loss.
+
+        viscosity: param of dataset
+        """
+        super().__init__()
+        self.L1 = nn.L1Loss()
+        self.lploss = LpLoss(size_average=True)
+        self.viscosity = viscosity
+
+    def forward(
+        self,
+        model_pred: torch.Tensor,
+        ground_truth: torch.Tensor,
+        model_input: torch.Tensor,
+    ) -> float:
+        """Loss calculation.
+
+        model_pred shape: batch_size x time x X_dim
+        ground_truth shape: same as model pred
+        model input shape: batch_size x initial_steps x X_dim
+        """
+        data_loss = self.L1(model_pred, ground_truth)
+
+        batchsize = model_pred.size(0)
+        nt = model_pred.size(1)
+        nx = model_pred.size(-1)
+        u = model_pred.reshape(batchsize, nt, nx)
+
+        index_t = torch.zeros(nx).long()
+        index_x = torch.tensor(range(nx)).long()
+        boundary_u = u[:, index_t, index_x]
+        u0 = model_input[:, 0, 0, :]  # TODO(MS): check whether this is correct
+        boundary_loss = torch.nn.functional.mse_loss(boundary_u, u0)
+
+        du = fdm_burgers(model_pred, self.viscosity)
+        f = torch.zeros(du.shape, device=u.device)
+        # TODO(MS): these are all MSE (but in darcy we use L1), make consistant
+        pde_loss = torch.nn.functional.mse_loss(du, f)
+
+        # TODO(MS): do something about this weighting
+        return 0.33 * data_loss + 0.33 * boundary_loss + 0.33 * pde_loss
 
 
 # NOTE(MS): Reformatting original loss
