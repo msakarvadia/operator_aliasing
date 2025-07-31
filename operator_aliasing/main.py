@@ -162,6 +162,15 @@ if __name__ == '__main__':
             PDEBench various viscosity terms (nu).
             """,
     )
+    parser.add_argument(
+        '--incomp_ns_viscosity',
+        type=float,
+        default=0.01,
+        choices=[0.01],
+        help="""Viscosity for incompressible navier stokes eqation.
+            PDEBench fixed viscosity for this dataset.
+            """,
+    )
 
     # Model args
     parser.add_argument(
