@@ -133,34 +133,15 @@ def fdm_burgers(u: torch.Tensor, v: float, d: int = 1) -> torch.Tensor:
     return du
 
 
-# NOTE(MS): Reformatting original loss
-# to be a torch.nn.module below.
-# def PINO_loss(u, u0, v):
-#    batchsize = u.size(0)
-#    nt = u.size(1)
-#    nx = u.size(2)
-#
-#    u = u.reshape(batchsize, nt, nx)
-
-#    index_t = torch.zeros(nx,).long()
-#    index_x = torch.tensor(range(nx)).long()
-#    boundary_u = u[:, index_t, index_x]
-#    loss_u = F.mse_loss(boundary_u, u0)
-#
-#    du = fdm_burgers(u, v)[:, :, :]
-#    f = torch.zeros(du.shape, device=u.device)
-#    loss_f = F.mse_loss(du, f)
-
-#    return loss_u, loss_f
-
-
 class BurgersDataAndPinnsLoss(nn.Module):
     """Data+Pinns Loss for Burgers flow."""
 
     def __init__(self, pinn_loss_weight: float, viscosity: float) -> None:
         """Initialize loss.
 
+        pinn_loss_weight: ratio of data vs. pinn loss
         viscosity: param of dataset
+
         https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L224
         """
         super().__init__()
@@ -213,21 +194,6 @@ class BurgersDataAndPinnsLoss(nn.Module):
         ) * data_loss + self.pinn_loss_weight * pde_loss
 
 
-# NOTE(MS): Reformatting original loss
-# to be a torch.nn.module below.
-
-# def darcy_loss(u, a):
-#    batchsize = u.size(0)
-#    size = u.size(1)
-#    u = u.reshape(batchsize, size, size)
-#    a = a.reshape(batchsize, size, size)
-#    lploss = LpLoss(size_average=True)
-#    du = fdm_darcy(u, a)
-#    f = torch.ones(du.shape, device=u.device)
-#    loss_f = lploss.rel(du, f)
-#    return loss_f
-
-
 class L1Loss(nn.Module):
     """Data Loss."""
 
@@ -261,6 +227,9 @@ class DarcyDataAndPinnsLoss(nn.Module):
         """Initialize loss.
 
         pinn_loss_weight: ratio of data vs. pinn loss
+        darcy_forcing_term: forcing value (scalar)
+
+        https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L39
         """
         super().__init__()
         self.L1 = nn.L1Loss()
