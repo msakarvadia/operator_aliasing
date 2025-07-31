@@ -133,6 +133,111 @@ def fdm_burgers(u: torch.Tensor, v: float, d: int = 1) -> torch.Tensor:
     return du
 
 
+def finite_difference_2d(
+    u: torch.tensor, d: int = 1, axis: str = 'dx'
+) -> torch.Tensor:
+    """Calculate finite difference.
+
+    u: feild (shape (batch, channels, xdim, ydim))
+    axis: d/dx or d/dy (var deriv is taken w.r.t.)
+    d: size of spatial domain (assume equivalent x/y size)
+    #https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L15
+    """
+    size = u.shape[-1]
+    delta = d / (size - 1)
+
+    if axis == 'dx':
+        ux = (u[..., 2:, 1:-1] - u[..., :-2, 1:-1]) / (2 * delta)
+
+        return ux
+
+    if axis == 'dy':
+        uy = (u[..., 1:-1, 2:] - u[..., 1:-1, :-2]) / (2 * delta)
+
+        return uy
+
+
+def laplacian(u: torch.tensor, d: int = 1) -> torch.Tensor:
+    """Laplacian Operator.
+
+    Can be applied to vorticity for example.
+
+    u: feild (shape (batch, channels, xdim, ydim))
+    d: size of spatial domain (assume equivalent x/y size)
+    # https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L20C5-L21C74
+    """
+    size = u.shape[-1]
+    delta = d / (size - 1)
+
+    # d/dx^2
+    uxx = (u[..., 2:, 1:-1] - 2 * u[..., 1:-1, 1:-1] + u[..., :-2, 1:-1]) / (
+        delta**2
+    )
+    # d/dy^2
+    uyy = (u[..., 1:-1, 2:] - 2 * u[..., 1:-1, 1:-1] + u[..., 1:-1, :-2]) / (
+        delta**2
+    )
+
+    return uxx + uyy
+
+
+def incomp_ns_fdm(
+    vx: torch.tensor,
+    vy: torch.tensor,
+    vorticity: torch.tensor,
+    viscosity: float,
+    force_curl: torch.tensor,
+) -> torch.tensor:
+    """Pinns loss for vorticity for of incompressible Navier stokes equations.
+
+    vx: x velocity
+    vy: y velocity
+    vorticity: vorticity
+    viscosity: viscosity coeff
+    force_curl: curl of x and y forces
+    t_interval: time interval = 1
+
+    For using finite difference instead of spectral derivative incase
+    of non-periodic boundary conditions
+
+    https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L68
+    """
+    # hold time interval constant at 1
+    # (can make function arg if time interval changes)
+    t_interval = 1
+    batchsize = vorticity.shape[0]
+    nx = vorticity.shape[-1]
+    ny = nx  # assume same x/y dim
+    nt = vorticity.shape[1]
+
+    dt = t_interval / (nt - 1)
+    vorticity_dt = (vorticity[:, 2:, ...] - vorticity[:, :-2, ...]) / (2 * dt)
+
+    voriticity_dx = finite_difference_2d(vorticity, d=1, axis='dx')
+    voriticity_dy = finite_difference_2d(vorticity, d=1, axis='dy')
+
+    # veolicty * nabla vorticity
+    u_nabla_vort = (
+        vx[..., 2:-2, 2:-2] * voriticity_dx
+        + vy[..., 2:-2, 2:-2] * voriticity_dy
+    )
+
+    # force term (repeat along time dim
+    force_curl = force_curl.repeat(nt - 2).reshape(batchsize, nt - 2, nx, ny)
+
+    # viscoity*laplacian of vorticity
+    lap_vorticity = laplacian(vorticity)
+
+    # NOTE(MS):must ensure shape's matchup
+    # finite-difference shaves off a dimention each time it is applied
+    return (
+        vorticity_dt[..., 1:-1, 1:-1]
+        + u_nabla_vort[:, 1:-1, ...]
+        - viscosity * lap_vorticity[:, 1:-1, ...]
+        - force_curl[..., 1:-1, 1:-1]
+    )
+
+
 class BurgersDataAndPinnsLoss(nn.Module):
     """Data+Pinns Loss for Burgers flow."""
 
