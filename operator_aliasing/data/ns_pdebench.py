@@ -1,4 +1,4 @@
-"""Navier Stokes Dataset Example."""
+"""(Compressible) Navier Stokes Dataset Example."""
 
 # https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/utils.py
 from __future__ import annotations
@@ -14,7 +14,7 @@ from torchvision.transforms import Compose
 
 
 class NSPDEBench(Dataset):
-    """Navier Stokes Dataset from PDE Bench."""
+    """(Compressible) Navier Stokes Dataset from PDE Bench."""
 
     def __init__(
         self,
