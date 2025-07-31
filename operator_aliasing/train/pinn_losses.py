@@ -161,6 +161,7 @@ class BurgersDataAndPinnsLoss(nn.Module):
         """Initialize loss.
 
         viscosity: param of dataset
+        https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L224
         """
         super().__init__()
         self.L1 = nn.L1Loss()
@@ -202,7 +203,9 @@ class BurgersDataAndPinnsLoss(nn.Module):
         du = fdm_burgers(model_pred, self.viscosity)
         f = torch.zeros(du.shape, device=model_pred.device)
         # TODO(MS): these are all MSE (but in darcy we use L1), make consistant
-        pde_loss = torch.nn.functional.mse_loss(du, f)
+        # pde_loss = torch.nn.functional.mse_loss(du, f)
+        # NOTE(MS): standardizing L1 loss for data + physics
+        pde_loss = self.L1(du, f)
 
         # return 0.33 * data_loss + 0.33 * boundary_loss + 0.33 * pde_loss
         return (
@@ -284,7 +287,9 @@ class DarcyDataAndPinnsLoss(nn.Module):
         a = model_input.reshape(batchsize, size, size)
         du = fdm_darcy(u, a)
         f = torch.ones(du.shape, device=u.device) * self.darcy_forcing_term
-        pinn_loss = self.lploss.rel(du, f)
+        # NOTE(MS): standardizing L1 loss for data + physics
+        # pinn_loss = self.lploss.rel(du, f)
+        pinn_loss = self.L1(du, f)
 
         return (
             1 - self.pinn_loss_weight
