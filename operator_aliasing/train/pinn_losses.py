@@ -182,6 +182,11 @@ class BurgersDataAndPinnsLoss(nn.Module):
         """
         data_loss = self.L1(model_pred, ground_truth)
 
+        # NOTE(MS): PINO had initial condition loss
+        # for training stability, but we don't need it
+        # we train auto-regressively
+        # Initical condition loss is cheating, model explicitly seeing IC!!
+
         # batchsize = model_pred.size(0)
         # nt = model_pred.size(1)
         # nx = model_pred.size(-1)
