@@ -28,7 +28,7 @@ def get_loss(
     if loss_name == 'darcy_pinn':
         loss = DarcyDataAndPinnsLoss(pinn_loss_weight, darcy_forcing_term)
     if loss_name == 'burgers_pinn':
-        loss = BurgersDataAndPinnsLoss(viscosity)
+        loss = BurgersDataAndPinnsLoss(pinn_loss_weight, viscosity)
     return loss
 
 

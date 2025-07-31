@@ -157,7 +157,7 @@ def fdm_burgers(u: torch.Tensor, v: float, d: int = 1) -> torch.Tensor:
 class BurgersDataAndPinnsLoss(nn.Module):
     """Data+Pinns Loss for Burgers flow."""
 
-    def __init__(self, viscosity: float) -> None:
+    def __init__(self, pinn_loss_weight: float, viscosity: float) -> None:
         """Initialize loss.
 
         viscosity: param of dataset
@@ -166,6 +166,7 @@ class BurgersDataAndPinnsLoss(nn.Module):
         self.L1 = nn.L1Loss()
         self.lploss = LpLoss(size_average=True)
         self.viscosity = viscosity
+        self.pinn_loss_weight = pinn_loss_weight
 
     def forward(
         self,
@@ -181,24 +182,27 @@ class BurgersDataAndPinnsLoss(nn.Module):
         """
         data_loss = self.L1(model_pred, ground_truth)
 
-        batchsize = model_pred.size(0)
-        nt = model_pred.size(1)
-        nx = model_pred.size(-1)
-        u = model_pred.reshape(batchsize, nt, nx)
+        # batchsize = model_pred.size(0)
+        # nt = model_pred.size(1)
+        # nx = model_pred.size(-1)
+        # u = model_pred.reshape(batchsize, nt, nx)
 
-        index_t = torch.zeros(nx).long()
-        index_x = torch.tensor(range(nx)).long()
-        boundary_u = u[:, index_t, index_x]
-        u0 = model_input[:, 0, 0, :]  # TODO(MS): check whether this is correct
-        boundary_loss = torch.nn.functional.mse_loss(boundary_u, u0)
+        # index_t = torch.zeros(nx).long()
+        # index_x = torch.tensor(range(nx)).long()
+        # boundary_u = u[:, index_t, index_x]
+        # TODO(MS): check whether this is correct
+        # u0 = model_input[:, 0, 0, :]
+        # boundary_loss = torch.nn.functional.mse_loss(boundary_u, u0)
 
         du = fdm_burgers(model_pred, self.viscosity)
-        f = torch.zeros(du.shape, device=u.device)
+        f = torch.zeros(du.shape, device=model_pred.device)
         # TODO(MS): these are all MSE (but in darcy we use L1), make consistant
         pde_loss = torch.nn.functional.mse_loss(du, f)
 
-        # TODO(MS): do something about this weighting
-        return 0.33 * data_loss + 0.33 * boundary_loss + 0.33 * pde_loss
+        # return 0.33 * data_loss + 0.33 * boundary_loss + 0.33 * pde_loss
+        return (
+            1 - self.pinn_loss_weight
+        ) * data_loss + self.pinn_loss_weight * pde_loss
 
 
 # NOTE(MS): Reformatting original loss
