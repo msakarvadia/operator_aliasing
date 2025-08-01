@@ -12,6 +12,7 @@ from torch import nn
 
 from .pinn_losses import BurgersDataAndPinnsLoss
 from .pinn_losses import DarcyDataAndPinnsLoss
+from .pinn_losses import IncompNSDataAndPinnsLoss
 from .pinn_losses import L1Loss
 
 
@@ -19,7 +20,8 @@ def get_loss(
     loss_name: str,
     pinn_loss_weight: float,
     darcy_forcing_term: float,
-    viscosity: float,
+    burger_viscosity: float,
+    incomp_ns_viscosity: float,
 ) -> nn.Module:
     """Get loss functions."""
     loss = None
@@ -28,7 +30,9 @@ def get_loss(
     if loss_name == 'darcy_pinn':
         loss = DarcyDataAndPinnsLoss(pinn_loss_weight, darcy_forcing_term)
     if loss_name == 'burgers_pinn':
-        loss = BurgersDataAndPinnsLoss(pinn_loss_weight, viscosity)
+        loss = BurgersDataAndPinnsLoss(pinn_loss_weight, burger_viscosity)
+    if loss_name == 'incomp_ns_pinn':
+        loss = IncompNSDataAndPinnsLoss(pinn_loss_weight, incomp_ns_viscosity)
     return loss
 
 

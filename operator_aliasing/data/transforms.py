@@ -50,12 +50,14 @@ class LowpassFilter:
 
         # apply no filter
         if self.filter_limit == -1:
-            return {'x': model_input, 'y': label}
+            return sample
 
         filter_input = filter_batch(self.filter, model_input, self.n_dim)
         filter_label = filter_batch(self.filter, label, self.n_dim)
 
-        return {'x': filter_input, 'y': filter_label}
+        sample['x'] = filter_input
+        sample['y'] = filter_label
+        return sample
 
 
 class DownSample:
@@ -83,7 +85,7 @@ class DownSample:
 
         # apply no downsample
         if self.out_size == -1:
-            return {'x': model_input, 'y': label}
+            return sample
 
         time_dim = model_input.shape[0]
         shape = tuple([self.out_size] * self.n_dim)
@@ -114,4 +116,6 @@ class DownSample:
             antialias=antialias,
         )
 
-        return {'x': downsample_input, 'y': downsample_label}
+        sample['x'] = downsample_input
+        sample['y'] = downsample_label
+        return sample

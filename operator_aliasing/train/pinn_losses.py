@@ -205,9 +205,6 @@ def incomp_ns_fdm(
     # hold time interval constant at 1
     # (can make function arg if time interval changes)
     t_interval = 1
-    batchsize = vorticity.shape[0]
-    nx = vorticity.shape[-1]
-    ny = nx  # assume same x/y dim
     nt = vorticity.shape[1]
 
     dt = t_interval / (nt - 1)
@@ -218,12 +215,12 @@ def incomp_ns_fdm(
 
     # veolicty * nabla vorticity
     u_nabla_vort = (
-        vx[..., 1:-1, 1:-1] * voriticity_dx
-        + vy[..., 1:-1, 1:-1] * voriticity_dy
+        vx[:, nt:, 1:-1, 1:-1] * voriticity_dx
+        + vy[:, nt:, 1:-1, 1:-1] * voriticity_dy
     )
 
     # force term (repeat along time dim
-    force_curl = force_curl.repeat(nt - 2).reshape(batchsize, nt - 2, nx, ny)
+    force_curl = force_curl.unsqueeze(dim=1).repeat(1, nt - 2, 1, 1)
 
     # viscoity*laplacian of vorticity
     lap_vorticity = laplacian(vorticity)
@@ -236,6 +233,60 @@ def incomp_ns_fdm(
         - viscosity * lap_vorticity[:, 1:-1, ...]
         - force_curl[..., 1:-1, 1:-1]
     )
+
+
+class IncompNSDataAndPinnsLoss(nn.Module):
+    """Data+Pinns Loss for Incompressible navier stokes."""
+
+    def __init__(self, pinn_loss_weight: float, viscosity: float) -> None:
+        """Initialize loss.
+
+        pinn_loss_weight: ratio of data vs. pinn loss
+        viscosity: param of dataset
+
+        https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L68
+        """
+        super().__init__()
+        self.L1 = nn.L1Loss()
+        self.lploss = LpLoss(size_average=True)
+        self.viscosity = viscosity
+        self.pinn_loss_weight = pinn_loss_weight
+
+    def forward(
+        self,
+        model_pred: torch.Tensor,
+        ground_truth: torch.Tensor,
+        model_input: torch.Tensor,
+        **kwargs: typing.Any,
+    ) -> float:
+        """Loss calculation.
+
+        model_pred shape: batch_size x time x X_dim
+        ground_truth shape: same as model pred
+        model input shape: batch_size x initial_steps x X_dim
+        """
+        vx = kwargs['Vx']
+        vy = kwargs['Vy']
+        force_curl = kwargs['force_curl']
+        device = kwargs['device']
+
+        data_loss = self.L1(model_pred, ground_truth)
+
+        # NOTE(MS): vorticity has channel dim, must be squeezed
+        du = incomp_ns_fdm(
+            vx.to(device),
+            vy.to(device),
+            model_pred.squeeze(),
+            self.viscosity,
+            force_curl.to(device),
+        )
+        f = torch.zeros(du.shape, device=model_pred.device)
+        pde_loss = self.L1(du, f)
+
+        # return 0.33 * data_loss + 0.33 * boundary_loss + 0.33 * pde_loss
+        return (
+            1 - self.pinn_loss_weight
+        ) * data_loss + self.pinn_loss_weight * pde_loss
 
 
 class BurgersDataAndPinnsLoss(nn.Module):
@@ -260,6 +311,7 @@ class BurgersDataAndPinnsLoss(nn.Module):
         model_pred: torch.Tensor,
         ground_truth: torch.Tensor,
         model_input: torch.Tensor,
+        **kwargs: typing.Any,
     ) -> float:
         """Loss calculation.
 

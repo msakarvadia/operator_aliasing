@@ -56,7 +56,7 @@ if __name__ == '__main__':
         '--loss_name',
         type=str,
         default='l1',
-        choices=['l1', 'darcy_pinn', 'burgers_pinn'],
+        choices=['l1', 'darcy_pinn', 'burgers_pinn', 'incomp_ns_pinn'],
         help='Name of loss functions for training.',
     )
     parser.add_argument(
@@ -223,6 +223,7 @@ if __name__ == '__main__':
         args.pinn_loss_weight,
         args.darcy_forcing_term,
         args.burger_viscosity,
+        args.incomp_ns_viscosity,
     )
 
     # Train Model

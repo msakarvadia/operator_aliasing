@@ -101,7 +101,7 @@ class IncompNSPDEBench(Dataset):
                 ],
                 dtype=torch.float32,
             )  # batch, time, x,...
-            print('loaded Vx')
+            print(f'loaded Vx {self.vx.shape=}')
             # Vy
             self.vy = torch.tensor(
                 f['Vy'][
@@ -112,7 +112,7 @@ class IncompNSPDEBench(Dataset):
                 ],
                 dtype=torch.float32,
             )  # batch, time, x,...
-            print('loaded Vy')
+            print(f'loaded Vy {self.vy.shape=}')
 
         # batch, time, channel, x, y
         self.vorticity = self.vorticity[:, :, None, :, :]

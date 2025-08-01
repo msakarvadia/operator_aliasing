@@ -69,6 +69,8 @@ def train_model(**train_args: typing.Any) -> Module:
         for _step, batch in enumerate(tqdm(train_dataloader)):
             input_batch = batch['x'].to(device)
             output_batch = batch['y'].to(device)
+            batch['device'] = device
+
             optimizer.zero_grad()
             if initial_steps == 1:
                 # for Darcy flow
@@ -79,7 +81,7 @@ def train_model(**train_args: typing.Any) -> Module:
             else:
                 # Autoregressive loop for NS and burgers
                 loss_f = autoregressive_loop(
-                    input_batch, output_batch, initial_steps, model, loss
+                    initial_steps, model, loss, **batch
                 )
 
             loss_f.backward()
@@ -128,14 +130,17 @@ def train_model(**train_args: typing.Any) -> Module:
 
 
 def autoregressive_loop(
-    input_batch: torch.Tensor,
-    output_batch: torch.tensor,
     initial_steps: int,
     model: Module,
     loss: Module,
+    **batch: typing.Any,
 ) -> int:
     """Autoregressive training loop for time-varying PDE training."""
     # adapted from: https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/train.py
+    device = batch['device']
+    input_batch = batch['x'].to(device)
+    output_batch = batch['y'].to(device)
+
     img_size = input_batch.shape[-1]
     batch_size = input_batch.shape[0]
     loss_f = 0
@@ -166,7 +171,7 @@ def autoregressive_loop(
         all_model_preds,
         output_at_last_n_steps,
         model_input=input_batch,
-        # output_pred_batch, output_at_time_step, model_input=model_input
+        **batch,
     )
     return loss_f
 
@@ -187,8 +192,8 @@ def test_model(
             for _step, batch in enumerate(test_dataloader):
                 input_batch = batch['x'].to(device)
                 output_batch = batch['y'].to(device)
-                # output_pred_batch = model(input_batch)
-                # loss_f = loss(output_pred_batch, output_batch)
+                batch['device'] = device
+
                 if initial_steps == 1:
                     output_pred_batch = model(input_batch)
                     loss_f = loss(
@@ -198,7 +203,10 @@ def test_model(
                     )
                 else:
                     loss_f = autoregressive_loop(
-                        input_batch, output_batch, initial_steps, model, loss
+                        initial_steps,
+                        model,
+                        loss,
+                        **batch,
                     )
                 """
                 loss_f = (
