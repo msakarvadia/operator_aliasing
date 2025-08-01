@@ -81,61 +81,41 @@ class IncompNSPDEBench(Dataset):
             )
             print(f'loaded force curl {self.force_curl.shape=}')
             # vorticity
-            self.vorticity = np.array(
+            self.vorticity = torch.tensor(
                 f['vorticity'][
                     first_batch_idx:last_batch_idx:reduced_batch,
                     ::reduced_resolution_t,
                     ::reduced_resolution,
                     ::reduced_resolution,
                 ],
-                dtype=np.float32,
+                dtype=torch.float32,
             )  # batch, time, x, y
             print(f'loaded vorticity {self.vorticity.shape=}')
             # Vx
-            self.vx = np.array(
+            self.vx = torch.tensor(
                 f['Vx'][
                     first_batch_idx:last_batch_idx:reduced_batch,
                     ::reduced_resolution_t,
                     ::reduced_resolution,
                     ::reduced_resolution,
                 ],
-                dtype=np.float32,
+                dtype=torch.float32,
             )  # batch, time, x,...
             print('loaded Vx')
             # Vy
-            self.vy = np.array(
+            self.vy = torch.tensor(
                 f['Vy'][
                     first_batch_idx:last_batch_idx:reduced_batch,
                     ::reduced_resolution_t,
                     ::reduced_resolution,
                     ::reduced_resolution,
                 ],
-                dtype=np.float32,
+                dtype=torch.float32,
             )  # batch, time, x,...
             print('loaded Vy')
 
         # batch, time, channel, x, y
         self.vorticity = self.vorticity[:, :, None, :, :]
-
-        self.vorticity = (
-            self.vorticity
-            if torch.is_tensor(self.vorticity)
-            else torch.tensor(self.vorticity)
-        )
-
-        self.force_curl = (
-            self.force_curl
-            if torch.is_tensor(self.force_curl)
-            else torch.tensor(self.force_curl)
-        )
-
-        self.vx = (
-            self.vx if torch.is_tensor(self.vx) else torch.tensor(self.vx)
-        )
-
-        self.vy = (
-            self.vy if torch.is_tensor(self.vy) else torch.tensor(self.vy)
-        )
 
     def __len__(self) -> int:
         """Returns len of dataset."""
