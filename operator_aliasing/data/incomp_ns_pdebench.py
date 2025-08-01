@@ -61,64 +61,61 @@ class IncompNSPDEBench(Dataset):
         # Define path to files
         root_path = Path(Path(saved_folder).resolve()) / filename
         with h5py.File(root_path, 'r') as f:
-            _data = np.array(f['force_curl'], dtype=np.float32)
             # force curl: bs x X x Y
-            self.force_curl = _data[
-                ::reduced_batch,
-                ::reduced_resolution,
-                ::reduced_resolution,
-            ]
+            num_samples_max = f['force_curl'].shape[0]
+            test_idx = int(num_samples_max * test_ratio)
+            if train:
+                first_batch_idx = test_idx
+                last_batch_idx = -1
+            else:
+                first_batch_idx = 0
+                last_batch_idx = test_idx
+            print(f'{num_samples_max=}')
+            self.force_curl = np.array(
+                f['force_curl'][
+                    first_batch_idx:last_batch_idx:reduced_batch,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ],
+                dtype=np.float32,
+            )
             print(f'loaded force curl {self.force_curl.shape=}')
             # vorticity
-            _data = np.array(
-                f['vorticity'], dtype=np.float32
+            self.vorticity = np.array(
+                f['vorticity'][
+                    first_batch_idx:last_batch_idx:reduced_batch,
+                    ::reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ],
+                dtype=np.float32,
             )  # batch, time, x, y
-            self.vorticity = _data[
-                ::reduced_batch,
-                ::reduced_resolution_t,
-                ::reduced_resolution,
-                ::reduced_resolution,
-            ]
             print(f'loaded vorticity {self.vorticity.shape=}')
             # Vx
-            _data = np.array(f['Vx'], dtype=np.float32)  # batch, time, x,...
-            self.vx = _data[
-                ::reduced_batch,
-                ::reduced_resolution_t,
-                ::reduced_resolution,
-                ::reduced_resolution,
-            ]
+            self.vx = np.array(
+                f['Vx'][
+                    first_batch_idx:last_batch_idx:reduced_batch,
+                    ::reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ],
+                dtype=np.float32,
+            )  # batch, time, x,...
             print('loaded Vx')
             # Vy
-            _data = np.array(f['Vy'], dtype=np.float32)  # batch, time, x,...
-            self.vy = _data[
-                ::reduced_batch,
-                ::reduced_resolution_t,
-                ::reduced_resolution,
-                ::reduced_resolution,
-            ]
+            self.vy = np.array(
+                f['Vy'][
+                    first_batch_idx:last_batch_idx:reduced_batch,
+                    ::reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ],
+                dtype=np.float32,
+            )  # batch, time, x,...
             print('loaded Vy')
-
-        if num_samples_max > 0:
-            num_samples_max = min(num_samples_max, self.data.shape[0])
-        else:
-            num_samples_max = self.vorticity.shape[0]
-
-        test_idx = int(num_samples_max * test_ratio)
 
         # batch, time, channel, x, y
         self.vorticity = self.vorticity[:, :, None, :, :]
-
-        if train:
-            self.vorticity = self.vorticity[test_idx:num_samples_max]
-            self.force_curl = self.force_curl[test_idx:num_samples_max]
-            self.vx = self.vx[test_idx:num_samples_max]
-            self.vy = self.vy[test_idx:num_samples_max]
-        else:
-            self.vorticity = self.vorticity[:test_idx]
-            self.force_curl = self.force_curl[:test_idx]
-            self.vx = self.vx[:test_idx]
-            self.vy = self.vy[:test_idx]
 
         self.vorticity = (
             self.vorticity
