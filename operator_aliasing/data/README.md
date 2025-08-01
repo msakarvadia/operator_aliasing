@@ -1,0 +1,1 @@
+- [`preprocess_incom_ns.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/data/preprocess_incom_ns.py): run this to pre-process the [PDEBench](https://github.com/pdebench/PDEBench/tree/main/pdebench/data_download) Incompressible navier stokes dataset. Before using this script, download the dataset from PDEBench.
