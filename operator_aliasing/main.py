@@ -97,6 +97,7 @@ if __name__ == '__main__':
             'random_fluid',
             'burgers_pdebench',
             'ns_pdebench',
+            'incomp_ns_pdebench',
         ],
         help='Training Datasets',
     )

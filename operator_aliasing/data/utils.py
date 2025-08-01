@@ -12,6 +12,7 @@ from torchvision import transforms
 from operator_aliasing.data.burgers_pdebench import BurgersPDEBench
 from operator_aliasing.data.darcy import DarcyData
 from operator_aliasing.data.darcy_pdebench import DarcyPDEBench
+from operator_aliasing.data.incomp_ns_pdebench import IncompNSPDEBench
 from operator_aliasing.data.ns_pdebench import NSPDEBench
 from operator_aliasing.data.random_data import RandomData
 from operator_aliasing.data.random_fluid_data import RandomFluidData
@@ -108,6 +109,16 @@ def get_dataset(
             filename='2D_CFD_Rand_M0.1_Eta0.1_Zeta0.1_periodic_128_Train.hdf5',
             initial_step=10,
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/CFD/2D_Train_Rand/',
+            # reduced_resolution=1,
+            train=train,
+            transform=data_transforms,
+            img_size=img_size,
+        )
+    if dataset_name == 'incomp_ns_pdebench':
+        dataset = IncompNSPDEBench(
+            filename='full_data_merge.h5',
+            initial_step=10,
+            saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/NS_incom/',
             # reduced_resolution=1,
             train=train,
             transform=data_transforms,

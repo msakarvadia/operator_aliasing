@@ -105,6 +105,10 @@ class IncompNSPDEBench(Dataset):
             num_samples_max = self.vorticity.shape[0]
 
         test_idx = int(num_samples_max * test_ratio)
+
+        # batch, time, channel, x, y
+        self.vorticity = self.vorticity[:, :, None, :, :]
+
         if train:
             self.vorticity = self.vorticity[test_idx:num_samples_max]
             self.force_curl = self.force_curl[test_idx:num_samples_max]
