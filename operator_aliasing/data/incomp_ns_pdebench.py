@@ -68,7 +68,7 @@ class IncompNSPDEBench(Dataset):
                 ::reduced_resolution,
                 ::reduced_resolution,
             ]
-            print('loaded density')
+            print(f'loaded force curl {self.force_curl.shape=}')
             # vorticity
             _data = np.array(
                 f['vorticity'], dtype=np.float32
@@ -79,7 +79,7 @@ class IncompNSPDEBench(Dataset):
                 ::reduced_resolution,
                 ::reduced_resolution,
             ]
-            print('loaded vorticity')
+            print(f'loaded vorticity {self.vorticity.shape=}')
             # Vx
             _data = np.array(f['Vx'], dtype=np.float32)  # batch, time, x,...
             self.vx = _data[
@@ -102,7 +102,7 @@ class IncompNSPDEBench(Dataset):
         if num_samples_max > 0:
             num_samples_max = min(num_samples_max, self.data.shape[0])
         else:
-            num_samples_max = self.data.shape[0]
+            num_samples_max = self.vorticity.shape[0]
 
         test_idx = int(num_samples_max * test_ratio)
         if train:
@@ -138,7 +138,7 @@ class IncompNSPDEBench(Dataset):
 
     def __len__(self) -> int:
         """Returns len of dataset."""
-        return len(self.data)
+        return len(self.vorticity)
 
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         """Get single sample at idx."""
