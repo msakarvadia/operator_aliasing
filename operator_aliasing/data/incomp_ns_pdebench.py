@@ -45,7 +45,7 @@ class IncompNSPDEBench(Dataset):
         self.initial_step = initial_step
         # downsample data
         img_size = kwargs['img_size']
-        spatial_dim = 512  # from the real data TODO(MS): check for real data
+        spatial_dim = 510  # from the real data TODO(MS): check for real data
         if spatial_dim % img_size != 0:
             raise Exception(f"""Desired img_size should
                 be a factor of the data's {spatial_dim=}

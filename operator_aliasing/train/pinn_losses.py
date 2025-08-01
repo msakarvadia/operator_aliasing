@@ -218,8 +218,8 @@ def incomp_ns_fdm(
 
     # veolicty * nabla vorticity
     u_nabla_vort = (
-        vx[..., 2:-2, 2:-2] * voriticity_dx
-        + vy[..., 2:-2, 2:-2] * voriticity_dy
+        vx[..., 1:-1, 1:-1] * voriticity_dx
+        + vy[..., 1:-1, 1:-1] * voriticity_dy
     )
 
     # force term (repeat along time dim

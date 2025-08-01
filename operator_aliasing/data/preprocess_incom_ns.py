@@ -34,14 +34,14 @@ with h5py.File(
     h5fw.require_dataset(
         'Vx',
         dtype='f',
-        shape=(1096, 20, 512, 512),
-        maxshape=(1096, 20, 512, 512),
+        shape=(1096, 20, 510, 510),
+        maxshape=(1096, 20, 510, 510),
     )
     h5fw.require_dataset(
         'Vy',
         dtype='f',
-        shape=(1096, 20, 512, 512),
-        maxshape=(1096, 20, 512, 512),
+        shape=(1096, 20, 510, 510),
+        maxshape=(1096, 20, 510, 510),
     )
     h5fw.require_dataset(
         'vorticity',
@@ -68,8 +68,8 @@ with h5py.File(
 
         batch_size = Vx.shape[0]
 
-        h5fw['Vx'][row1 : row1 + batch_size, ...] = Vx[:, ...]
-        h5fw['Vy'][row1 : row1 + batch_size, ...] = Vy[:, ...]
+        h5fw['Vx'][row1 : row1 + batch_size, ...] = Vx[:, ..., 1:-1, 1:-1]
+        h5fw['Vy'][row1 : row1 + batch_size, ...] = Vy[:, ..., 1:-1, 1:-1]
         h5fw['vorticity'][row1 : row1 + batch_size, ...] = vorticity[:, ...]
         h5fw['force_curl'][row1 : row1 + batch_size, ...] = force_curl[:, ...]
 
