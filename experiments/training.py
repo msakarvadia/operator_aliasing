@@ -55,7 +55,6 @@ def train(**kwargs: typing.Any) -> str:
     --img_size {img_size} \
     --ckpt_path ckpts/{ckpt_name} \
     --loss_name {loss_name} \
-    --loss_name {loss_name} \
     --max_modes {max_mode} \
     --batch_size {batch_size} \
     --model_name {model_name}\
@@ -63,6 +62,7 @@ def train(**kwargs: typing.Any) -> str:
     --in_channels {in_channels} \
     --initial_steps {initial_steps} \
     """
+
     return exec_str
 
 

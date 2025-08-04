@@ -116,6 +116,17 @@ class DownSample:
             antialias=antialias,
         )
 
+        if time_dim == 1:
+            # 4 dim: time x channels x Xdim x Ydim
+            # 3 dim: channels x Xdim x Ydim
+
+            # NOTE(MS): because we downsample 1 img at a time
+            # we must first exapand the batch dim
+            # then collapse the batch dim to be compatible
+            # w/ interpolate & also dataloader
+            downsample_input = downsample_input.squeeze(0)
+            downsample_label = downsample_label.squeeze(0)
+
         sample['x'] = downsample_input
         sample['y'] = downsample_label
         return sample
