@@ -65,52 +65,57 @@ def get_filter_downsample_args(
     return hyper_param_search_args
 
 
-def get_pino_args(dataset_name: str) -> list[dict[str, typing.Any]]:
+def get_pino_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
-    model_name = 'FNO2D'
-    # num time steps * channels:
-    in_channels = 10
-    initial_steps = 10
-
-    if dataset_name == 'darcy_pdebench':
-        img_sizes = [16, 32, 64, 128]
-        pinn_loss_name = 'darcy_pinn'
-        batch_size = 128
-        in_channels = 1
-        initial_steps = 1
-
-    if dataset_name == 'burgers_pdebench':
-        img_sizes = [128, 256, 512, 1024]
-        pinn_loss_name = 'burgers_pinn'
-        batch_size = 64
-        model_name = 'FNO1D'
-
-    if dataset_name == 'incomp_ns_pdebench':
-        img_sizes = [17, 85, 255, 510]
-        pinn_loss_name = 'incomp_ns_pinn'
-        batch_size = 4
-
-    # Add hyper-parameter search:
     hyper_param_search_args = []
-    for img_size in img_sizes:
-        for loss_name in ['l1', pinn_loss_name]:
-            for lr in [1e-3, 1e-4, 1e-5]:
-                for wd in [1e-7, 1e-8, 1e-9]:
-                    hp_args = {
-                        'lr': lr,
-                        'weight_decay': wd,
-                        'step_size': 15,
-                        'gamma': 0.5,
-                        'loss_name': loss_name,
-                        'batch_size': batch_size,
-                        'dataset_name': dataset_name,
-                        'downsample_dim': -1,
-                        'filter_lim': -1,
-                        'img_size': img_size,
-                        'max_mode': img_size // 2,
-                        'model_name': model_name,
-                        'in_channels': in_channels,
-                        'initial_steps': initial_steps,
-                    }
-                    hyper_param_search_args.append(hp_args)
+    for dataset_name in [
+        'darcy_pdebench',
+        'burgers_pdebench',
+        'incomp_ns_pdebench',
+    ]:
+        model_name = 'FNO2D'
+        # num time steps * channels:
+        in_channels = 10
+        initial_steps = 10
+
+        if dataset_name == 'darcy_pdebench':
+            img_sizes = [16, 32, 64, 128]
+            pinn_loss_name = 'darcy_pinn'
+            batch_size = 128
+            in_channels = 1
+            initial_steps = 1
+
+        if dataset_name == 'burgers_pdebench':
+            img_sizes = [128, 256, 512, 1024]
+            pinn_loss_name = 'burgers_pinn'
+            batch_size = 64
+            model_name = 'FNO1D'
+
+        if dataset_name == 'incomp_ns_pdebench':
+            img_sizes = [17, 85, 255, 510]
+            pinn_loss_name = 'incomp_ns_pinn'
+            batch_size = 4
+
+        # Add hyper-parameter search:
+        for img_size in img_sizes:
+            for loss_name in ['l1', pinn_loss_name]:
+                for lr in [1e-3, 1e-4, 1e-5]:
+                    for wd in [1e-7, 1e-8, 1e-9]:
+                        hp_args = {
+                            'lr': lr,
+                            'weight_decay': wd,
+                            'step_size': 15,
+                            'gamma': 0.5,
+                            'loss_name': loss_name,
+                            'batch_size': batch_size,
+                            'dataset_name': dataset_name,
+                            'downsample_dim': -1,
+                            'filter_lim': -1,
+                            'img_size': img_size,
+                            'max_mode': img_size // 2,
+                            'model_name': model_name,
+                            'in_channels': in_channels,
+                            'initial_steps': initial_steps,
+                        }
+                        hyper_param_search_args.append(hp_args)
     return hyper_param_search_args

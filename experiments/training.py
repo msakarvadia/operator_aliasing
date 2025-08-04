@@ -34,6 +34,9 @@ def train(**kwargs: typing.Any) -> str:
     max_mode = kwargs['max_mode']
     batch_size = kwargs['batch_size']
     img_size = kwargs['img_size']
+    model_name = kwargs['model_name']
+    in_channels = kwargs['in_channels']
+    initial_steps = kwargs['initial_steps']
 
     arg_path = '_'.join(map(str, list(kwargs.values())))
     # Need to remove any . or / to
@@ -55,6 +58,10 @@ def train(**kwargs: typing.Any) -> str:
     --loss_name {loss_name} \
     --max_modes {max_mode} \
     --batch_size {batch_size} \
+    --model_name {model_name}\
+    --out_channels 1 \
+    --in_channels {in_channels} \
+    --initial_steps {initial_steps} \
     """
     return exec_str
 
@@ -66,14 +73,19 @@ if __name__ == '__main__':
         '--dataset_name',
         type=str,
         default='darcy',
-        choices=['darcy', 'darcy_pdebench'],
-        help='Name of training data.',
+        choices=[
+            'darcy',
+            'darcy_pdebench',
+            'burgers_pdebench',
+            'incomp_ns_pdebench',
+        ],
+        help='Name of training data: only for downsample/filter experiments.',
     )
     parser.add_argument(
         '--experiment_name',
         type=str,
         default='filter_downsample',
-        choices=['filter_downsample', 'pino'],
+        choices=['filter_downsample', 'hp_search'],
         help='Name of training data.',
     )
     parser.add_argument(
@@ -99,8 +111,8 @@ if __name__ == '__main__':
 
     if args.experiment_name == 'filter_downsample':
         training_args = get_filter_downsample_args(args.dataset_name)
-    if args.experiment_name == 'pino':
-        training_args = get_pino_args(args.dataset_name)
+    if args.experiment_name == 'hp_search':
+        training_args = get_pino_args()
 
     config = get_parsl_config(
         walltime=args.walltime, queue=args.queue, num_nodes=args.num_nodes
