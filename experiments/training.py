@@ -79,7 +79,8 @@ if __name__ == '__main__':
             'burgers_pdebench',
             'incomp_ns_pdebench',
         ],
-        help='Name of training data: only for downsample/filter experiments.',
+        help="""[not used]
+Name of training data: only for downsample/filter experiments.""",
     )
     parser.add_argument(
         '--experiment_name',
@@ -110,7 +111,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.experiment_name == 'filter_downsample':
-        training_args = get_filter_downsample_args(args.dataset_name)
+        training_args = get_filter_downsample_args()
     if args.experiment_name == 'hp_search':
         training_args = get_pino_args()
 
