@@ -11,7 +11,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     for dataset_name in [
         'darcy_pdebench',
         'burgers_pdebench',
-        # TODO: 'incomp_ns_pdebench',
+        'incomp_ns_pdebench',
     ]:
         train_args = []
         model_name = 'FNO2D'
@@ -47,8 +47,8 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             fixed_lim = 85 // 2  # half of 85 // 2
             filter_lims = [85 // 2, 255 // 2]  # -1 finished
             downsample_dims = [255, -1]  # 85 finished
-            # TODO lr = 1e-3
-            # TODO wd = 1e-7
+            lr = 1e-4
+            wd = 1e-7
 
         if dataset_name == 'darcy':
             fixed_lim = 3
