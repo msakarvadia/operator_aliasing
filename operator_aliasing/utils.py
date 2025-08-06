@@ -202,9 +202,10 @@ def get_energy_curve_1d(
 ) -> torch.Tensor:
     """Calculate 1d spectrum of data."""
     signal = data.cpu()
-    t = signal.shape[0]
+    batch_size = signal.shape[0]
+    time_points = signal.shape[1]
     n_observations = signal.shape[-1]
-    signal = signal.view(t, n_observations)
+    signal = signal.view(batch_size, time_points, n_observations)
 
     if normalize:
         signal = torch.fft.fftn(signal, norm='ortho')
@@ -225,13 +226,14 @@ def get_energy_curve_1d(
     wave_numbers = generate_wavenumbers_1d(n=n_observations)
     max_wavenumber = n_observations // 2
 
-    spectrum = torch.zeros((t, n_observations // 2))
+    spectrum = torch.zeros((batch_size, time_points, n_observations // 2))
     for j in range(1, max_wavenumber + 1):
         ind = torch.where(torch.tensor(wave_numbers) == j)
-        spectrum[:, j - 1] = energy[:, ind[0]].sum(dim=1)
+        spectrum[:, :, j - 1] = energy[:, :, ind[0]].sum(dim=-1)
 
-    spectrum = spectrum.mean(dim=0)
-    return spectrum
+    time_avg_spectrum = spectrum.mean(dim=1)
+    batch_avg_spectrum = time_avg_spectrum.mean(dim=0)
+    return batch_avg_spectrum
 
 
 def get_1d_low_pass_filter(f: int, s: int) -> torch.Tensor:
