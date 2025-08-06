@@ -14,7 +14,7 @@ from operator_aliasing.train.utils import load_latest_ckpt
 from operator_aliasing.train.utils import save_ckpt
 
 from ..utils import seed_everything
-from .pinn_losses import L1Loss
+from .pinn_losses import Loss
 
 
 def train_model(**train_args: typing.Any) -> Module:
@@ -98,7 +98,7 @@ def train_model(**train_args: typing.Any) -> Module:
             device,
             initial_steps,
         )
-        test_relative_l2 = test_dict
+        test_loss = test_dict
 
         # save train stats:
         train_stats.loc[len(train_stats)] = {
@@ -121,8 +121,7 @@ def train_model(**train_args: typing.Any) -> Module:
                 ' ######### Train Loss:',
                 train_loss,
                 ' ######### Test Loss:',
-                #' ######### Relative L1 Test Norm:',
-                test_relative_l2,
+                test_loss,
             )
             model.to(device)
 
@@ -184,7 +183,7 @@ def test_model(
 ) -> dict[str, float]:
     """Test model."""
     test_dict = {}
-    loss = L1Loss()
+    loss = Loss('mse')
     with torch.no_grad():
         model.eval()
         for test_label, test_dataloader in test_dataloaders.items():

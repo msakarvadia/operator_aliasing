@@ -55,8 +55,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--loss_name',
         type=str,
-        default='l1',
-        choices=['l1', 'darcy_pinn', 'burgers_pinn', 'incomp_ns_pinn'],
+        default='mse',
+        choices=['mse', 'l1', 'darcy_pinn', 'burgers_pinn', 'incomp_ns_pinn'],
         help='Name of loss functions for training.',
     )
     parser.add_argument(

@@ -247,7 +247,7 @@ class IncompNSDataAndPinnsLoss(nn.Module):
         https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L68
         """
         super().__init__()
-        self.L1 = nn.L1Loss()
+        self.mse = nn.MSELoss()
         self.lploss = LpLoss(size_average=True)
         self.viscosity = viscosity
         self.pinn_loss_weight = pinn_loss_weight
@@ -270,7 +270,7 @@ class IncompNSDataAndPinnsLoss(nn.Module):
         force_curl = kwargs['force_curl']
         device = kwargs['device']
 
-        data_loss = self.L1(model_pred, ground_truth)
+        data_loss = self.mse(model_pred, ground_truth)
 
         # NOTE(MS): vorticity has channel dim, must be squeezed
         du = incomp_ns_fdm(
@@ -281,7 +281,7 @@ class IncompNSDataAndPinnsLoss(nn.Module):
             force_curl.to(device),
         )
         f = torch.zeros(du.shape, device=model_pred.device)
-        pde_loss = self.L1(du, f)
+        pde_loss = self.mse(du, f)
 
         # return 0.33 * data_loss + 0.33 * boundary_loss + 0.33 * pde_loss
         return (
@@ -301,7 +301,7 @@ class BurgersDataAndPinnsLoss(nn.Module):
         https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L224
         """
         super().__init__()
-        self.L1 = nn.L1Loss()
+        self.mse = nn.MSELoss()
         self.lploss = LpLoss(size_average=True)
         self.viscosity = viscosity
         self.pinn_loss_weight = pinn_loss_weight
@@ -319,7 +319,7 @@ class BurgersDataAndPinnsLoss(nn.Module):
         ground_truth shape: same as model pred
         model input shape: batch_size x initial_steps x X_dim
         """
-        data_loss = self.L1(model_pred, ground_truth)
+        data_loss = self.mse(model_pred, ground_truth)
 
         # NOTE(MS): PINO had initial condition loss
         # for training stability, but we don't need it
@@ -343,7 +343,7 @@ class BurgersDataAndPinnsLoss(nn.Module):
         # TODO(MS): these are all MSE (but in darcy we use L1), make consistant
         # pde_loss = torch.nn.functional.mse_loss(du, f)
         # NOTE(MS): standardizing L1 loss for data + physics
-        pde_loss = self.L1(du, f)
+        pde_loss = self.mse(du, f)
 
         # return 0.33 * data_loss + 0.33 * boundary_loss + 0.33 * pde_loss
         return (
@@ -351,15 +351,19 @@ class BurgersDataAndPinnsLoss(nn.Module):
         ) * data_loss + self.pinn_loss_weight * pde_loss
 
 
-class L1Loss(nn.Module):
+class Loss(nn.Module):
     """Data Loss."""
 
     def __init__(
         self,
+        loss_name: str = 'l1',
     ) -> None:
         """Initialize loss."""
         super().__init__()
-        self.L1 = nn.L1Loss()
+        if 'l1' in loss_name:
+            self.loss = nn.L1Loss()
+        if 'mse' in loss_name:
+            self.loss = nn.MSELoss()
 
     def forward(
         self,
@@ -372,7 +376,7 @@ class L1Loss(nn.Module):
         model_pred shape: batch_size x 1 (no time) x X_dim x Y_dim
         ground_truth shape: same as model pred
         """
-        return self.L1(model_pred, ground_truth)
+        return self.loss(model_pred, ground_truth)
 
 
 class DarcyDataAndPinnsLoss(nn.Module):
@@ -389,7 +393,7 @@ class DarcyDataAndPinnsLoss(nn.Module):
         https://github.com/neuraloperator/physics_informed/blob/master/train_utils/losses.py#L39
         """
         super().__init__()
-        self.L1 = nn.L1Loss()
+        self.mse = nn.MSELoss()
         self.lploss = LpLoss(size_average=True)
         self.pinn_loss_weight = pinn_loss_weight
         self.darcy_forcing_term = darcy_forcing_term
@@ -405,7 +409,7 @@ class DarcyDataAndPinnsLoss(nn.Module):
         model_pred shape: batch_size x 1 (no time) x X_dim x Y_dim
         ground_truth shape: same as model pred
         """
-        data_loss = self.L1(model_pred, ground_truth)
+        data_loss = self.mse(model_pred, ground_truth)
 
         batchsize = model_pred.size(0)
         size = ground_truth.size(-1)
@@ -415,7 +419,7 @@ class DarcyDataAndPinnsLoss(nn.Module):
         f = torch.ones(du.shape, device=u.device) * self.darcy_forcing_term
         # NOTE(MS): standardizing L1 loss for data + physics
         # pinn_loss = self.lploss.rel(du, f)
-        pinn_loss = self.L1(du, f)
+        pinn_loss = self.mse(du, f)
 
         return (
             1 - self.pinn_loss_weight
