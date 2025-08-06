@@ -144,7 +144,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--burger_viscosity',
         type=float,
-        default=1.0,
+        default=0.001,
         choices=[
             0.001,
             0.002,
