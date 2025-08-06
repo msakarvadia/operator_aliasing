@@ -8,6 +8,7 @@ import typing
 import numpy as np
 import torch
 from neuralop.data.datasets.tensor_dataset import TensorDataset
+from torch.nn import Module
 
 # def get_energy_curve(data: torch.Tensor) -> torch.Tensor:
 #    """Energy Calculation used by Liangzhao."""
@@ -53,10 +54,46 @@ from neuralop.data.datasets.tensor_dataset import TensorDataset
 #    return f_energy
 
 
+def autoregressive_inference(
+    initial_steps: int,
+    model: Module,
+    input_batch: torch.tensor,
+    output_batch: torch.tensor,
+) -> torch.tensor:
+    """Autoregressive training loop for time-varying PDE training."""
+    # adapted from: https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/train.py
+
+    img_size = input_batch.shape[-1]
+    batch_size = input_batch.shape[0]
+    t_train = output_batch.shape[1]  # number of time steps
+    shape: typing.Any = (batch_size, -1)
+    for _dim in range(model.n_dim):
+        shape += (img_size,)
+
+    all_model_preds = []
+    for _t in range(initial_steps, t_train):
+        # Model run
+        model_input = torch.reshape(input_batch, shape)
+        output_pred_batch = model(model_input)
+        all_model_preds.append(output_pred_batch)
+
+        # Concatenate the prediction at the current
+        # time step to be used as input for the next time step
+        input_batch = torch.cat(
+            (input_batch[:, 1:, ...], output_pred_batch.unsqueeze(dim=1)),
+            dim=1,
+        )
+
+    # stack all model preds
+    all_model_preds = torch.stack(all_model_preds, dim=1)
+    return all_model_preds
+
+
 def get_model_preds(
     test_loader: torch.utils.data.DataLoader,
     model: torch.nn.Module,
     device: torch.device,
+    initial_steps: int,
     # data_transform: DataProcessor,
 ) -> torch.Tensor:
     """Return model predictions."""
@@ -65,8 +102,14 @@ def get_model_preds(
     with torch.no_grad():
         for _idx, sample in enumerate(test_loader):  # resolution 128
             model_input = sample['x'].to(device)
+            model_output = sample['y'].to(device)
             with torch.no_grad():
-                out = model(model_input)
+                if initial_steps > 1:
+                    out = autoregressive_inference(
+                        initial_steps, model, model_input, model_output
+                    )
+                else:
+                    out = model(model_input)
                 model_preds.append(out)
     return torch.cat(model_preds)
 
@@ -115,11 +158,17 @@ def generate_wavenumbers_1d(n: int = 6) -> torch.tensor:
 def get_energy_curve(
     data: torch.Tensor, normalize: bool = True
 ) -> torch.Tensor:
-    """Calculate 2d spectrum of data."""
+    """Calculate 2d spectrum of data.
+
+    data dim: batch x time x X x Y
+    """
     signal = data.cpu()
-    t = signal.shape[0]
+    batch_size = signal.shape[0]
+    time_points = signal.shape[1]
     n_observations = signal.shape[-1]
-    signal = signal.view(t, n_observations, n_observations)
+    signal = signal.view(
+        batch_size, time_points, n_observations, n_observations
+    )
 
     if normalize:
         signal = torch.fft.fft2(signal, norm='ortho')
@@ -138,13 +187,14 @@ def get_energy_curve(
     wave_numbers = generate_wavenumbers(n=n_observations)
     max_wavenumber = n_observations // 2
 
-    spectrum = torch.zeros((t, n_observations // 2))
+    spectrum = torch.zeros((batch_size, time_points, n_observations // 2))
     for j in range(1, max_wavenumber + 1):
         ind = torch.where(torch.tensor(wave_numbers) == j)
-        spectrum[:, j - 1] = energy[:, ind[0], ind[1]].sum(dim=1)
+        spectrum[:, :, j - 1] = energy[:, :, ind[0], ind[1]].sum(dim=-1)
 
-    spectrum = spectrum.mean(dim=0)
-    return spectrum
+    time_avg_spectrum = spectrum.mean(dim=1)
+    batch_avg_spectrum = time_avg_spectrum.mean(dim=0)
+    return batch_avg_spectrum
 
 
 def get_energy_curve_1d(
