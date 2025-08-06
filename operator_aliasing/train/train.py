@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 import typing
 
 import pandas as pd
@@ -67,6 +68,7 @@ def train_model(**train_args: typing.Any) -> Module:
     # train model
     for epoch in range(starting_epoch, epochs + 1):
         train_loss = 0.0
+        start_time = time.time()
         for _step, batch in enumerate(tqdm(train_dataloader)):
             input_batch = batch['x'].to(device)
             output_batch = batch['y'].to(device)
@@ -88,8 +90,8 @@ def train_model(**train_args: typing.Any) -> Module:
             loss_f.backward()
             optimizer.step()
             train_loss += loss_f.item()
-        train_loss /= len(train_dataloader)
         scheduler.step()
+        end_time = time.time()
 
         # test model
         test_dict = test_model(
@@ -98,12 +100,12 @@ def train_model(**train_args: typing.Any) -> Module:
             device,
             initial_steps,
         )
-        test_loss = test_dict
 
         # save train stats:
         train_stats.loc[len(train_stats)] = {
             'epoch': epoch,
-            'train_loss': train_loss,
+            'train_loss': train_loss / len(train_dataloader),
+            'train_time': end_time - start_time,
         } | test_dict
 
         if epoch % train_args['ckpt_freq'] == 0:
@@ -121,7 +123,7 @@ def train_model(**train_args: typing.Any) -> Module:
                 ' ######### Train Loss:',
                 train_loss,
                 ' ######### Test Loss:',
-                test_loss,
+                test_dict,
             )
             model.to(device)
 
