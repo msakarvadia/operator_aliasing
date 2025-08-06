@@ -37,7 +37,12 @@ def train_model(**train_args: typing.Any) -> Module:
     initial_steps = train_args['initial_steps']
 
     # training stats
-    columns = ['epoch', 'train_loss', *list(test_dataloaders.keys())]
+    columns = [
+        'epoch',
+        'train_loss',
+        'train_time',
+        *list(test_dataloaders.keys()),
+    ]
     train_stats = pd.DataFrame(columns=columns)
 
     # TODO(MS): test seeding!!
