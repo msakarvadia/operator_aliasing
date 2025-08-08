@@ -75,8 +75,10 @@ def train_model(**train_args: typing.Any) -> Module:
         train_loss = 0.0
         start_time = time.time()
         for _step, batch in enumerate(tqdm(train_dataloader)):
-            input_batch = batch['x'].to(device)
-            output_batch = batch['y'].to(device)
+            # NOTE(MS): must remove outer batch dim from dataloader
+            # because we pre-batch data due to multi-res training
+            input_batch = batch['x'][0].to(device)
+            output_batch = batch['y'][0].to(device)
             batch['device'] = device
 
             optimizer.zero_grad()

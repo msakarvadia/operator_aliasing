@@ -36,6 +36,8 @@ def get_dataset(
     model_name = data_args['model_name']
     darcy_forcing_term = data_args['darcy_forcing_term']
     burger_viscosity = data_args['burger_viscosity']
+    batch_size = data_args['batch_size']
+    seed = data_args['seed']
 
     n_spatial_dims = 2
     if '1D' in model_name:
@@ -92,7 +94,10 @@ def get_dataset(
             train=train,
             num_samples_max=-1,
             transform=data_transforms,
-            img_size=img_size,
+            # TODO (MS): remove hard coding
+            batch_size=batch_size,
+            resolution_proportions=[0.03, 0.07, 0.1, 0.8],
+            seed=seed,
         )
     if dataset_name == 'burgers_pdebench':
         dataset = BurgersPDEBench(
@@ -132,7 +137,6 @@ def get_data(
     **data_args: typing.Any,
 ) -> tuple[DataLoader, dict[str, DataLoader]]:
     """Get data w/ args."""
-    batch_size = data_args['batch_size']
     seed = data_args['seed']
 
     seed_everything(seed)
@@ -166,7 +170,7 @@ def get_data(
 
     training_loader = DataLoader(
         train_dataset,
-        batch_size=batch_size,
+        batch_size=1,
         shuffle=True,
         worker_init_fn=seed_worker,
         generator=g,
@@ -176,7 +180,7 @@ def get_data(
     for k, test_dataset in test_datasets.items():
         testing_loaders[k] = DataLoader(
             test_dataset,
-            batch_size=batch_size,
+            batch_size=1,
             shuffle=False,
             worker_init_fn=seed_worker,
             generator=g,
