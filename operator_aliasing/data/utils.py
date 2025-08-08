@@ -55,6 +55,7 @@ def get_dataset(
         # NOTE (MS): downsample before filter
         # [DownSample(downsample_dim),LowpassFilter2D(filter_lim, filter_size)]
         [
+            # TODO(MS): need to figure out img size for low pass filter!!
             LowpassFilter(filter_lim, img_size, n_spatial_dims),
             DownSample(downsample_dim, n_spatial_dims),
         ]
@@ -96,7 +97,6 @@ def get_dataset(
             train=train,
             num_samples_max=-1,
             transform=data_transforms,
-            # TODO (MS): remove hard coding
             batch_size=batch_size,
             resolution_proportions=resolution_ratios,
             seed=seed,
