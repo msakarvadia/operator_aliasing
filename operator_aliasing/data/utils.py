@@ -106,10 +106,11 @@ def get_dataset(
             filename=f'1D_Burgers_Sols_Nu{burger_viscosity}.hdf5',
             initial_step=10,
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/1D/Burgers/Train/',
-            # reduced_resolution=1,
             train=train,
             transform=data_transforms,
-            img_size=img_size,
+            batch_size=batch_size,
+            resolution_proportions=resolution_ratios,
+            seed=seed,
         )
     if dataset_name == 'ns_pdebench':
         dataset = NSPDEBench(

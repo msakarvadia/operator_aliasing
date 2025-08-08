@@ -80,6 +80,7 @@ def train_model(**train_args: typing.Any) -> Module:
             input_batch = batch['x'][0].to(device)
             output_batch = batch['y'][0].to(device)
             batch['device'] = device
+            # print(f"{input_batch.shape=}, {output_batch.shape=}")
 
             optimizer.zero_grad()
             if initial_steps == 1:
@@ -146,8 +147,8 @@ def autoregressive_loop(
     """Autoregressive training loop for time-varying PDE training."""
     # adapted from: https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/train.py
     device = batch['device']
-    input_batch = batch['x'].to(device)
-    output_batch = batch['y'].to(device)
+    input_batch = batch['x'][0].to(device)
+    output_batch = batch['y'][0].to(device)
 
     img_size = input_batch.shape[-1]
     batch_size = input_batch.shape[0]
