@@ -198,8 +198,10 @@ def test_model(
         for test_label, test_dataloader in test_dataloaders.items():
             test_relative_l2 = 0.0
             for _step, batch in enumerate(test_dataloader):
-                input_batch = batch['x'].to(device)
-                output_batch = batch['y'].to(device)
+                # NOTE(MS): must remove outer batch dim from dataloader
+                # because we pre-batch data due to multi-res training
+                input_batch = batch['x'][0].to(device)
+                output_batch = batch['y'][0].to(device)
                 batch['device'] = device
 
                 if initial_steps == 1:
