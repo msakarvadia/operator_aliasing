@@ -38,6 +38,8 @@ def get_dataset(
     burger_viscosity = data_args['burger_viscosity']
     batch_size = data_args['batch_size']
     seed = data_args['seed']
+    resolution_ratios = data_args['resolution_ratios']
+    print(f'{resolution_ratios=}')
 
     n_spatial_dims = 2
     if '1D' in model_name:
@@ -96,7 +98,7 @@ def get_dataset(
             transform=data_transforms,
             # TODO (MS): remove hard coding
             batch_size=batch_size,
-            resolution_proportions=[0.03, 0.07, 0.1, 0.8],
+            resolution_proportions=resolution_ratios,
             seed=seed,
         )
     if dataset_name == 'burgers_pdebench':
