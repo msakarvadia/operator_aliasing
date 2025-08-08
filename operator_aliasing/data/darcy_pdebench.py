@@ -89,7 +89,7 @@ class DarcyPDEBench(Dataset):
 
     def __len__(self) -> int:
         """Returns len of dataset."""
-        return len(self.data)
+        return len(self.label)
 
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         """Get single sample at idx."""
