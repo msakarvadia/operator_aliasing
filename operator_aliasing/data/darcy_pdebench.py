@@ -22,7 +22,6 @@ class DarcyPDEBench(Dataset):
         filename: str,
         saved_folder: str = '../data/',
         train: bool = True,
-        num_samples_max: int = -1,
         transform: Compose = None,
         **kwargs: typing.Any,
     ):
@@ -44,6 +43,7 @@ class DarcyPDEBench(Dataset):
         reduced_resolution = spatial_dim // img_size
         reduced_batch = 1
         test_ratio = 0.1
+        num_samples_max = -1
 
         # Define path to files
         root_path = Path(Path(saved_folder).resolve()) / filename
@@ -51,77 +51,41 @@ class DarcyPDEBench(Dataset):
             # print(".HDF5 file extension is assumed hereafter")
 
             with h5py.File(root_path, 'r') as f:
-                keys = list(f.keys())
-                keys.sort()
+                num_samples_max = f['tensor'].shape[0]
+                test_idx = int(num_samples_max * test_ratio)
+                if train:
+                    first_batch_idx = test_idx
+                    last_batch_idx = -1
+                else:
+                    first_batch_idx = 0
+                    last_batch_idx = test_idx
 
-                ## data dim = [t, x1, ..., xd, v]
-                _data = np.array(
-                    f['tensor'], dtype=np.float32
-                )  # batch, time, x,...
-                four = 4
-                if len(_data.shape) == four:  # 2D Darcy flow
-                    # u: label
-                    _data = _data[
-                        ::reduced_batch,
+                # u: label
+                label = np.array(
+                    f['tensor'][
+                        first_batch_idx:last_batch_idx:reduced_batch,
                         :,
                         ::reduced_resolution,
                         ::reduced_resolution,
-                    ]
-                    ## convert to [x1, ..., xd, t, v]
-                    _data = np.transpose(_data[:, :, :, :], (0, 2, 3, 1))
-                    # if _data.shape[-1]==1:  # if nt==1
-                    #    _data = np.tile(_data, (1, 1, 1, 2))
-                    self.data = _data
-                    # nu: input
-                    _data = np.array(
-                        f['nu'], dtype=np.float32
-                    )  # batch, time, x,...
-                    _data = _data[
-                        ::reduced_batch,
-                        None,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ]
-                    ## convert to [x1, ..., xd, t, v]
-                    _data = np.transpose(_data[:, :, :, :], (0, 2, 3, 1))
-                    self.data = np.concatenate([_data, self.data], axis=-1)
-                    self.data = self.data[
-                        :,
-                        :,
-                        :,
-                        :,  # None
-                    ]  # batch, x, y, t, ch
+                    ],
+                    dtype=np.float32,
+                )
 
-                    x = np.array(f['x-coordinate'], dtype=np.float32)
-                    y = np.array(f['y-coordinate'], dtype=np.float32)
-                    x = torch.tensor(x, dtype=torch.float)
-                    y = torch.tensor(y, dtype=torch.float)
-                    """
-                    X, Y = torch.meshgrid(x, y, indexing='ij')
-                    self.grid = torch.stack((X, Y), axis=-1)[
-                        ::reduced_resolution, ::reduced_resolution
-                    ]
-                    """
+                # batch, time, x,...
+                _data = np.array(f['nu'], dtype=np.float32)
+                # nu: input
+                model_input = _data[
+                    first_batch_idx:last_batch_idx:reduced_batch,
+                    None,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ]
 
-        if num_samples_max > 0:
-            num_samples_max = min(num_samples_max, self.data.shape[0])
-        else:
-            num_samples_max = self.data.shape[0]
-
-        test_idx = int(num_samples_max * test_ratio)
-        if train:
-            self.data = self.data[test_idx:num_samples_max]
-        else:
-            self.data = self.data[:test_idx]
+                self.model_input = torch.tensor(model_input)
+                self.label = torch.tensor(label)
 
         # Time steps used as initial conditions
         self.initial_step = initial_step
-
-        self.data = (
-            self.data
-            if torch.is_tensor(self.data)
-            else torch.tensor(self.data)
-        )
 
     def __len__(self) -> int:
         """Returns len of dataset."""
@@ -129,12 +93,9 @@ class DarcyPDEBench(Dataset):
 
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         """Get single sample at idx."""
-        unsqueeze_dim = 0
-        if type(idx) is not int:
-            unsqueeze_dim = 1
         sample = {
-            'x': self.data[idx, :, :, 0].unsqueeze(unsqueeze_dim),
-            'y': self.data[idx, ..., 1].unsqueeze(unsqueeze_dim),
+            'x': self.model_input[idx],
+            'y': self.label[idx],
             # self.grid,
         }
 
