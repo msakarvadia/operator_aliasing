@@ -93,7 +93,6 @@ def get_dataset(
         dataset = DarcyPDEBench(
             filename=f'2D_DarcyFlow_beta{darcy_forcing_term}_Train.hdf5',
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/DarcyFlow/',
-            # reduced_resolution=1,
             train=train,
             num_samples_max=-1,
             transform=data_transforms,
@@ -104,7 +103,7 @@ def get_dataset(
     if dataset_name == 'burgers_pdebench':
         dataset = BurgersPDEBench(
             filename=f'1D_Burgers_Sols_Nu{burger_viscosity}.hdf5',
-            initial_step=10,
+            initial_step=initial_steps,
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/1D/Burgers/Train/',
             train=train,
             transform=data_transforms,
@@ -115,9 +114,8 @@ def get_dataset(
     if dataset_name == 'ns_pdebench':
         dataset = NSPDEBench(
             filename='2D_CFD_Rand_M0.1_Eta0.1_Zeta0.1_periodic_128_Train.hdf5',
-            initial_step=10,
+            initial_step=initial_steps,
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/CFD/2D_Train_Rand/',
-            # reduced_resolution=1,
             train=train,
             transform=data_transforms,
             batch_size=batch_size,
@@ -127,9 +125,8 @@ def get_dataset(
     if dataset_name == 'incomp_ns_pdebench':
         dataset = IncompNSPDEBench(
             filename='full_data_merge.h5',
-            initial_step=10,
+            initial_step=initial_steps,
             saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/NS_incom/',
-            # reduced_resolution=1,
             train=train,
             transform=data_transforms,
             batch_size=batch_size,
