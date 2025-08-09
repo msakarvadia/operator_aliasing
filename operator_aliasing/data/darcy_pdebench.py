@@ -117,7 +117,11 @@ class DarcyPDEBench(Dataset):
         Recall this is a pre-batched dataset, so we return
         number of batches.
         """
-        return math.ceil(self.num_samples / self.batch_size)
+        total_batches = 0
+        for _set_idx, res_set in enumerate(self.model_inputs):
+            num_batches_in_set = math.ceil(len(res_set) / self.batch_size)
+            total_batches += num_batches_in_set
+        return total_batches
 
     def __getitem__(self, batch_idx: int) -> dict[str, torch.Tensor]:
         """Get single sample at idx."""
