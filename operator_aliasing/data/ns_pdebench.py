@@ -3,12 +3,14 @@
 # https://github.com/pdebench/PDEBench/blob/main/pdebench/models/fno/utils.py
 from __future__ import annotations
 
+import math
 import typing
 from pathlib import Path
 
 import h5py
 import numpy as np
 import torch
+from numpy.random import default_rng
 from torch.utils.data import Dataset
 from torchvision.transforms import Compose
 
@@ -21,12 +23,7 @@ class NSPDEBench(Dataset):
         filename: str,
         initial_step: int = 10,
         saved_folder: str = '../data/',
-        # reduced_resolution=1,
-        # reduced_resolution_t=1,
-        # reduced_batch=1,
         train: bool = False,
-        # test_ratio=0.1,
-        # num_samples_max=-1,
         transform: Compose = None,
         **kwargs: typing.Any,
     ):
@@ -35,105 +32,141 @@ class NSPDEBench(Dataset):
         :param filename: filename that contains the dataset
         :type filename: STR
 
+        support img dimentions: 128, 64, 32, 16 (highest to lowest)
         """
         self.transform = transform
         self.initial_step = initial_step
-        # downsample data
-        img_size = kwargs['img_size']
-        spatial_dim = 128  # from the real data TODO(MS): check for real data
-        if spatial_dim % img_size != 0:
-            raise Exception(f"""Desired img_size should
-                be a factor of the data's {spatial_dim=}
-                """)
-        reduced_resolution = spatial_dim // img_size
-        reduced_resolution_t = 1
-        reduced_batch = 1
+        resolution_proportions = kwargs['resolution_proportions']
+        four = 4
+        assert len(resolution_proportions) == four, (
+            'Only support 4 img_resolutions, see doc string.'
+        )
+        assert sum(resolution_proportions) == 1, (
+            'All dataset proportions must sum to 1.'
+        )
+        self.rng = default_rng(seed=kwargs['seed'])
+        self.batch_size = kwargs['batch_size']
         test_ratio = 0.1
         num_samples_max = -1
+        # NOTE(MS): already filtered time in preprocessing
+        reduced_resolution_t = 1
+
+        root_path = Path(Path(saved_folder).resolve()) / filename
+        with h5py.File(root_path, 'r') as f:
+            # num of data samples
+            num_samples_max = f['density'].shape[0]
+
+            # list of data idxs
+            data_idx = np.arange(0, num_samples_max)
+            # num of test samples
+            test_idx = int(num_samples_max * test_ratio)
+            if train:
+                first_batch_idx = test_idx
+                last_batch_idx = -1
+                self.num_samples = num_samples_max - test_idx
+            else:
+                first_batch_idx = 0
+                last_batch_idx = test_idx
+                self.num_samples = test_idx
+            print(f'{self.num_samples=}')
+            # grab data indexs
+            self.data_idxs = data_idx[first_batch_idx:last_batch_idx]
+            # shuffle indexes
+            self.rng.shuffle(self.data_idxs)
 
         # Define path to files
-        root_path = Path(Path(saved_folder).resolve()) / filename
-        if filename[-2:] != 'h5':
-            # print(".HDF5 file extension is assumed hereafter")
-
+        self.data_sets = []
+        for res_factor, ratio in enumerate(resolution_proportions):
+            reduced_resolution = 2**res_factor
             with h5py.File(root_path, 'r') as f:
-                keys = list(f.keys())
-                keys.sort()
-                if 'tensor' not in keys:
-                    _data = np.array(f['density'], dtype=np.float32)
-                    print(f'{_data.shape=}')
-                    # batch, time, x,...
+                # number of points in this resolution set
+                res_idx = int(self.num_samples * ratio)
+                # sort all indexes
+                set_indexes = np.sort(self.data_idxs[:res_idx])
 
-                    # density
-                    density = _data[
-                        ::reduced_batch,
-                        ::reduced_resolution_t,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ]
-                    print('loaded density')
-                    # pressure
-                    _data = np.array(
-                        f['pressure'], dtype=np.float32
-                    )  # batch, time, x,...
-                    pressure = _data[
-                        ::reduced_batch,
-                        ::reduced_resolution_t,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ]
-                    print('loaded pressure')
-                    # Vx
-                    _data = np.array(
-                        f['Vx'], dtype=np.float32
-                    )  # batch, time, x,...
-                    vx = _data[
-                        ::reduced_batch,
-                        ::reduced_resolution_t,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ]
-                    print('loaded Vx')
-                    # Vy
-                    _data = np.array(
-                        f['Vy'], dtype=np.float32
-                    )  # batch, time, x,...
-                    vy = _data[
-                        ::reduced_batch,
-                        ::reduced_resolution_t,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ]
-                    print('loaded Vy')
+                _data = np.array(f['density'], dtype=np.float32)
+                # batch, time, x,...
 
-                    self.data = np.stack([density, pressure, vx, vy], axis=2)
+                # density
+                density = _data[
+                    set_indexes,
+                    ::reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ]
+                print(f'loaded density, {density.shape=}')
+                # pressure
+                _data = np.array(
+                    f['pressure'], dtype=np.float32
+                )  # batch, time, x,...
+                pressure = _data[
+                    set_indexes,
+                    ::reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ]
+                print('loaded pressure')
+                # Vx
+                _data = np.array(
+                    f['Vx'], dtype=np.float32
+                )  # batch, time, x,...
+                vx = _data[
+                    set_indexes,
+                    ::reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ]
+                print('loaded Vx')
+                # Vy
+                _data = np.array(
+                    f['Vy'], dtype=np.float32
+                )  # batch, time, x,...
+                vy = _data[
+                    set_indexes,
+                    ::reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ]
+                print('loaded Vy')
 
-        if num_samples_max > 0:
-            num_samples_max = min(num_samples_max, self.data.shape[0])
-        else:
-            num_samples_max = self.data.shape[0]
-
-        test_idx = int(num_samples_max * test_ratio)
-        if train:
-            self.data = self.data[test_idx:num_samples_max]
-        else:
-            self.data = self.data[:test_idx]
-
-        self.data = (
-            self.data
-            if torch.is_tensor(self.data)
-            else torch.tensor(self.data)
-        )
+                self.data_sets.append(
+                    torch.tensor(np.stack([density, pressure, vx, vy], axis=2))
+                )
 
     def __len__(self) -> int:
-        """Returns len of dataset."""
-        return len(self.data)
+        """Returns len of dataset.
 
-    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
-        """Get single sample at idx."""
+        Recall this is a pre-batched dataset, so we return
+        number of batches.
+        """
+        total_batches = 0
+        for _set_idx, res_set in enumerate(self.data_sets):
+            num_batches_in_set = math.ceil(len(res_set) / self.batch_size)
+            total_batches += num_batches_in_set
+        return total_batches
+
+    def __getitem__(self, batch_idx: int) -> dict[str, torch.Tensor]:
+        """Get single batch."""
+        # iterate through all resoulution sets to find batch
+        for _set_idx, res_set in enumerate(self.data_sets):
+            num_batches_in_set = math.ceil(len(res_set) / self.batch_size)
+            if batch_idx >= num_batches_in_set:
+                batch_idx -= num_batches_in_set
+            else:
+                item_idx = int(batch_idx * self.batch_size)
+                set_idx = _set_idx
+                break
+
         sample = {
-            'x': self.data[idx, : self.initial_step, ...],
-            'y': self.data[idx, ...],
+            'x': self.data_sets[set_idx][
+                item_idx : item_idx + self.batch_size,
+                : self.initial_step,
+                : self.initial_step,
+                ...,
+            ],
+            'y': self.data_sets[set_idx][
+                item_idx : item_idx + self.batch_size, ...
+            ],
             # self.grid,
         }
 

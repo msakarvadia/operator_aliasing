@@ -120,7 +120,9 @@ def get_dataset(
             # reduced_resolution=1,
             train=train,
             transform=data_transforms,
-            img_size=img_size,
+            batch_size=batch_size,
+            resolution_proportions=resolution_ratios,
+            seed=seed,
         )
     if dataset_name == 'incomp_ns_pdebench':
         dataset = IncompNSPDEBench(
