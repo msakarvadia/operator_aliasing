@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import typing
+
 import torch
 import torch.nn.functional as f
 
@@ -87,21 +89,22 @@ class DownSample:
         if self.out_size == -1:
             return sample
 
-        time_dim = model_input.shape[0]
+        # desired spatial dim
         shape = tuple([self.out_size] * self.n_dim)
+        # store dimention for post downsample batch/channel/time dim
+        input_post_shape = model_input.shape[: -self.n_dim] + shape
+        label_post_shape = label.shape[: -self.n_dim] + shape
+
+        pre_shape: typing.Any = (model_input.shape[0], -1)
+        for _dim in range(self.n_dim):
+            pre_shape += (model_input.shape[-1],)
+
+        # collapse time and channel dim if it exists
+        model_input = torch.reshape(model_input, pre_shape)
+        label = torch.reshape(label, pre_shape)
+
         antialias = self.n_dim > 1
         mode = 'bicubic' if self.n_dim > 1 else 'linear'
-        if time_dim == 1:
-            # 4 dim: time x channels x Xdim x Ydim
-            # 3 dim: channels x Xdim x Ydim
-
-            # NOTE(MS): because we downsample 1 img at a time
-            # we must first exapand the batch dim
-            # then collapse the batch dim to be compatible
-            # w/ interpolate & also dataloader
-            model_input = model_input.unsqueeze(0)
-            label = label.unsqueeze(0)
-
         downsample_input = f.interpolate(
             model_input,
             size=shape,
@@ -115,18 +118,7 @@ class DownSample:
             mode=mode,
             antialias=antialias,
         )
-
-        if time_dim == 1:
-            # 4 dim: time x channels x Xdim x Ydim
-            # 3 dim: channels x Xdim x Ydim
-
-            # NOTE(MS): because we downsample 1 img at a time
-            # we must first exapand the batch dim
-            # then collapse the batch dim to be compatible
-            # w/ interpolate & also dataloader
-            downsample_input = downsample_input.squeeze(0)
-            downsample_label = downsample_label.squeeze(0)
-
-        sample['x'] = downsample_input
-        sample['y'] = downsample_label
+        # uncollapse time and channel dims if they existed
+        sample['x'] = torch.reshape(downsample_input, input_post_shape)
+        sample['y'] = torch.reshape(downsample_label, label_post_shape)
         return sample
