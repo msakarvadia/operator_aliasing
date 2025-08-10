@@ -19,36 +19,30 @@ class LowpassFilter:
         filter_limit: frequencies > filter_lim excluded
     """
 
-    def __init__(self, filter_limit: int, img_size: int, n_dim: int) -> None:
+    def __init__(self, filter_limit: int, n_dim: int) -> None:
         """Initialize filter transform.
 
         filter_limit: number of frequencies to keep
         n_dim: number of spatial dimentions
         """
         assert isinstance(filter_limit, int)
-        assert isinstance(img_size, int)
         self.filter_limit = filter_limit
-        self.img_size = img_size
         self.n_dim = n_dim
-
-        # assert that filter limit is less than half img_size
-        assert self.filter_limit <= self.img_size // 2
-
-        # get filter
-        if n_dim == 1:
-            self.filter = get_1d_low_pass_filter(
-                self.filter_limit, self.img_size
-            )
-        else:
-            self.filter = get_2d_low_pass_filter(
-                self.filter_limit, self.img_size
-            )
 
     def __call__(
         self, sample: dict[str, torch.Tensor]
     ) -> dict[str, torch.Tensor]:
         """Apply transform."""
         model_input, label = sample['x'], sample['y']
+        img_size = model_input.shape[-1]
+        # assert that filter limit is less than half img_size
+        assert self.filter_limit <= img_size // 2
+
+        # get filter
+        if self.n_dim == 1:
+            self.filter = get_1d_low_pass_filter(self.filter_limit, img_size)
+        else:
+            self.filter = get_2d_low_pass_filter(self.filter_limit, img_size)
 
         # apply no filter
         if self.filter_limit == -1:
