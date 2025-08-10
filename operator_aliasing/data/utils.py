@@ -167,10 +167,22 @@ def get_data(
             test_dataset = get_dataset(**test_kwargs)
             test_datasets[f'test_{lim=}_{downsample=}'] = test_dataset
     """
+    # NOTE(MS): single dataset standard
+    # test_kwargs = data_args
+    # test_kwargs['train'] = False
+    # test_dataset = get_dataset(**test_kwargs)
+    # test_datasets['test'] = test_dataset
+
+    # multiple test_datasets
+    # TODO (this may not work w/ multiple downsample/filter regeims)
     test_kwargs = data_args
     test_kwargs['train'] = False
-    test_dataset = get_dataset(**test_kwargs)
-    test_datasets['test'] = test_dataset
+    for res in range(4):
+        resolution_ratios = [0, 0, 0, 0]
+        resolution_ratios[res] = 1
+        test_kwargs['resolution_ratios'] = resolution_ratios
+        test_dataset = get_dataset(**test_kwargs)
+        test_datasets[f'test_res_{res}'] = test_dataset
 
     training_loader = DataLoader(
         train_dataset,
