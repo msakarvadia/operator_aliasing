@@ -84,49 +84,50 @@ class NSPDEBench(Dataset):
                 # sort all indexes
                 set_indexes = np.sort(self.data_idxs[:res_idx])
 
-                _data = np.array(f['density'], dtype=np.float32)
+                density = np.array(
+                    f['density'][
+                        set_indexes,
+                        ::reduced_resolution_t,
+                        ::reduced_resolution,
+                        ::reduced_resolution,
+                    ],
+                    dtype=np.float32,
+                )
                 # batch, time, x,...
 
-                # density
-                density = _data[
-                    set_indexes,
-                    ::reduced_resolution_t,
-                    ::reduced_resolution,
-                    ::reduced_resolution,
-                ]
                 print(f'loaded density, {density.shape=}')
                 # pressure
-                _data = np.array(
-                    f['pressure'], dtype=np.float32
+                pressure = np.array(
+                    f['pressure'][
+                        set_indexes,
+                        ::reduced_resolution_t,
+                        ::reduced_resolution,
+                        ::reduced_resolution,
+                    ],
+                    dtype=np.float32,
                 )  # batch, time, x,...
-                pressure = _data[
-                    set_indexes,
-                    ::reduced_resolution_t,
-                    ::reduced_resolution,
-                    ::reduced_resolution,
-                ]
                 print('loaded pressure')
                 # Vx
-                _data = np.array(
-                    f['Vx'], dtype=np.float32
+                vx = np.array(
+                    f['Vx'][
+                        set_indexes,
+                        ::reduced_resolution_t,
+                        ::reduced_resolution,
+                        ::reduced_resolution,
+                    ],
+                    dtype=np.float32,
                 )  # batch, time, x,...
-                vx = _data[
-                    set_indexes,
-                    ::reduced_resolution_t,
-                    ::reduced_resolution,
-                    ::reduced_resolution,
-                ]
                 print('loaded Vx')
                 # Vy
-                _data = np.array(
-                    f['Vy'], dtype=np.float32
+                vy = np.array(
+                    f['Vy'][
+                        set_indexes,
+                        ::reduced_resolution_t,
+                        ::reduced_resolution,
+                        ::reduced_resolution,
+                    ],
+                    dtype=np.float32,
                 )  # batch, time, x,...
-                vy = _data[
-                    set_indexes,
-                    ::reduced_resolution_t,
-                    ::reduced_resolution,
-                    ::reduced_resolution,
-                ]
                 print('loaded Vy')
 
                 self.data_sets.append(
