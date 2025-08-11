@@ -103,35 +103,53 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
         'darcy_pdebench',
         'burgers_pdebench',
         'incomp_ns_pdebench',
+        'ns_pdebench',
     ]:
         model_name = 'FNO2D'
-        # num time steps * channels:
         in_channels = 10
+        out_channels = 1
         initial_steps = 10
+        # if dataset_name == 'incomp_ns_pdebench':
+
+        # incomp_ns args
+        img_size = 255
+        pinn_loss_name = 'incomp_ns_pinn'
+        batch_size = 4
+
+        if dataset_name == 'ns_pdebench':
+            img_size = 256
+            pinn_loss_name = 'n/a'
+            batch_size = 4
+            # num time steps * channels:
+            in_channels = 40
+            # num channels:
+            out_channels = 4
 
         if dataset_name == 'darcy_pdebench':
-            img_sizes = [16, 32, 64, 128]
+            img_size = 64
             pinn_loss_name = 'darcy_pinn'
             batch_size = 128
             in_channels = 1
             initial_steps = 1
 
         if dataset_name == 'burgers_pdebench':
-            img_sizes = [128, 256, 512, 1024]
+            img_size = 512
             pinn_loss_name = 'burgers_pinn'
             batch_size = 64
             model_name = 'FNO1D'
 
-        if dataset_name == 'incomp_ns_pdebench':
-            img_sizes = [17, 85, 255, 510]
-            pinn_loss_name = 'incomp_ns_pinn'
-            batch_size = 4
-
         # Add hyper-parameter search:
-        for img_size in img_sizes:
-            for loss_name in ['l1', pinn_loss_name]:
-                for lr in [1e-3, 1e-4, 1e-5]:
-                    for wd in [1e-7, 1e-8, 1e-9]:
+        for loss_name in ['mse', pinn_loss_name]:
+            # NOTE(MS): we don't do pinns loss for compressible NS
+            # we will just let the pinns loss error out for NS
+            # if loss_name == 'n/a':
+            #    continue
+            pinn_loss_weights = [0.5]
+            if 'pinn' in loss_name:
+                pinn_loss_weights += [0.25, 0.75]
+            for pinn_loss_weight in pinn_loss_weights:
+                for lr in [1e-2, 1e-3, 1e-4, 1e-5]:
+                    for wd in [1e-5, 1e-6, 1e-7]:
                         hp_args = {
                             'lr': lr,
                             'weight_decay': wd,
@@ -142,11 +160,14 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
                             'dataset_name': dataset_name,
                             'downsample_dim': -1,
                             'filter_lim': -1,
-                            'img_size': img_size,
                             'max_mode': img_size // 2,
                             'model_name': model_name,
                             'in_channels': in_channels,
+                            'out_channels': out_channels,
+                            'pinn_loss_weight': pinn_loss_weight,
                             'initial_steps': initial_steps,
+                            'test_res': 'single',
+                            'resolution_ratios': '[0,1,0,0]',  # high to low
                         }
                         hyper_param_search_args.append(hp_args)
     return hyper_param_search_args

@@ -120,12 +120,22 @@ if __name__ == '__main__':
         default=32,
         help='Resolution of training data.',
     )
-
+    # NOTE(MS): w/ parsl, the nargs are not all recognized, hack below
+    # parser.add_argument(
+    #    '--resolution_ratios',
+    #    type=float,
+    #    default=[0.1, 0.1, 0.1, 0.7],
+    #    nargs=4,
+    #    help="""Ratio of different size inputs are passed via multiple args
+    #        e.g., (.9, .1, .07, .03), which means
+    #        that we want 90% of data to be the highest res,
+    #        10% to be second highest res, and so on.
+    #        """,
+    # )
     parser.add_argument(
         '--resolution_ratios',
-        type=float,
-        default=[0.1, 0.1, 0.1, 0.7],
-        nargs=4,
+        type=str,
+        default='[0.1, 0.1, 0.1, 0.7]',
         help="""Ratio of different size inputs are passed via multiple args
             e.g., (.9, .1, .07, .03), which means
             that we want 90% of data to be the highest res,
@@ -239,6 +249,8 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
+    # NOTE(MS): parsl workaround
+    args.resolution_ratios = eval(args.resolution_ratios)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     args.device = device
     seed_everything(args.seed)

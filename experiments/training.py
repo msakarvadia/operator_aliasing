@@ -23,21 +23,6 @@ def hello_world() -> str:
 @bash_app
 def train(**kwargs: typing.Any) -> str:
     """Train a model."""
-    filter_lim = kwargs['filter_lim']
-    downsample_dim = kwargs['downsample_dim']
-    dataset_name = kwargs['dataset_name']
-    lr = kwargs['lr']
-    wd = kwargs['weight_decay']
-    step_size = kwargs['step_size']
-    gamma = kwargs['gamma']
-    loss_name = kwargs['loss_name']
-    max_mode = kwargs['max_mode']
-    batch_size = kwargs['batch_size']
-    img_size = kwargs['img_size']
-    model_name = kwargs['model_name']
-    in_channels = kwargs['in_channels']
-    initial_steps = kwargs['initial_steps']
-
     arg_path = '_'.join(map(str, list(kwargs.values())))
     # Need to remove any . or / to
     # ensure a single continuous file path
@@ -45,22 +30,24 @@ def train(**kwargs: typing.Any) -> str:
     ckpt_name = arg_path.replace('/', '')
 
     exec_str = f"""pwd;
-    python main.py --filter_lim {filter_lim} \
-    --downsample_dim {downsample_dim} \
-    --lr {lr} \
-    --weight_decay {wd} \
-    --step_size {step_size} \
-    --gamma {gamma} \
-    --dataset_name {dataset_name} \
-    --img_size {img_size} \
+    python main.py --filter_lim {kwargs['filter_lim']} \
+    --downsample_dim {kwargs['downsample_dim']} \
+    --lr {kwargs['lr']} \
+    --weight_decay {kwargs['weight_decay']} \
+    --step_size {kwargs['step_size']} \
+    --gamma {kwargs['gamma']} \
+    --dataset_name {kwargs['dataset_name']} \
     --ckpt_path ckpts/{ckpt_name} \
-    --loss_name {loss_name} \
-    --max_modes {max_mode} \
-    --batch_size {batch_size} \
-    --model_name {model_name}\
-    --out_channels 1 \
-    --in_channels {in_channels} \
-    --initial_steps {initial_steps} \
+    --loss_name {kwargs['loss_name']} \
+    --max_modes {kwargs['max_mode']} \
+    --batch_size {kwargs['batch_size']} \
+    --model_name {kwargs['model_name']}\
+    --out_channels {kwargs['out_channels']} \
+    --in_channels {kwargs['in_channels']} \
+    --initial_steps {kwargs['initial_steps']} \
+    --pinn_loss_weight {kwargs['pinn_loss_weight']} \
+    --test_res {kwargs['test_res']} \
+    --resolution_ratios {kwargs['resolution_ratios']}
     """
 
     return exec_str
@@ -69,19 +56,6 @@ def train(**kwargs: typing.Any) -> str:
 if __name__ == '__main__':
     # Get args
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--dataset_name',
-        type=str,
-        default='darcy',
-        choices=[
-            'darcy',
-            'darcy_pdebench',
-            'burgers_pdebench',
-            'incomp_ns_pdebench',
-        ],
-        help="""[not used]
-Name of training data: only for downsample/filter experiments.""",
-    )
     parser.add_argument(
         '--experiment_name',
         type=str,
@@ -122,7 +96,6 @@ Name of training data: only for downsample/filter experiments.""",
         futures = [train(**args) for args in training_args]
         print(f'Num of experiments: {len(futures)}')
 
-        # futures = futures + pinn_futures
         for future in futures:
             print(f'Waiting for {future}')
             print(f'Got result {future.result()}')
