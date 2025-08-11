@@ -33,6 +33,9 @@ class NSPDEBench(Dataset):
         :type filename: STR
 
         support img dimentions: 128, 64, 32, 16 (highest to lowest)
+                             OR 512, 256, 128, 64, (highest to lowest)
+
+        spatial dim just depends on the original simulation res
         """
         self.transform = transform
         self.initial_step = initial_step

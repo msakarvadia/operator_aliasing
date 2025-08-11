@@ -113,9 +113,11 @@ def get_dataset(
         )
     if dataset_name == 'ns_pdebench':
         dataset = NSPDEBench(
-            filename='2D_CFD_Rand_M0.1_Eta0.1_Zeta0.1_periodic_128_Train.hdf5',
+            filename='2D_CFD_Turb_M1.0_Eta1e-08_Zeta1e-08_periodic_512_Train.hdf5',
+            #'2D_CFD_Rand_M0.1_Eta0.1_Zeta0.1_periodic_128_Train.hdf5',
             initial_step=initial_steps,
-            saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/CFD/2D_Train_Rand/',
+            saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/CFD/2D_Train_Turb/',
+            # Rand/',
             train=train,
             transform=data_transforms,
             batch_size=batch_size,
@@ -168,21 +170,23 @@ def get_data(
             test_datasets[f'test_{lim=}_{downsample=}'] = test_dataset
     """
     # NOTE(MS): single dataset standard
-    # test_kwargs = data_args
-    # test_kwargs['train'] = False
-    # test_dataset = get_dataset(**test_kwargs)
-    # test_datasets['test'] = test_dataset
-
-    # multiple test_datasets
-    # TODO (this may not work w/ multiple downsample/filter regeims)
+    # intended use: HP search, filter/downsample exp
     test_kwargs = data_args
     test_kwargs['train'] = False
-    for res in range(4):
-        resolution_ratios = [0, 0, 0, 0]
-        resolution_ratios[res] = 1
-        test_kwargs['resolution_ratios'] = resolution_ratios
+    if test_kwargs['test_res'] == 'single':
         test_dataset = get_dataset(**test_kwargs)
-        test_datasets[f'test_res_{res}'] = test_dataset
+        test_datasets['test'] = test_dataset
+
+    # multiple test_datasets
+    # NOTE(MS): (this may not work w/ multiple downsample/filter regeims)
+    # intended us: multi-res training testing
+    if test_kwargs['test_res'] == 'multi':
+        for res in range(4):
+            resolution_ratios = [0, 0, 0, 0]
+            resolution_ratios[res] = 1
+            test_kwargs['resolution_ratios'] = resolution_ratios
+            test_dataset = get_dataset(**test_kwargs)
+            test_datasets[f'test_res_{res}'] = test_dataset
 
     training_loader = DataLoader(
         train_dataset,

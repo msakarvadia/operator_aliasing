@@ -78,6 +78,19 @@ if __name__ == '__main__':
         default=5,
         help='The number of epochs between ckpts.',
     )
+    parser.add_argument(
+        '--test_res',
+        type=str,
+        default='single',
+        choices=['single', 'multi'],
+        help="""The testing sets to use during training.
+        'single' - test set will have same res and parameters as training
+        'multi' - 4 test resolutions w/ same parameters as training
+
+        NOTE: this param doesn't affect model training, simply what stats
+        are reported
+        """,
+    )
 
     # Data args
     parser.add_argument(
