@@ -96,6 +96,7 @@ if __name__ == '__main__':
         futures = [train(**args) for args in training_args]
         print(f'Num of experiments: {len(futures)}')
 
-        for future in futures:
+        for train_args, future in zip(training_args, futures):
+            print(train_args)
             print(f'Waiting for {future}')
             print(f'Got result {future.result()}')
