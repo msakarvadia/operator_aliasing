@@ -197,6 +197,13 @@ if __name__ == '__main__':
             PDEBench fixed viscosity for this dataset.
             """,
     )
+    parser.add_argument(
+        '--comp_ns_params',
+        nargs=6,
+        default=['Turb', 1.0, 1e-08, 1e-08, 'periodic', 512],
+        help=""" Compressible Navier Stokes from pde Bench
+    param should include [type,M,eta,zeta,boundary,resolution] as list""",
+    )
 
     # Model args
     parser.add_argument(

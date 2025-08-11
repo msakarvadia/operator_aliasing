@@ -112,11 +112,14 @@ def get_dataset(
             seed=seed,
         )
     if dataset_name == 'ns_pdebench':
+        param = data_args['comp_ns_params']
         dataset = NSPDEBench(
-            filename='2D_CFD_Turb_M1.0_Eta1e-08_Zeta1e-08_periodic_512_Train.hdf5',
-            #'2D_CFD_Rand_M0.1_Eta0.1_Zeta0.1_periodic_128_Train.hdf5',
+            filename=(
+                f'2D_CFD_{param[0]}_M{param[1]}_'
+                f'Eta{param[2]}_Zeta{param[3]}_{param[4]}_{param[5]}_Train.hdf5'
+            ),
             initial_step=initial_steps,
-            saved_folder='/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/CFD/2D_Train_Turb/',
+            saved_folder=f'/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/CFD/2D_Train_{param[0]}/',
             # Rand/',
             train=train,
             transform=data_transforms,
