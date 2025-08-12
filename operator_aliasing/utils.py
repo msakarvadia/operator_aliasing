@@ -101,8 +101,8 @@ def get_model_preds(
     model = model.to(device)
     with torch.no_grad():
         for _idx, sample in enumerate(test_loader):  # resolution 128
-            model_input = sample['x'].to(device)
-            model_output = sample['y'].to(device)
+            model_input = sample['x'][0].to(device)
+            model_output = sample['y'][0].to(device)
             with torch.no_grad():
                 if initial_steps > 1:
                     out = autoregressive_inference(

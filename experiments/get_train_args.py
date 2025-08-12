@@ -213,7 +213,7 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
             #    continue
             pinn_loss_weights = [0.5]
             if 'pinn' in loss_name:
-                pinn_loss_weights += [0.25, 0.75]
+                pinn_loss_weights += [0.25, 0.1]  # 0.75 was too high
             for pinn_loss_weight in pinn_loss_weights:
                 for lr in [1e-2, 1e-3, 1e-4, 1e-5]:
                     for wd in [1e-5, 1e-6, 1e-7]:
