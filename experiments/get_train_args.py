@@ -10,14 +10,17 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
-        'burgers_pdebench',
-        'incomp_ns_pdebench',
+        #'burgers_pdebench',
+        #'incomp_ns_pdebench',
+        #'ns_pdebench',
     ]:
         train_args = []
         model_name = 'FNO2D'
         # num time steps * channels:
         in_channels = 10
+        out_channels = 1
         initial_steps = 10
+        wd = 1e-7
 
         if dataset_name == 'darcy_pdebench':
             img_size = 128
@@ -28,7 +31,6 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             filter_lims = [8, 16, 32]  # -1 finished
             downsample_dims = [32, 64, -1]  # 16 finished
             lr = 1e-3
-            wd = 1e-7
 
         if dataset_name == 'burgers_pdebench':
             img_size = 1024
@@ -36,9 +38,8 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             model_name = 'FNO1D'
             fixed_lim = 64
             filter_lims = [64, 128, 256]  # -1 finished
-            downsample_dims = [256, 512, -1]  # 16 finished
+            downsample_dims = [256, 512, -1]  # 128 finished
             lr = 1e-4
-            wd = 1e-7
 
         if dataset_name == 'incomp_ns_pdebench':
             # TODO(MS): waiting for HP search
@@ -48,13 +49,23 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             filter_lims = [85 // 2, 255 // 2]  # -1 finished
             downsample_dims = [255, -1]  # 85 finished
             lr = 1e-4
-            wd = 1e-7
 
-        if dataset_name == 'darcy':
-            fixed_lim = 3
-            img_size = 32
-            downsample_dims = [-1, 6, 8, 12]
-            filter_lims = [-1, 10, 5, 3]
+        if dataset_name == 'ns_pdebench':
+            # TODO(MS): waiting for HP search
+            img_size = 512
+            batch_size = 4
+            in_channels = 40
+            out_channels = 4
+            fixed_lim = 16
+            filter_lims = [16, 32, 64]  # -1 finished
+            downsample_dims = [128, 256, -1]  # 64 finished
+            lr = 1e-4
+
+        # if dataset_name == 'darcy':
+        #    fixed_lim = 3
+        #    img_size = 32
+        #    downsample_dims = [-1, 6, 8, 12]
+        #    filter_lims = [-1, 10, 5, 3]
 
         # study effect of downsampling
         for downsample_dim in downsample_dims:
@@ -72,7 +83,6 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
                 'dataset_name': dataset_name,
                 'downsample_dim': -1,
                 'filter_lim': filter_lim,
-                'img_size': img_size,
                 'max_mode': img_size // 2,
             }
             train_args.append(training_args)
@@ -89,7 +99,11 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
                 'batch_size': batch_size,
                 'model_name': model_name,
                 'in_channels': in_channels,
+                'out_channels': out_channels,
                 'initial_steps': initial_steps,
+                'test_res': 'single',
+                'resolution_ratios': '[1,0,0,0]',  # high to low
+                'pinn_loss_weight': 0.5,  # irrelavent arg
             }
             hyper_param_search_args.append(experiment_args | hp_args)
 
