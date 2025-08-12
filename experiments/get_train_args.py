@@ -5,6 +5,59 @@ from __future__ import annotations
 import typing
 
 
+def get_multi_res_args() -> list[dict[str, typing.Any]]:
+    """Get Training Params for basic multi res experiment."""
+    hyper_param_search_args = []
+    for dataset_name in [
+        'darcy_pdebench',
+        #'burgers_pdebench',
+        #'incomp_ns_pdebench',
+        #'ns_pdebench',
+    ]:
+        model_name = 'FNO2D'
+        # num time steps * channels:
+        in_channels = 10
+        out_channels = 1
+        initial_steps = 10
+        wd = 1e-7
+
+        if dataset_name == 'darcy_pdebench':
+            img_size = 128
+            batch_size = 128
+            in_channels = 1
+            initial_steps = 1
+            lr = 1e-3
+
+        # Add hyper-parameter search:
+        for res_ratio in [
+            '[0.1, 0.1, 0.1, 0.7]',
+            '[0.1, 0, 0, 0.9]',
+            '[0.02, 0.03, 0.05, 0.9]',
+        ]:
+            hp_args = {
+                'dataset_name': dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': -1,
+                'max_mode': img_size // 2,
+                'lr': lr,
+                'weight_decay': wd,
+                'step_size': 15,
+                'gamma': 0.5,
+                'loss_name': 'l1',
+                'batch_size': batch_size,
+                'model_name': model_name,
+                'in_channels': in_channels,
+                'out_channels': out_channels,
+                'initial_steps': initial_steps,
+                'test_res': 'single',
+                'resolution_ratios': res_ratio,  # high to low
+                'pinn_loss_weight': 0.5,  # irrelavent arg
+            }
+            hyper_param_search_args.append(hp_args)
+
+    return hyper_param_search_args
+
+
 def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
     hyper_param_search_args = []
@@ -101,7 +154,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
                 'in_channels': in_channels,
                 'out_channels': out_channels,
                 'initial_steps': initial_steps,
-                'test_res': 'single',
+                'test_res': 'multi',
                 'resolution_ratios': '[1,0,0,0]',  # high to low
                 'pinn_loss_weight': 0.5,  # irrelavent arg
             }
