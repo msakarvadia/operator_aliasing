@@ -30,28 +30,28 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
 
         # Add hyper-parameter search:
         for res_ratio in [
-            '[0.1, 0.1, 0.1, 0.7]',
-            '[0.1, 0, 0, 0.9]',
-            '[0.02, 0.03, 0.05, 0.9]',
+            '[0.1,0.1,0.1,0.7]',
+            '[0.1,0,0,0.9]',
+            '[0.02,0.03,0.05,0.9]',
         ]:
             hp_args = {
-                'dataset_name': dataset_name,
-                'downsample_dim': -1,
-                'filter_lim': -1,
-                'max_mode': img_size // 2,
                 'lr': lr,
                 'weight_decay': wd,
                 'step_size': 15,
                 'gamma': 0.5,
-                'loss_name': 'l1',
+                'loss_name': 'mse',
                 'batch_size': batch_size,
+                'dataset_name': dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': -1,
+                'max_mode': img_size // 2,
                 'model_name': model_name,
                 'in_channels': in_channels,
                 'out_channels': out_channels,
-                'initial_steps': initial_steps,
-                'test_res': 'single',
-                'resolution_ratios': res_ratio,  # high to low
                 'pinn_loss_weight': 0.5,  # irrelavent arg
+                'initial_steps': initial_steps,
+                'test_res': 'multi',
+                'resolution_ratios': res_ratio,  # high to low
             }
             hyper_param_search_args.append(hp_args)
 
@@ -148,7 +148,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
                 'weight_decay': wd,
                 'step_size': 15,
                 'gamma': 0.5,
-                'loss_name': 'l1',
+                'loss_name': 'mse',
                 'batch_size': batch_size,
                 'model_name': model_name,
                 'in_channels': in_channels,
