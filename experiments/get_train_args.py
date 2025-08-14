@@ -60,14 +60,13 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
 
 def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
-    hyper_param_search_args = []
+    train_args = []
     for dataset_name in [
         'darcy_pdebench',
         #'burgers_pdebench',
         #'incomp_ns_pdebench',
         #'ns_pdebench',
     ]:
-        train_args = []
         model_name = 'FNO2D'
         # num time steps * channels:
         in_channels = 10
@@ -123,54 +122,59 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
         # study effect of downsampling
         for downsample_dim in downsample_dims:
             training_args = {
-                'dataset_name': dataset_name,
-                'downsample_dim': downsample_dim,
-                'filter_lim': fixed_lim,
-                'img_size': img_size,
-                'max_mode': img_size // 2,
-            }
-            train_args.append(training_args)
-        # study effect of filtering
-        for filter_lim in filter_lims:
-            training_args = {
-                'dataset_name': dataset_name,
-                'downsample_dim': -1,
-                'filter_lim': filter_lim,
-                'max_mode': img_size // 2,
-            }
-            train_args.append(training_args)
-
-        # Add hyper-parameter search:
-        for train_arg in train_args:
-            experiment_args = train_arg.copy()
-            hp_args = {
                 'lr': lr,
                 'weight_decay': wd,
                 'step_size': 15,
                 'gamma': 0.5,
                 'loss_name': 'mse',
                 'batch_size': batch_size,
+                'dataset_name': dataset_name,
+                'downsample_dim': downsample_dim,
+                'filter_lim': fixed_lim,
+                'max_mode': img_size // 2,
                 'model_name': model_name,
                 'in_channels': in_channels,
                 'out_channels': out_channels,
+                'pinn_loss_weight': 0.5,  # irrelavent arg
                 'initial_steps': initial_steps,
                 'test_res': 'multi',
                 'resolution_ratios': '[1,0,0,0]',  # high to low
-                'pinn_loss_weight': 0.5,  # irrelavent arg
             }
-            hyper_param_search_args.append(experiment_args | hp_args)
+            train_args.append(training_args)
+        # study effect of filtering
+        for filter_lim in filter_lims:
+            training_args = {
+                'lr': lr,
+                'weight_decay': wd,
+                'step_size': 15,
+                'gamma': 0.5,
+                'loss_name': 'mse',
+                'batch_size': batch_size,
+                'dataset_name': dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': filter_lim,
+                'max_mode': img_size // 2,
+                'model_name': model_name,
+                'in_channels': in_channels,
+                'out_channels': out_channels,
+                'pinn_loss_weight': 0.5,  # irrelavent arg
+                'initial_steps': initial_steps,
+                'test_res': 'multi',
+                'resolution_ratios': '[1,0,0,0]',  # high to low
+            }
+            train_args.append(training_args)
 
-    return hyper_param_search_args
+    return train_args
 
 
 def get_pino_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
     hyper_param_search_args = []
     for dataset_name in [
-        'darcy_pdebench',
-        'burgers_pdebench',
         'incomp_ns_pdebench',
         'ns_pdebench',
+        'darcy_pdebench',
+        'burgers_pdebench',
     ]:
         model_name = 'FNO2D'
         in_channels = 10
