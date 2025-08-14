@@ -147,8 +147,8 @@ class IncompNSPDEBench(Dataset):
             )
 
             self.vx_sets.append(torch.tensor(self.vx))
-            self.vy_sets.append(torch.tensor(self.vx))
-            self.force_curl_sets.append(torch.tensor(self.vx))
+            self.vy_sets.append(torch.tensor(self.vy))
+            self.force_curl_sets.append(torch.tensor(self.force_curl))
 
     def __len__(self) -> int:
         """Returns len of dataset.

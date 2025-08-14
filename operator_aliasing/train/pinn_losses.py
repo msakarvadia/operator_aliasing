@@ -265,9 +265,11 @@ class IncompNSDataAndPinnsLoss(nn.Module):
         ground_truth shape: same as model pred
         model input shape: batch_size x initial_steps x X_dim
         """
-        vx = kwargs['Vx']
-        vy = kwargs['Vy']
-        force_curl = kwargs['force_curl']
+        # because we pre-batch data due to multi-res training
+        # remove duplicate outer batch dim
+        vx = kwargs['Vx'][0]
+        vy = kwargs['Vy'][0]
+        force_curl = kwargs['force_curl'][0]
         device = kwargs['device']
 
         data_loss = self.mse(model_pred, ground_truth)
