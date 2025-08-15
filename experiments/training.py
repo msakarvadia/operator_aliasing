@@ -7,8 +7,8 @@ import typing
 
 import parsl
 from get_train_args import get_filter_downsample_args
+from get_train_args import get_hp_search_args
 from get_train_args import get_multi_res_args
-from get_train_args import get_pino_args
 from parsl.app.app import bash_app
 from parsl_setup import get_parsl_config
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     if args.experiment_name == 'filter_downsample':
         training_args = get_filter_downsample_args()
     if args.experiment_name == 'hp_search':
-        training_args = get_pino_args()
+        training_args = get_hp_search_args()
     if args.experiment_name == 'multi_res':
         training_args = get_multi_res_args()
 

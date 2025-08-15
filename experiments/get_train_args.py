@@ -167,13 +167,13 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     return train_args
 
 
-def get_pino_args() -> list[dict[str, typing.Any]]:
+def get_hp_search_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
     hyper_param_search_args = []
     for dataset_name in [
-        'incomp_ns_pdebench',
-        'ns_pdebench',
-        'darcy_pdebench',
+        #'incomp_ns_pdebench',
+        #'ns_pdebench',
+        #'darcy_pdebench',
         'burgers_pdebench',
     ]:
         model_name = 'FNO2D'
