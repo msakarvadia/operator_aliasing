@@ -5,6 +5,77 @@ from __future__ import annotations
 import typing
 
 
+def get_dataset_info(
+    dataset_name: str, loss_name: str
+) -> tuple[str, int, int, int, str, int, float, float, float]:
+    """Store dataset specific params.
+
+    Including HP search results like lr/wd/pinns weights.
+    """
+    model_name = 'FNO2D'
+    in_channels = 10
+    out_channels = 1
+    initial_steps = 10
+    pinn_loss_weight = 0.5
+
+    if dataset_name == 'incomp_ns_pdebench':
+        pinn_loss_name = 'incomp_ns_pinn'
+        batch_size = 4
+        lr = 0.0100
+        wd = 0.000001
+        if 'pinn' in loss_name:
+            lr = 0.0001
+            wd = 0.000010
+            pinn_loss_weight = 0.1
+
+    if dataset_name == 'ns_pdebench':
+        pinn_loss_name = 'n/a'
+        batch_size = 4
+        # num time steps * channels:
+        in_channels = 40
+        # num channels:
+        out_channels = 4
+        lr = 0.0010
+        wd = 0.000001
+        # NOTE(MS): we don't support pinns for compressible NS
+
+    if dataset_name == 'darcy_pdebench':
+        pinn_loss_name = 'darcy_pinn'
+        batch_size = 128
+        in_channels = 1
+        initial_steps = 1
+        lr = 0.0010
+        wd = 0.000010
+        if 'pinn' in loss_name:
+            lr = 0.010
+            wd = 0.000010
+            pinn_loss_weight = 0.1
+
+    if dataset_name == 'burgers_pdebench':
+        pinn_loss_name = 'burgers_pinn'
+        batch_size = 64
+        model_name = 'FNO1D'
+        # TODO(MS): populate after experiments
+        lr = 0
+        wd = 0
+        if 'pinn' in loss_name:
+            lr = 0
+            wd = 0
+            pinn_loss_weight = 0
+
+    return (
+        model_name,
+        in_channels,
+        out_channels,
+        initial_steps,
+        pinn_loss_name,
+        batch_size,
+        lr,
+        wd,
+        pinn_loss_weight,
+    )
+
+
 def get_multi_res_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic multi res experiment."""
     hyper_param_search_args = []
@@ -176,41 +247,28 @@ def get_hp_search_args() -> list[dict[str, typing.Any]]:
         #'darcy_pdebench',
         'burgers_pdebench',
     ]:
-        model_name = 'FNO2D'
-        in_channels = 10
-        out_channels = 1
-        initial_steps = 10
-        # if dataset_name == 'incomp_ns_pdebench':
-
-        # incomp_ns args
-        img_size = 255
-        pinn_loss_name = 'incomp_ns_pinn'
-        batch_size = 4
-
         if dataset_name == 'ns_pdebench':
             img_size = 256
-            pinn_loss_name = 'n/a'
-            batch_size = 4
-            # num time steps * channels:
-            in_channels = 40
-            # num channels:
-            out_channels = 4
 
         if dataset_name == 'darcy_pdebench':
             img_size = 64
-            pinn_loss_name = 'darcy_pinn'
-            batch_size = 128
-            in_channels = 1
-            initial_steps = 1
 
         if dataset_name == 'burgers_pdebench':
             img_size = 512
-            pinn_loss_name = 'burgers_pinn'
-            batch_size = 64
-            model_name = 'FNO1D'
 
         # Add hyper-parameter search:
-        for loss_name in ['mse', pinn_loss_name]:
+        for loss_name in ['mse', 'pinn']:
+            (
+                model_name,
+                in_channels,
+                out_channels,
+                initial_steps,
+                pinn_loss_name,
+                batch_size,
+                _,
+                _,
+                _,
+            ) = get_dataset_info(dataset_name, loss_name)
             # NOTE(MS): we don't do pinns loss for compressible NS
             # we will just let the pinns loss error out for NS
             # if loss_name == 'n/a':
