@@ -19,7 +19,6 @@ def get_dataset_info(
     pinn_loss_weight = 0.5
 
     if dataset_name == 'incomp_ns_pdebench':
-        pinn_loss_name = 'incomp_ns_pinn'
         batch_size = 4
         lr = 0.0100
         wd = 0.000001
@@ -27,9 +26,9 @@ def get_dataset_info(
             lr = 0.0001
             wd = 0.000010
             pinn_loss_weight = 0.1
+            loss_name = 'incomp_ns_pinn'
 
     if dataset_name == 'ns_pdebench':
-        pinn_loss_name = 'n/a'
         batch_size = 4
         # num time steps * channels:
         in_channels = 40
@@ -37,10 +36,11 @@ def get_dataset_info(
         out_channels = 4
         lr = 0.0010
         wd = 0.000001
+        if 'pinn' in loss_name:
+            loss_name = 'n/a'
         # NOTE(MS): we don't support pinns for compressible NS
 
     if dataset_name == 'darcy_pdebench':
-        pinn_loss_name = 'darcy_pinn'
         batch_size = 128
         in_channels = 1
         initial_steps = 1
@@ -50,9 +50,9 @@ def get_dataset_info(
             lr = 0.010
             wd = 0.000010
             pinn_loss_weight = 0.1
+            loss_name = 'darcy_pinn'
 
     if dataset_name == 'burgers_pdebench':
-        pinn_loss_name = 'burgers_pinn'
         batch_size = 64
         model_name = 'FNO1D'
         # TODO(MS): populate after experiments
@@ -62,13 +62,14 @@ def get_dataset_info(
             lr = 0
             wd = 0
             pinn_loss_weight = 0
+            loss_name = 'burgers_pinn'
 
     return (
         model_name,
         in_channels,
         out_channels,
         initial_steps,
-        pinn_loss_name,
+        loss_name,
         batch_size,
         lr,
         wd,
@@ -143,7 +144,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             in_channels,
             out_channels,
             initial_steps,
-            pinn_loss_name,
+            loss_name,
             batch_size,
             lr,
             wd,
@@ -158,7 +159,6 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
 
         if dataset_name == 'burgers_pdebench':
             img_size = 1024
-            batch_size = 64
             model_name = 'FNO1D'
             fixed_lim = 64
             filter_lims = [64, 128, 256]  # -1 finished
@@ -248,18 +248,18 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
             img_sizes = [1024, 512, 256, 128]
 
         # Add hyper-parameter search:
-        for loss_name in ['mse', 'pinn']:
+        for l_name in ['mse', 'pinn']:
             (
                 model_name,
                 in_channels,
                 out_channels,
                 initial_steps,
-                pinn_loss_name,
+                loss_name,
                 batch_size,
                 lr,
                 wd,
                 _,
-            ) = get_dataset_info(dataset_name, loss_name)
+            ) = get_dataset_info(dataset_name, l_name)
             # NOTE(MS): we don't do pinns loss for compressible NS
             # we will just let the pinns loss error out for NS
             # if loss_name == 'n/a':
@@ -327,18 +327,18 @@ def get_hp_search_args() -> list[dict[str, typing.Any]]:
             img_size = 512
 
         # Add hyper-parameter search:
-        for loss_name in ['mse', 'pinn']:
+        for l_name in ['mse', 'pinn']:
             (
                 model_name,
                 in_channels,
                 out_channels,
                 initial_steps,
-                pinn_loss_name,
+                loss_name,
                 batch_size,
                 _,
                 _,
                 _,
-            ) = get_dataset_info(dataset_name, loss_name)
+            ) = get_dataset_info(dataset_name, l_name)
             # NOTE(MS): we don't do pinns loss for compressible NS
             # we will just let the pinns loss error out for NS
             # if loss_name == 'n/a':
