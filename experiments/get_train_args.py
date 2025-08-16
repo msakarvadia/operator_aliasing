@@ -56,12 +56,12 @@ def get_dataset_info(
         batch_size = 64
         model_name = 'FNO1D'
         # TODO(MS): populate after experiments
-        lr = 0
-        wd = 0
+        lr = 0.0010
+        wd = 1e-5
         if 'pinn' in loss_name:
-            lr = 0
-            wd = 0
-            pinn_loss_weight = 0
+            lr = 0.0010
+            wd = 1e-5
+            pinn_loss_weight = 0.1
             loss_name = 'burgers_pinn'
 
     return (
@@ -137,7 +137,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
         'darcy_pdebench',
         'incomp_ns_pdebench',
         'ns_pdebench',
-        #'burgers_pdebench',
+        'burgers_pdebench',
     ]:
         (
             model_name,
@@ -233,7 +233,7 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
         'darcy_pdebench',
         'incomp_ns_pdebench',
         'ns_pdebench',
-        #'burgers_pdebench',
+        'burgers_pdebench',
     ]:
         # if dataset_name == 'incomp_ns_pdebench':
         img_sizes = [510, 255, 85, 17]
@@ -309,9 +309,9 @@ def get_hp_search_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
     hyper_param_search_args = []
     for dataset_name in [
-        #'incomp_ns_pdebench',
-        #'ns_pdebench',
-        #'darcy_pdebench',
+        'incomp_ns_pdebench',
+        'ns_pdebench',
+        'darcy_pdebench',
         'burgers_pdebench',
     ]:
         # if dataset_name == 'incomp_ns_pdebench':
