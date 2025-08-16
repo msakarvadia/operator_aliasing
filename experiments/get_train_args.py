@@ -238,6 +238,85 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     return train_args
 
 
+def get_pino_args() -> list[dict[str, typing.Any]]:
+    """Get Training Params for PINO w/ HP search."""
+    hyper_param_search_args = []
+    for dataset_name in [
+        'incomp_ns_pdebench',
+        'ns_pdebench',
+        'darcy_pdebench',
+        #'burgers_pdebench',
+    ]:
+        # if dataset_name == 'incomp_ns_pdebench':
+        img_sizes = [510, 255, 85, 17]
+
+        if dataset_name == 'ns_pdebench':
+            img_sizes = [512, 256, 128, 64]
+
+        if dataset_name == 'darcy_pdebench':
+            img_sizes = [128, 64, 32, 16]
+
+        if dataset_name == 'burgers_pdebench':
+            img_sizes = [1024, 512, 256, 128]
+
+        # Add hyper-parameter search:
+        for loss_name in ['mse', 'pinn']:
+            (
+                model_name,
+                in_channels,
+                out_channels,
+                initial_steps,
+                pinn_loss_name,
+                batch_size,
+                lr,
+                wd,
+                _,
+            ) = get_dataset_info(dataset_name, loss_name)
+            # NOTE(MS): we don't do pinns loss for compressible NS
+            # we will just let the pinns loss error out for NS
+            # if loss_name == 'n/a':
+            #    continue
+            pinn_loss_weights = [0.5]
+            if 'pinn' in loss_name:
+                pinn_loss_weights += [0.25, 0.1]  # 0.75 was too high
+            for pinn_loss_weight in pinn_loss_weights:
+                for res_idx, resolution_ratios in enumerate(
+                    [
+                        '[1,0,0,0]',
+                        '[0,1,0,0]',
+                        '[0,0,1,0]',
+                        '[0,0,0,1]',
+                    ]
+                ):
+                    # NOTE(MS): delete later
+
+                    if resolution_ratios == '[0,1,0,0]':
+                        # to avoid interference w/ HP search experiment
+                        continue
+                    img_size = img_sizes[res_idx]
+                    hp_args = {
+                        'lr': lr,
+                        'weight_decay': wd,
+                        'step_size': 15,
+                        'gamma': 0.5,
+                        'loss_name': loss_name,
+                        'batch_size': batch_size,
+                        'dataset_name': dataset_name,
+                        'downsample_dim': -1,
+                        'filter_lim': -1,
+                        'max_mode': img_size // 2,
+                        'model_name': model_name,
+                        'in_channels': in_channels,
+                        'out_channels': out_channels,
+                        'pinn_loss_weight': pinn_loss_weight,
+                        'initial_steps': initial_steps,
+                        'test_res': 'single',
+                        'resolution_ratios': resolution_ratios,  # high to low
+                    }
+                    hyper_param_search_args.append(hp_args)
+    return hyper_param_search_args
+
+
 def get_hp_search_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
     hyper_param_search_args = []
@@ -247,6 +326,9 @@ def get_hp_search_args() -> list[dict[str, typing.Any]]:
         #'darcy_pdebench',
         'burgers_pdebench',
     ]:
+        # if dataset_name == 'incomp_ns_pdebench':
+        img_size = 255
+
         if dataset_name == 'ns_pdebench':
             img_size = 256
 
