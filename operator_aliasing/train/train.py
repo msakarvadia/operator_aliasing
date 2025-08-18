@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import time
 import typing
 
@@ -23,30 +24,48 @@ def train_model(**train_args: typing.Any) -> Module:
     # set up trianing args
     model = train_args['model']
     epochs = train_args['epochs']
-    # lr = train_args['lr']
-    # weight_decay = train_args['weight_decay']
-    gamma = train_args['gamma']
-    step_size = train_args['step_size']
     loss = train_args['loss']
     device = train_args['device']
-    seed = train_args['seed']
     train_dataloader = train_args['train_dataloader']
     test_dataloaders = train_args['test_dataloaders']
     ckpt_path = train_args['ckpt_path']
-    # ckpt_freq = train_args['ckpt_freq']
     initial_steps = train_args['initial_steps']
+    # lr = train_args['lr']
+    # weight_decay = train_args['weight_decay']
+    # gamma = train_args['gamma']
+    # step_size = train_args['step_size']
+    # ckpt_freq = train_args['ckpt_freq']
+    # seed = train_args['seed']
+
+    # set up logging
+    logging.basicConfig(
+        filename=f'{ckpt_path}/experiment.log',
+        format='%(asctime)s %(message)s',
+        filemode='a',
+    )
+    logger = logging.getLogger()
+    # Setting the threshold of logger to DEBUG
+    logger.setLevel(logging.DEBUG)
+    logger.info(f'Training args: {train_args}')
 
     # training stats
-    columns = [
-        'epoch',
-        'train_loss',
-        'train_time',
-        *list(test_dataloaders.keys()),
-    ]
-    train_stats = pd.DataFrame(columns=columns)
+    # columns = [
+    #    'epoch',
+    #    'train_loss',
+    #    'train_time',
+    #    *list(test_dataloaders.keys()),
+    # ]
+    train_stats = pd.DataFrame(
+        columns=[
+            'epoch',
+            'train_loss',
+            'train_time',
+            *list(test_dataloaders.keys()),
+        ]
+    )
 
     # TODO(MS): test seeding!!
-    seed_everything(seed)
+    seed_everything(train_args['seed'])
 
     # set up optimizer and scheduler
     optimizer = AdamW(
@@ -55,7 +74,7 @@ def train_model(**train_args: typing.Any) -> Module:
         weight_decay=train_args['weight_decay'],
     )
     scheduler = torch.optim.lr_scheduler.StepLR(
-        optimizer, step_size=step_size, gamma=gamma
+        optimizer, step_size=train_args['step_size'], gamma=train_args['gamma']
     )
     starting_epoch = 0
     model = model.to(device)
@@ -68,7 +87,9 @@ def train_model(**train_args: typing.Any) -> Module:
         scheduler.load_state_dict(ckpt_dict['scheduler_state_dict'])
         starting_epoch = ckpt_dict['epoch'] + 1
         train_stats = ckpt_dict['train_stats']
-        print(train_stats)
+        logger.info(
+            f'Resuming from: {ckpt_path} \n {ckpt_dict=} \n {train_stats}'
+        )
 
     # train model
     for epoch in range(starting_epoch, epochs + 1):
