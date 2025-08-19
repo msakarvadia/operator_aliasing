@@ -32,18 +32,6 @@ def train_model(**train_args: typing.Any) -> Module:
     initial_steps = train_args['initial_steps']
 
     # set up logging
-    """
-    if not os.path.exists(ckpt_path):
-        os.makedirs(ckpt_path, exist_ok=True)
-    logging.basicConfig(
-        filename=f'{ckpt_path}/experiment.log',
-        format='%(asctime)s %(message)s',
-        filemode='a',
-    )
-    logger = logging.getLogger()
-    # Setting the threshold of logger to DEBUG
-    logger.setLevel(logging.DEBUG)
-    """
     logger = setup_logger(ckpt_path)
     logger.info(f'Training args: {train_args}')
 
