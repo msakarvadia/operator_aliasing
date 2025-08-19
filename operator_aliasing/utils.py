@@ -367,3 +367,74 @@ def seed_worker(worker_id: int) -> None:
     worker_seed = torch.initial_seed() % 2**32
     np.random.seed(worker_seed)
     random.seed(worker_seed)
+
+
+def get_dataset_info(
+    dataset_name: str, loss_name: str
+) -> tuple[str, int, int, int, str, int, float, float, float]:
+    """Store dataset specific model/training params.
+
+    Including HP search results like lr/wd/pinns weights.
+    """
+    model_name = 'FNO2D'
+    in_channels = 10
+    out_channels = 1
+    initial_steps = 10
+    pinn_loss_weight = 0.5
+
+    if dataset_name == 'incomp_ns_pdebench':
+        batch_size = 4
+        lr = 0.0100
+        wd = 0.000001
+        if 'pinn' in loss_name:
+            lr = 0.0001
+            wd = 0.000010
+            pinn_loss_weight = 0.1
+            loss_name = 'incomp_ns_pinn'
+
+    if dataset_name == 'ns_pdebench':
+        batch_size = 4
+        # num time steps * channels:
+        in_channels = 40
+        # num channels:
+        out_channels = 4
+        lr = 0.0010
+        wd = 0.000001
+        if 'pinn' in loss_name:
+            loss_name = 'n/a'
+        # NOTE(MS): we don't support pinns for compressible NS
+
+    if dataset_name == 'darcy_pdebench':
+        batch_size = 128
+        in_channels = 1
+        initial_steps = 1
+        lr = 0.0010
+        wd = 0.000010
+        if 'pinn' in loss_name:
+            lr = 0.010
+            wd = 0.000010
+            pinn_loss_weight = 0.1
+            loss_name = 'darcy_pinn'
+
+    if dataset_name == 'burgers_pdebench':
+        batch_size = 64
+        model_name = 'FNO1D'
+        lr = 0.0010
+        wd = 1e-5
+        if 'pinn' in loss_name:
+            lr = 0.0010
+            wd = 1e-5
+            pinn_loss_weight = 0.1
+            loss_name = 'burgers_pinn'
+
+    return (
+        model_name,
+        in_channels,
+        out_channels,
+        initial_steps,
+        loss_name,
+        batch_size,
+        lr,
+        wd,
+        pinn_loss_weight,
+    )
