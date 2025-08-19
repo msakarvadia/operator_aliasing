@@ -31,7 +31,7 @@ def train(**kwargs: typing.Any) -> str:
     arg_path = arg_path.replace('.', '')
     arg_path = arg_path.replace('[', '')
     arg_path = arg_path.replace(']', '')
-    arg_path = arg_path.replace(',', '')
+    arg_path = arg_path.replace(',', '_')
     ckpt_name = arg_path.replace('/', '')
 
     exec_str = f"""pwd;

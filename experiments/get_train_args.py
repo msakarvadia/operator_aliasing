@@ -65,9 +65,9 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     train_args = []
     for dataset_name in [
         'darcy_pdebench',
-        'incomp_ns_pdebench',
-        'ns_pdebench',
-        'burgers_pdebench',
+        #'incomp_ns_pdebench',
+        #'ns_pdebench',
+        #'burgers_pdebench',
     ]:
         (
             model_name,
