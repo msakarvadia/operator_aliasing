@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import glob
+import logging
 import os
 import typing
 
@@ -14,6 +15,22 @@ from .pinn_losses import BurgersDataAndPinnsLoss
 from .pinn_losses import DarcyDataAndPinnsLoss
 from .pinn_losses import IncompNSDataAndPinnsLoss
 from .pinn_losses import Loss
+
+
+def setup_logger(ckpt_path: str) -> logging.Logger:
+    """Set up logging."""
+    if not os.path.exists(ckpt_path):
+        os.makedirs(ckpt_path, exist_ok=True)
+    logging.basicConfig(
+        filename=f'{ckpt_path}/experiment.log',
+        format='%(asctime)s %(message)s',
+        filemode='a',
+    )
+    logger = logging.getLogger()
+    # Setting the threshold of logger to DEBUG
+    logger.setLevel(logging.DEBUG)
+
+    return logger
 
 
 def get_loss(

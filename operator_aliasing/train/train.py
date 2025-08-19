@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 import time
 import typing
 
@@ -14,6 +13,7 @@ from tqdm import tqdm
 
 from operator_aliasing.train.utils import load_latest_ckpt
 from operator_aliasing.train.utils import save_ckpt
+from operator_aliasing.train.utils import setup_logger
 
 from ..utils import seed_everything
 from .pinn_losses import Loss
@@ -30,14 +30,11 @@ def train_model(**train_args: typing.Any) -> Module:
     test_dataloaders = train_args['test_dataloaders']
     ckpt_path = train_args['ckpt_path']
     initial_steps = train_args['initial_steps']
-    # lr = train_args['lr']
-    # weight_decay = train_args['weight_decay']
-    # gamma = train_args['gamma']
-    # step_size = train_args['step_size']
-    # ckpt_freq = train_args['ckpt_freq']
-    # seed = train_args['seed']
 
     # set up logging
+    """
+    if not os.path.exists(ckpt_path):
+        os.makedirs(ckpt_path, exist_ok=True)
     logging.basicConfig(
         filename=f'{ckpt_path}/experiment.log',
         format='%(asctime)s %(message)s',
@@ -46,15 +43,10 @@ def train_model(**train_args: typing.Any) -> Module:
     logger = logging.getLogger()
     # Setting the threshold of logger to DEBUG
     logger.setLevel(logging.DEBUG)
+    """
+    logger = setup_logger(ckpt_path)
     logger.info(f'Training args: {train_args}')
 
-    # training stats
-    # columns = [
-    #    'epoch',
-    #    'train_loss',
-    #    'train_time',
-    #    *list(test_dataloaders.keys()),
-    # ]
     train_stats = pd.DataFrame(
         columns=[
             'epoch',
