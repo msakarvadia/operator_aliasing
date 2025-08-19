@@ -84,29 +84,29 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
         if dataset_name == 'darcy_pdebench':
             img_size = 128
             fixed_lim = 8
-            filter_lims = [8, 16, 32]  # -1 finished
-            downsample_dims = [32, 64, -1]  # 16 finished
+            filter_lims = [8, 16, 32, -1]  # -1 finished
+            downsample_dims = [16, 32, 64, -1]  # 16 finished
 
         if dataset_name == 'burgers_pdebench':
             img_size = 1024
             model_name = 'FNO1D'
             fixed_lim = 64
-            filter_lims = [64, 128, 256]  # -1 finished
-            downsample_dims = [256, 512, -1]  # 128 finished
+            filter_lims = [64, 128, 256, -1]  # -1 finished
+            downsample_dims = [128, 256, 512, -1]  # 128 finished
 
         if dataset_name == 'incomp_ns_pdebench':
             # TODO(MS): waiting for HP search
             img_size = 510
             fixed_lim = 85 // 2  # half of 85 // 2
-            filter_lims = [85 // 2, 255 // 2]  # -1 finished
-            downsample_dims = [255, -1]  # 85 finished
+            filter_lims = [85 // 2, 255 // 2, -1]  # -1 finished
+            downsample_dims = [85, 255, -1]  # 85 finished
 
         if dataset_name == 'ns_pdebench':
             # TODO(MS): waiting for HP search
             img_size = 512
             fixed_lim = 32
-            filter_lims = [16, 32, 64]  # -1 finished
-            downsample_dims = [128, 256, -1]  # 64 finished
+            filter_lims = [16, 32, 64, -1]  # -1 finished
+            downsample_dims = [64, 128, 256, -1]  # 64 finished
 
         # study effect of downsampling
         for downsample_dim in downsample_dims:

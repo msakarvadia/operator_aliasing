@@ -29,6 +29,9 @@ def train(**kwargs: typing.Any) -> str:
     # Need to remove any . or / to
     # ensure a single continuous file path
     arg_path = arg_path.replace('.', '')
+    arg_path = arg_path.replace('[', '')
+    arg_path = arg_path.replace(']', '')
+    arg_path = arg_path.replace(',', '')
     ckpt_name = arg_path.replace('/', '')
 
     exec_str = f"""pwd;
