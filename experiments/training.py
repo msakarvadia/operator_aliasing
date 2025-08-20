@@ -87,6 +87,13 @@ if __name__ == '__main__':
         default=1,
         help='Number of nodes in your job.',
     )
+    parser.add_argument(
+        '--gpu_mem',
+        type=int,
+        default=40,
+        choices=[40, 80],
+        help='Number of GB mem on GPU being requested.',
+    )
     args = parser.parse_args()
 
     if args.experiment_name == 'filter_downsample':
@@ -99,7 +106,10 @@ if __name__ == '__main__':
         training_args = get_pino_args()
 
     config = get_parsl_config(
-        walltime=args.walltime, queue=args.queue, num_nodes=args.num_nodes
+        walltime=args.walltime,
+        queue=args.queue,
+        num_nodes=args.num_nodes,
+        gpu_mem=args.gpu_mem,
     )
     with parsl.load(config):
         futures = [train(**args) for args in training_args]

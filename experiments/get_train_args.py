@@ -64,10 +64,10 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
     train_args = []
     for dataset_name in [
-        'darcy_pdebench',
         #'incomp_ns_pdebench',
         #'ns_pdebench',
-        #'burgers_pdebench',
+        'burgers_pdebench',
+        'darcy_pdebench',
     ]:
         (
             model_name,
@@ -105,7 +105,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             # TODO(MS): waiting for HP search
             img_size = 512
             fixed_lim = 32
-            filter_lims = [16, 32, 64, -1]  # -1 finished
+            filter_lims = [32, 64, 128, -1]  # -1 finished
             downsample_dims = [64, 128, 256, -1]  # 64 finished
 
         # study effect of downsampling
@@ -126,7 +126,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
                 'out_channels': out_channels,
                 'pinn_loss_weight': 0.5,  # irrelavent arg
                 'initial_steps': initial_steps,
-                'test_res': 'multi',
+                'test_res': 'single',
                 'resolution_ratios': '[1,0,0,0]',  # high to low
             }
             train_args.append(training_args)
@@ -148,7 +148,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
                 'out_channels': out_channels,
                 'pinn_loss_weight': 0.5,  # irrelavent arg
                 'initial_steps': initial_steps,
-                'test_res': 'multi',
+                'test_res': 'single',
                 'resolution_ratios': '[1,0,0,0]',  # high to low
             }
             train_args.append(training_args)
@@ -161,8 +161,8 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
-        'incomp_ns_pdebench',
-        'ns_pdebench',
+        #'incomp_ns_pdebench',
+        #'ns_pdebench',
         'burgers_pdebench',
     ]:
         # if dataset_name == 'incomp_ns_pdebench':

@@ -9,7 +9,10 @@ from parsl.providers import SlurmProvider
 
 
 def get_parsl_config(
-    walltime: str = '00:30:00', queue: str = 'debug', num_nodes: int = 1
+    walltime: str = '00:30:00',
+    queue: str = 'debug',
+    num_nodes: int = 1,
+    gpu_mem: int = 40,
 ) -> Config:
     """Initialize Parsl config.
 
@@ -24,7 +27,7 @@ def get_parsl_config(
         nodes_per_block=num_nodes,  # how many nodes to request
         min_blocks=0,
         max_blocks=1,
-        scheduler_options=f'#SBATCH -C gpu&hbm40g\n#SBATCH --qos={queue}\n#SBATCH --mail-user=sakarvadia@uchicago.edu',  # noqa
+        scheduler_options=f'#SBATCH -C gpu&hbm{gpu_mem}g\n#SBATCH --qos={queue}\n#SBATCH --mail-user=sakarvadia@uchicago.edu',  # noqa
         account='m1266',
         worker_init="""
 module load conda
