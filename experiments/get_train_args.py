@@ -34,7 +34,7 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
             img_size = 256
 
         if dataset_name == 'darcy_pdebench':
-            img_size = 64
+            img_size = 128
 
         if dataset_name == 'burgers_pdebench':
             img_size = 512
@@ -90,8 +90,8 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
     train_args = []
     for dataset_name in [
-        'incomp_ns_pdebench',
-        'ns_pdebench',
+        #'incomp_ns_pdebench',
+        #'ns_pdebench',
         'burgers_pdebench',
         'darcy_pdebench',
     ]:
