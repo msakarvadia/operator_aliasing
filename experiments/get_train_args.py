@@ -28,16 +28,16 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
             _,
         ) = get_dataset_info(dataset_name, 'mse')
 
-        img_size = 255
+        img_size = 510
 
         if dataset_name == 'ns_pdebench':
-            img_size = 256
+            img_size = 512
 
         if dataset_name == 'darcy_pdebench':
             img_size = 128
 
         if dataset_name == 'burgers_pdebench':
-            img_size = 512
+            img_size = 1024
 
         # make res ratios
         res_ratios = [
