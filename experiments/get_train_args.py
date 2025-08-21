@@ -45,7 +45,7 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
             '[0.1,0,0,0.9]',
             '[0.02,0.03,0.05,0.9]',
         ]
-        for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.05]:
+        for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]:
             for first_idx, second_idx in [
                 (0, 1),
                 (0, 2),
