@@ -16,26 +16,52 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
         #'incomp_ns_pdebench',
         #'ns_pdebench',
     ]:
-        model_name = 'FNO2D'
-        # num time steps * channels:
-        in_channels = 10
-        out_channels = 1
-        initial_steps = 10
-        wd = 1e-7
+        (
+            model_name,
+            in_channels,
+            out_channels,
+            initial_steps,
+            loss_name,
+            batch_size,
+            lr,
+            wd,
+            _,
+        ) = get_dataset_info(dataset_name, 'mse')
+
+        img_size = 255
+
+        if dataset_name == 'ns_pdebench':
+            img_size = 256
 
         if dataset_name == 'darcy_pdebench':
-            img_size = 128
-            batch_size = 128
-            in_channels = 1
-            initial_steps = 1
-            lr = 1e-3
+            img_size = 64
 
-        # Add hyper-parameter search:
-        for res_ratio in [
+        if dataset_name == 'burgers_pdebench':
+            img_size = 512
+
+        # make res ratios
+        res_ratios = [
             '[0.1,0.1,0.1,0.7]',
             '[0.1,0,0,0.9]',
             '[0.02,0.03,0.05,0.9]',
-        ]:
+        ]
+        for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.05]:
+            for first_idx, second_idx in [
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (1, 2),
+                (1, 3),
+                (2, 3),
+            ]:
+                ratio: list[float] = [0, 0, 0, 0]
+                ratio[first_idx] = rat
+                ratio[second_idx] = round(1 - rat, 2)
+                ratio_formatted = str(ratio).replace(' ', '')
+                res_ratios.append(ratio_formatted)
+
+        # Add hyper-parameter search:
+        for res_ratio in res_ratios:
             hp_args = {
                 'lr': lr,
                 'weight_decay': wd,
@@ -64,8 +90,8 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
     train_args = []
     for dataset_name in [
-        #'incomp_ns_pdebench',
-        #'ns_pdebench',
+        'incomp_ns_pdebench',
+        'ns_pdebench',
         'burgers_pdebench',
         'darcy_pdebench',
     ]:
@@ -161,8 +187,8 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
-        #'incomp_ns_pdebench',
-        #'ns_pdebench',
+        'incomp_ns_pdebench',
+        'ns_pdebench',
         'burgers_pdebench',
     ]:
         # if dataset_name == 'incomp_ns_pdebench':
@@ -188,7 +214,7 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
                 batch_size,
                 lr,
                 wd,
-                _,
+                pinn_loss_w,
             ) = get_dataset_info(dataset_name, l_name)
             # NOTE(MS): we don't do pinns loss for compressible NS
             # we will just let the pinns loss error out for NS
@@ -196,7 +222,8 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
             #    continue
             pinn_loss_weights = [0.5]
             if 'pinn' in loss_name:
-                pinn_loss_weights += [0.25, 0.1]  # 0.75 was too high
+                pinn_loss_weights = [pinn_loss_w]  # 0.75 was too high
+                # pinn_loss_weights += [0.25, 0.1]  # 0.75 was too high
             for pinn_loss_weight in pinn_loss_weights:
                 for res_idx, resolution_ratios in enumerate(
                     [
