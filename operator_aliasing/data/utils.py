@@ -197,6 +197,8 @@ def get_data(
         shuffle=True,
         worker_init_fn=seed_worker,
         generator=g,
+        prefetch_factor=3,
+        num_workers=3,
     )
 
     testing_loaders = {}
@@ -207,5 +209,7 @@ def get_data(
             shuffle=False,
             worker_init_fn=seed_worker,
             generator=g,
+            prefetch_factor=3,
+            num_workers=3,
         )
     return (training_loader, testing_loaders)
