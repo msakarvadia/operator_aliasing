@@ -46,6 +46,7 @@ class IncompNSPDEBench(Dataset):
         """
         self.transform = transform
         self.initial_step = initial_step
+        self.root_path = Path(Path(saved_folder).resolve()) / filename
         resolution_proportions = kwargs['resolution_proportions']
         four = 4
         assert len(resolution_proportions) == four, (
@@ -59,10 +60,9 @@ class IncompNSPDEBench(Dataset):
         test_ratio = 0.1
         num_samples_max = -1
         # NOTE(MS): already filtered time in preprocessing
-        reduced_resolution_t = 1
+        self.reduced_resolution_t = 1
 
-        root_path = Path(Path(saved_folder).resolve()) / filename
-        with h5py.File(root_path, 'r') as f:
+        with h5py.File(self.root_path, 'r') as f:
             # num of data samples
             num_samples_max = f['force_curl'].shape[0]
 
@@ -84,74 +84,18 @@ class IncompNSPDEBench(Dataset):
             # shuffle indexes
             self.rng.shuffle(self.data_idxs)
 
-        self.vorticity_sets = []
-        self.vx_sets = []
-        self.vy_sets = []
-        self.force_curl_sets = []
+        self.index_sets = []
+        self.downsample_factors = [1, 2, 6, 30]
+        for _res_factor, ratio in enumerate(resolution_proportions):
+            # number of points in this resolution set
+            res_idx = int(self.num_samples * ratio)
+            # sort all indexes
+            set_indexes = np.sort(self.data_idxs[:res_idx])
 
-        downsample_factors = [1, 2, 6, 30]
-        for res_factor, ratio in enumerate(resolution_proportions):
-            reduced_resolution = downsample_factors[res_factor]
-            with h5py.File(root_path, 'r') as f:
-                # number of points in this resolution set
-                res_idx = int(self.num_samples * ratio)
-                # sort all indexes
-                set_indexes = np.sort(self.data_idxs[:res_idx])
+            self.index_sets.append(set_indexes)
 
-                # remove already used indexes
-                self.data_idxs = self.data_idxs[res_idx:]
-
-                self.force_curl = np.array(
-                    f['force_curl'][
-                        set_indexes,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ],
-                    dtype=np.float32,
-                )
-                print(f'loaded force curl {self.force_curl.shape=}')
-                # vorticity
-                self.vorticity = np.array(
-                    f['vorticity'][
-                        set_indexes,
-                        ::reduced_resolution_t,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ],
-                    dtype=np.float32,
-                )  # batch, time, x, y
-                print(f'loaded vorticity {self.vorticity.shape=}')
-                # Vx
-                self.vx = np.array(
-                    f['Vx'][
-                        set_indexes,
-                        ::reduced_resolution_t,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ],
-                    dtype=np.float32,
-                )  # batch, time, x,...
-                print(f'loaded Vx {self.vx.shape=}')
-                # Vy
-                self.vy = np.array(
-                    f['Vy'][
-                        set_indexes,
-                        ::reduced_resolution_t,
-                        ::reduced_resolution,
-                        ::reduced_resolution,
-                    ],
-                    dtype=np.float32,
-                )  # batch, time, x,...
-                print(f'loaded Vy {self.vy.shape=}')
-
-            # batch, time, channel, x, y
-            self.vorticity_sets.append(
-                torch.tensor(self.vorticity[:, :, None, :, :])
-            )
-
-            self.vx_sets.append(torch.tensor(self.vx))
-            self.vy_sets.append(torch.tensor(self.vy))
-            self.force_curl_sets.append(torch.tensor(self.force_curl))
+            # remove already used indexes
+            self.data_idxs = self.data_idxs[res_idx:]
 
     def __len__(self) -> int:
         """Returns len of dataset.
@@ -160,7 +104,7 @@ class IncompNSPDEBench(Dataset):
         number of batches.
         """
         total_batches = 0
-        for _set_idx, res_set in enumerate(self.vorticity_sets):
+        for _set_idx, res_set in enumerate(self.index_sets):
             num_batches_in_set = math.ceil(len(res_set) / self.batch_size)
             total_batches += num_batches_in_set
         return total_batches
@@ -168,7 +112,7 @@ class IncompNSPDEBench(Dataset):
     def __getitem__(self, batch_idx: int) -> dict[str, torch.Tensor]:
         """Get single batch."""
         # iterate through all resoulution sets to find batch
-        for _set_idx, res_set in enumerate(self.vorticity_sets):
+        for _set_idx, res_set in enumerate(self.index_sets):
             num_batches_in_set = math.ceil(len(res_set) / self.batch_size)
             if batch_idx >= num_batches_in_set:
                 batch_idx -= num_batches_in_set
@@ -177,22 +121,65 @@ class IncompNSPDEBench(Dataset):
                 set_idx = _set_idx
                 break
 
+        reduced_resolution = self.downsample_factors[set_idx]
+        set_indexes = self.index_sets[set_idx][
+            item_idx : item_idx + self.batch_size
+        ]
+
+        with h5py.File(self.root_path, 'r') as f:
+            self.force_curl = torch.tensor(
+                f['force_curl'][
+                    set_indexes,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ],
+                dtype=torch.float32,
+            )
+            # vorticity
+            self.vorticity = torch.tensor(
+                f['vorticity'][
+                    set_indexes,
+                    :: self.reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ],
+                dtype=torch.float32,
+            )  # batch, time, x, y
+
+            # Vx
+            self.vx = torch.tensor(
+                f['Vx'][
+                    set_indexes,
+                    :: self.reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ],
+                dtype=torch.float32,
+            )  # batch, time, x,...
+
+            # Vy
+            self.vy = torch.tensor(
+                f['Vy'][
+                    set_indexes,
+                    :: self.reduced_resolution_t,
+                    ::reduced_resolution,
+                    ::reduced_resolution,
+                ],
+                dtype=torch.float32,
+            )  # batch, time, x,...
+
         sample = {
-            'x': self.vorticity_sets[set_idx][
-                item_idx : item_idx + self.batch_size, : self.initial_step, ...
+            'x': self.vorticity[
+                :,
+                : self.initial_step,
+                None,
+                :,
+                :,  # need to add channel dim, only first n time steps
             ],
-            'y': self.vorticity_sets[set_idx][
-                item_idx : item_idx + self.batch_size, ...
-            ],
-            'Vx': self.vx_sets[set_idx][
-                item_idx : item_idx + self.batch_size, ...
-            ],
-            'Vy': self.vy_sets[set_idx][
-                item_idx : item_idx + self.batch_size, ...
-            ],
-            'force_curl': self.force_curl_sets[set_idx][
-                item_idx : item_idx + self.batch_size, ...
-            ],
+            'y': self.vorticity[:, :, None, :, :],
+            'Vx': self.vx,
+            'Vy': self.vy,
+            'force_curl': self.force_curl,
         }
 
         if self.transform:
