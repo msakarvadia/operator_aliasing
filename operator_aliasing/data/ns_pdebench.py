@@ -87,6 +87,9 @@ class NSPDEBench(Dataset):
                 # sort all indexes
                 set_indexes = np.sort(self.data_idxs[:res_idx])
 
+                # remove already used indexes
+                self.data_idxs = self.data_idxs[res_idx:]
+
                 density = np.array(
                     f['density'][
                         set_indexes,

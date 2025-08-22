@@ -83,6 +83,9 @@ class BurgersPDEBench(Dataset):
                 # sort all indexes
                 set_indexes = np.sort(self.data_idxs[:res_idx])
 
+                # remove already used indexes
+                self.data_idxs = self.data_idxs[res_idx:]
+
                 ## data dim = [t, x1, ..., xd, v]
                 _data = np.array(
                     f['tensor'], dtype=np.float32
@@ -94,6 +97,9 @@ class BurgersPDEBench(Dataset):
                 ]
                 # batch, time, channel, x,
                 self.data_sets.append(torch.tensor(_data[:, :, None, :]))
+
+                # remove already used indexes
+                self.data_idxs = self.data_idxs[res_idx:]
 
     def __len__(self) -> int:
         """Returns len of dataset.

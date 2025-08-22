@@ -98,6 +98,9 @@ class IncompNSPDEBench(Dataset):
                 # sort all indexes
                 set_indexes = np.sort(self.data_idxs[:res_idx])
 
+                # remove already used indexes
+                self.data_idxs = self.data_idxs[res_idx:]
+
                 self.force_curl = np.array(
                     f['force_curl'][
                         set_indexes,
