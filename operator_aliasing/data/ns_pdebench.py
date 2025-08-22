@@ -168,7 +168,6 @@ class NSPDEBench(Dataset):
             'x': self.data_sets[set_idx][
                 item_idx : item_idx + self.batch_size,
                 : self.initial_step,
-                : self.initial_step,
                 ...,
             ],
             'y': self.data_sets[set_idx][
