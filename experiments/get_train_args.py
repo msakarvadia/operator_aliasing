@@ -12,7 +12,7 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
-        #'burgers_pdebench',
+        'burgers_pdebench',
         #'incomp_ns_pdebench',
         #'ns_pdebench',
     ]:
@@ -42,7 +42,6 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
         # make res ratios
         res_ratios = [
             '[0.1,0.1,0.1,0.7]',
-            '[0.1,0,0,0.9]',
             '[0.02,0.03,0.05,0.9]',
         ]
         for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]:
@@ -90,7 +89,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
     train_args = []
     for dataset_name in [
-        #'incomp_ns_pdebench',
+        'incomp_ns_pdebench',
         #'ns_pdebench',
         'burgers_pdebench',
         'darcy_pdebench',
