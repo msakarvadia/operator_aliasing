@@ -187,7 +187,7 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
     for dataset_name in [
         'darcy_pdebench',
         'incomp_ns_pdebench',
-        'ns_pdebench',
+        #'ns_pdebench',
         'burgers_pdebench',
     ]:
         # if dataset_name == 'incomp_ns_pdebench':
