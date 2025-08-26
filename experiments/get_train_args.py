@@ -11,10 +11,10 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic multi res experiment."""
     hyper_param_search_args = []
     for dataset_name in [
+        'incomp_ns_pdebench',
         'darcy_pdebench',
         'burgers_pdebench',
-        'incomp_ns_pdebench',
-        'ns_pdebench',
+        #'ns_pdebench',
     ]:
         (
             model_name,
@@ -90,7 +90,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     train_args = []
     for dataset_name in [
         'incomp_ns_pdebench',
-        'ns_pdebench',
+        #'ns_pdebench',
         'burgers_pdebench',
         'darcy_pdebench',
     ]:
