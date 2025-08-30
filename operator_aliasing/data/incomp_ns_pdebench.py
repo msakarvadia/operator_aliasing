@@ -121,7 +121,9 @@ class IncompNSPDEBench(Dataset):
                 set_idx = _set_idx
                 break
 
-        reduced_resolution = self.downsample_factors[set_idx]
+        # reduced_resolution = self.downsample_factors[set_idx]
+        # NOTE(MS): inexact downsample
+        reduced_resolution = 2**set_idx
         set_indexes = self.index_sets[set_idx][
             item_idx : item_idx + self.batch_size
         ]
