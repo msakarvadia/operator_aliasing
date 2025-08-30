@@ -23,7 +23,7 @@ def hello_world() -> str:
 
 
 @bash_app
-def train(**kwargs: typing.Any) -> str:
+def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
     """Train a model."""
     arg_path = '_'.join(map(str, list(kwargs.values())))
     # Need to remove any . or / to
@@ -42,7 +42,7 @@ def train(**kwargs: typing.Any) -> str:
     --step_size {kwargs['step_size']} \
     --gamma {kwargs['gamma']} \
     --dataset_name {kwargs['dataset_name']} \
-    --ckpt_path ckpts/{ckpt_name} \
+    --ckpt_path {ckpt_dir}/{ckpt_name} \
     --loss_name {kwargs['loss_name']} \
     --max_modes {kwargs['max_mode']} \
     --batch_size {kwargs['batch_size']} \
@@ -74,6 +74,13 @@ if __name__ == '__main__':
         default='debug',
         choices=['debug', 'regular'],
         help='Name of slurm queue we want to run in.',
+    )
+    parser.add_argument(
+        '--ckpt_dir',
+        type=str,
+        default='ns_ckpts',
+        choices=['ns_ckpts', 'ckpts'],
+        help='Name of dir to store all experiments in.',
     )
     parser.add_argument(
         '--walltime',
@@ -112,7 +119,9 @@ if __name__ == '__main__':
         gpu_mem=args.gpu_mem,
     )
     with parsl.load(config):
-        futures = [train(**args) for args in training_args]
+        futures = [
+            train(args.ckpt_dir, **exp_args) for exp_args in training_args
+        ]
         print(f'Num of experiments: {len(futures)}')
 
         for train_args, future in zip(training_args, futures):
