@@ -28,7 +28,7 @@ def get_parsl_config(
         min_blocks=0,
         max_blocks=1,
         scheduler_options=f'#SBATCH -C gpu&hbm{gpu_mem}g\n#SBATCH --qos={queue}\n#SBATCH --mail-user=sakarvadia@uchicago.edu',  # noqa
-        account='m1266',
+        account='m4790',
         worker_init="""
 module load conda
 conda activate /pscratch/sd/m/mansisak/operator_aliasing/env/
