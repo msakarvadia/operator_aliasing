@@ -12,8 +12,8 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
     hyper_param_search_args = []
     for dataset_name in [
         'incomp_ns_pdebench',
-        'darcy_pdebench',
-        'burgers_pdebench',
+        #'darcy_pdebench',
+        #'burgers_pdebench',
         #'ns_pdebench',
     ]:
         (
@@ -91,8 +91,8 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     for dataset_name in [
         'incomp_ns_pdebench',
         #'ns_pdebench',
-        'burgers_pdebench',
-        'darcy_pdebench',
+        #'burgers_pdebench',
+        #'darcy_pdebench',
     ]:
         (
             model_name,
@@ -122,9 +122,12 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
         if dataset_name == 'incomp_ns_pdebench':
             # TODO(MS): waiting for HP search
             img_size = 510
-            fixed_lim = 85 // 2  # half of 85 // 2
-            filter_lims = [85 // 2, 255 // 2, -1]  # -1 finished
-            downsample_dims = [85, 255, -1]  # 85 finished
+            fixed_lim = 32  # half of 64 // 2
+            filter_lims = [8, 16, 32, -1]  # -1 finished
+            downsample_dims = [64, 128, 255, -1]  # 85 finished
+            # fixed_lim = 85 // 2  # half of 85 // 2
+            # filter_lims = [85 // 2, 255 // 2, -1]  # -1 finished
+            # downsample_dims = [85, 255, -1]  # 85 finished
 
         if dataset_name == 'ns_pdebench':
             # TODO(MS): waiting for HP search
@@ -185,13 +188,13 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
     hyper_param_search_args = []
     for dataset_name in [
-        'darcy_pdebench',
+        #'darcy_pdebench',
         'incomp_ns_pdebench',
-        'ns_pdebench',
-        'burgers_pdebench',
+        #'ns_pdebench',
+        #'burgers_pdebench',
     ]:
         # if dataset_name == 'incomp_ns_pdebench':
-        img_sizes = [510, 255, 85, 17]
+        img_sizes = [510, 255, 128, 64]
 
         if dataset_name == 'ns_pdebench':
             img_sizes = [512, 256, 128, 64]
