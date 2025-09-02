@@ -120,7 +120,8 @@ if __name__ == '__main__':
     )
     with parsl.load(config):
         futures = [
-            train(args.ckpt_dir, **exp_args) for exp_args in training_args
+            train(ckpt_dir=args.ckpt_dir, **exp_args)
+            for exp_args in training_args
         ]
         print(f'Num of experiments: {len(futures)}')
 

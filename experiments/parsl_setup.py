@@ -50,6 +50,7 @@ pwd""",
                 max_workers_per_node=4,
                 cpu_affinity='block',
                 provider=provider,
+                cores_per_worker=8,
             )
         ]
     )
