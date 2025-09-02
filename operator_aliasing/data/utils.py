@@ -128,6 +128,7 @@ def get_dataset(
             seed=seed,
         )
     if dataset_name == 'incomp_ns_pdebench':
+        pinn = 'pinn' in data_args['loss_name']
         dataset = IncompNSPDEBench(
             filename='full_data_merge.h5',
             initial_step=initial_steps,
@@ -137,6 +138,7 @@ def get_dataset(
             batch_size=batch_size,
             resolution_proportions=resolution_ratios,
             seed=seed,
+            pinn=pinn,
         )
 
     return dataset

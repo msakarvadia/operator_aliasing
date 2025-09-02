@@ -42,8 +42,11 @@ class IncompNSPDEBench(Dataset):
         :param filename: filename that contains the dataset
         :type filename: STR
 
-        support img dimentions: 510, 255, 85, 17 (highest to lowest)
+        support img dimentions: 510, 255, 128, 64 (highest to lowest)
         """
+        # boolearn to know if we need non-vorticity info for pinns loss:
+        self.pinn = kwargs['pinn']
+
         self.transform = transform
         self.initial_step = initial_step
         self.root_path = Path(Path(saved_folder).resolve()) / filename
@@ -129,14 +132,6 @@ class IncompNSPDEBench(Dataset):
         ]
 
         with h5py.File(self.root_path, 'r') as f:
-            self.force_curl = torch.tensor(
-                f['force_curl'][
-                    set_indexes,
-                    ::reduced_resolution,
-                    ::reduced_resolution,
-                ],
-                dtype=torch.float32,
-            )
             # vorticity
             self.vorticity = torch.tensor(
                 f['vorticity'][
@@ -148,27 +143,38 @@ class IncompNSPDEBench(Dataset):
                 dtype=torch.float32,
             )  # batch, time, x, y
 
-            # Vx
-            self.vx = torch.tensor(
-                f['Vx'][
-                    set_indexes,
-                    :: self.reduced_resolution_t,
-                    ::reduced_resolution,
-                    ::reduced_resolution,
-                ],
-                dtype=torch.float32,
-            )  # batch, time, x,...
+            # NOTE(MS): we only need these fields if we want a pinns loss
+            if self.pinn:
+                self.force_curl = torch.tensor(
+                    f['force_curl'][
+                        set_indexes,
+                        ::reduced_resolution,
+                        ::reduced_resolution,
+                    ],
+                    dtype=torch.float32,
+                )
 
-            # Vy
-            self.vy = torch.tensor(
-                f['Vy'][
-                    set_indexes,
-                    :: self.reduced_resolution_t,
-                    ::reduced_resolution,
-                    ::reduced_resolution,
-                ],
-                dtype=torch.float32,
-            )  # batch, time, x,...
+                # Vx
+                self.vx = torch.tensor(
+                    f['Vx'][
+                        set_indexes,
+                        :: self.reduced_resolution_t,
+                        ::reduced_resolution,
+                        ::reduced_resolution,
+                    ],
+                    dtype=torch.float32,
+                )  # batch, time, x,...
+
+                # Vy
+                self.vy = torch.tensor(
+                    f['Vy'][
+                        set_indexes,
+                        :: self.reduced_resolution_t,
+                        ::reduced_resolution,
+                        ::reduced_resolution,
+                    ],
+                    dtype=torch.float32,
+                )  # batch, time, x,...
 
         sample = {
             'x': self.vorticity[
@@ -179,10 +185,14 @@ class IncompNSPDEBench(Dataset):
                 :,  # need to add channel dim, only first n time steps
             ],
             'y': self.vorticity[:, :, None, :, :],
-            'Vx': self.vx,
-            'Vy': self.vy,
-            'force_curl': self.force_curl,
         }
+        if self.pinn:
+            # NOTE(MS): we only need these fields if we want a pinns loss
+            sample = sample | {
+                'Vx': self.vx,
+                'Vy': self.vy,
+                'force_curl': self.force_curl,
+            }
 
         if self.transform:
             sample = self.transform(sample)
