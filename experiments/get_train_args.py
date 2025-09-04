@@ -30,6 +30,11 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
 
         img_size = 510
 
+        # NOTE(MS): testing a lower batch size to see if memory error goes away
+        if dataset_name == 'incomp_ns_pdebench':
+            batch_size = 1
+            lr = 1e-5
+
         if dataset_name == 'ns_pdebench':
             img_size = 512
 
@@ -44,7 +49,9 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
             '[0.1,0.1,0.1,0.7]',
             '[0.02,0.03,0.05,0.9]',
         ]
-        for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]:
+        # NOTE(MS): truncated experiment for NS
+        for rat in [0.25, 0.5, 0.75]:
+            # for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]:
             for first_idx, second_idx in [
                 (0, 1),
                 (0, 2),
