@@ -50,8 +50,8 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
             '[0.02,0.03,0.05,0.9]',
         ]
         # NOTE(MS): truncated experiment for NS
-        for rat in [0.25, 0.5, 0.75]:
-            # for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]:
+        # for rat in [0.25, 0.5, 0.75]:
+        for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]:
             for first_idx, second_idx in [
                 (0, 1),
                 (0, 2),
@@ -96,10 +96,10 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
     train_args = []
     for dataset_name in [
+        'darcy_pdebench',
         'incomp_ns_pdebench',
         #'ns_pdebench',
-        #'burgers_pdebench',
-        #'darcy_pdebench',
+        'burgers_pdebench',
     ]:
         (
             model_name,
@@ -118,6 +118,12 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             fixed_lim = 8
             filter_lims = [8, 16, 32, -1]  # -1 finished
             downsample_dims = [16, 32, 64, -1]  # 16 finished
+            max_modes = [
+                img_size // 16,
+                img_size // 8,
+                img_size // 4,
+                img_size // 2,
+            ]
 
         if dataset_name == 'burgers_pdebench':
             img_size = 1024
@@ -125,6 +131,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             fixed_lim = 64
             filter_lims = [64, 128, 256, -1]  # -1 finished
             downsample_dims = [128, 256, 512, -1]  # 128 finished
+            max_modes = [img_size // 2]
 
         if dataset_name == 'incomp_ns_pdebench':
             # TODO(MS): waiting for HP search
@@ -132,6 +139,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             fixed_lim = 32  # half of 64 // 2
             filter_lims = [8, 16, 32, -1]  # -1 finished
             downsample_dims = [64, 128, 255, -1]  # 85 finished
+            max_modes = [img_size // 2]
             # fixed_lim = 85 // 2  # half of 85 // 2
             # filter_lims = [85 // 2, 255 // 2, -1]  # -1 finished
             # downsample_dims = [85, 255, -1]  # 85 finished
@@ -143,50 +151,51 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             filter_lims = [32, 64, 128, -1]  # -1 finished
             downsample_dims = [64, 128, 256, -1]  # 64 finished
 
-        # study effect of downsampling
-        for downsample_dim in downsample_dims:
-            training_args = {
-                'lr': lr,
-                'weight_decay': wd,
-                'step_size': 15,
-                'gamma': 0.5,
-                'loss_name': 'mse',
-                'batch_size': batch_size,
-                'dataset_name': dataset_name,
-                'downsample_dim': downsample_dim,
-                'filter_lim': fixed_lim,
-                'max_mode': img_size // 2,
-                'model_name': model_name,
-                'in_channels': in_channels,
-                'out_channels': out_channels,
-                'pinn_loss_weight': 0.5,  # irrelavent arg
-                'initial_steps': initial_steps,
-                'test_res': 'single',
-                'resolution_ratios': '[1,0,0,0]',  # high to low
-            }
-            train_args.append(training_args)
-        # study effect of filtering
-        for filter_lim in filter_lims:
-            training_args = {
-                'lr': lr,
-                'weight_decay': wd,
-                'step_size': 15,
-                'gamma': 0.5,
-                'loss_name': 'mse',
-                'batch_size': batch_size,
-                'dataset_name': dataset_name,
-                'downsample_dim': -1,
-                'filter_lim': filter_lim,
-                'max_mode': img_size // 2,
-                'model_name': model_name,
-                'in_channels': in_channels,
-                'out_channels': out_channels,
-                'pinn_loss_weight': 0.5,  # irrelavent arg
-                'initial_steps': initial_steps,
-                'test_res': 'single',
-                'resolution_ratios': '[1,0,0,0]',  # high to low
-            }
-            train_args.append(training_args)
+        for max_mode in max_modes:
+            # study effect of downsampling
+            for downsample_dim in downsample_dims:
+                training_args = {
+                    'lr': lr,
+                    'weight_decay': wd,
+                    'step_size': 15,
+                    'gamma': 0.5,
+                    'loss_name': 'mse',
+                    'batch_size': batch_size,
+                    'dataset_name': dataset_name,
+                    'downsample_dim': downsample_dim,
+                    'filter_lim': fixed_lim,
+                    'max_mode': max_mode,
+                    'model_name': model_name,
+                    'in_channels': in_channels,
+                    'out_channels': out_channels,
+                    'pinn_loss_weight': 0.5,  # irrelavent arg
+                    'initial_steps': initial_steps,
+                    'test_res': 'single',
+                    'resolution_ratios': '[1,0,0,0]',  # high to low
+                }
+                train_args.append(training_args)
+            # study effect of filtering
+            for filter_lim in filter_lims:
+                training_args = {
+                    'lr': lr,
+                    'weight_decay': wd,
+                    'step_size': 15,
+                    'gamma': 0.5,
+                    'loss_name': 'mse',
+                    'batch_size': batch_size,
+                    'dataset_name': dataset_name,
+                    'downsample_dim': -1,
+                    'filter_lim': filter_lim,
+                    'max_mode': max_mode,
+                    'model_name': model_name,
+                    'in_channels': in_channels,
+                    'out_channels': out_channels,
+                    'pinn_loss_weight': 0.5,  # irrelavent arg
+                    'initial_steps': initial_steps,
+                    'test_res': 'single',
+                    'resolution_ratios': '[1,0,0,0]',  # high to low
+                }
+                train_args.append(training_args)
 
     return train_args
 
