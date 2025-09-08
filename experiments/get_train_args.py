@@ -46,6 +46,7 @@ def get_multi_res_args() -> list[dict[str, typing.Any]]:
 
         # make res ratios
         res_ratios = [
+            '[0.25,0.25,0.25,0.25]',
             '[0.1,0.1,0.1,0.7]',
             '[0.02,0.03,0.05,0.9]',
         ]
