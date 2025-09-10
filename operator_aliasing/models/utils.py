@@ -5,6 +5,7 @@ from __future__ import annotations
 import typing
 
 from neuralop.models import FNO
+from operator_alias.models.crop2d import CROPFNO2d
 from torch.nn import Module
 
 
@@ -17,15 +18,34 @@ def get_model(**model_args: typing.Any) -> Module:
     in_channels = model_args['in_channels']
     out_channels = model_args['out_channels']
 
-    if model_name == 'FNO2D':
+    # crop specific params
+    in_size = model_args['img_size']
+    latent_size = model_args['latent_size']
+
+    if model_name == 'CROP2D':
         starting_modes: typing.Any = (max_modes, max_modes)
+        model = CROPFNO2d(
+            modes=starting_modes,
+            width=hidden_channels,
+            in_size=in_size,
+            latent_size=latent_size,
+            time_steps=in_channels,
+        )
+    if model_name == 'FNO2D':
+        starting_modes = (max_modes, max_modes)
+        model = FNO(
+            n_modes=starting_modes,
+            hidden_channels=hidden_channels,
+            in_channels=in_channels,
+            out_channels=out_channels,
+        )
     if model_name == 'FNO1D':
         starting_modes = (max_modes,)
-    model = FNO(
-        n_modes=starting_modes,
-        hidden_channels=hidden_channels,
-        in_channels=in_channels,
-        out_channels=out_channels,
-    )
+        model = FNO(
+            n_modes=starting_modes,
+            hidden_channels=hidden_channels,
+            in_channels=in_channels,
+            out_channels=out_channels,
+        )
 
     return model

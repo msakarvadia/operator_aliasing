@@ -244,8 +244,14 @@ if __name__ == '__main__':
         '--model_name',
         type=str,
         default='FNO2D',
-        choices=['FNO2D', 'FNO1D'],
+        choices=['FNO2D', 'FNO1D', 'CROP2D'],
         help='Type of model.',
+    )
+    parser.add_argument(
+        '--latent_size',
+        type=int,
+        default=32,
+        help='Latent projection dimention for CROP.',
     )
 
     args = parser.parse_args()
