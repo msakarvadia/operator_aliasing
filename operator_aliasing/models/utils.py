@@ -5,8 +5,9 @@ from __future__ import annotations
 import typing
 
 from neuralop.models import FNO
-from operator_alias.models.crop2d import CROPFNO2d
 from torch.nn import Module
+
+from operator_aliasing.models.crop2d import CROPFNO2d
 
 
 def get_model(**model_args: typing.Any) -> Module:
