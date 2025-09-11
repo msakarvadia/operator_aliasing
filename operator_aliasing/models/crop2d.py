@@ -224,7 +224,7 @@ class CROPFNO2d(nn.Module):
         self,
         modes: tuple[int, int],
         width: int,
-        in_size: int,
+        # in_size: int,
         latent_size: int,
         time_steps: int,
     ):
@@ -247,13 +247,11 @@ class CROPFNO2d(nn.Module):
         self.modes1 = modes[0]
         self.modes2 = modes[1]
         self.width = width
-        self.in_size = in_size
+        # self.in_size = in_size
         self.latent_size = latent_size
         self.padding = 8  # pad the domain if input is non-periodic
         self.time_steps = time_steps
 
-        self.CROP_to_latent = CropToLatentSize(self.in_size, self.latent_size)
-        self.CROP_back = CropToLatentSize(self.latent_size, self.in_size)
         # input channel is 12: the solution of the previous 10 timesteps
         # + 2 locations (u(t-10, x, y), ..., u(t-1, x, y),  x, y)
         self.p = nn.Conv2d(self.time_steps, self.width, 1)
@@ -287,6 +285,9 @@ class CROPFNO2d(nn.Module):
 
         x: input dim (batch_size, time_steps, x_dim, y_dim)
         """
+        self.in_size = x.shape[-1]
+        self.CROP_to_latent = CropToLatentSize(self.in_size, self.latent_size)
+        self.CROP_back = CropToLatentSize(self.latent_size, self.in_size)
         # x = x.permute(0, 3, 1, 2)
         # print('Pre projection: ', x.shape)
         x = self.CROP_to_latent(x)

@@ -20,7 +20,7 @@ def get_model(**model_args: typing.Any) -> Module:
     out_channels = model_args['out_channels']
 
     # crop specific params
-    in_size = model_args['img_size']
+    # in_size = model_args['img_size']
     latent_size = model_args['latent_size']
 
     if model_name == 'CROP2D':
@@ -28,7 +28,7 @@ def get_model(**model_args: typing.Any) -> Module:
         model = CROPFNO2d(
             modes=starting_modes,
             width=hidden_channels,
-            in_size=in_size,
+            # in_size=in_size,
             latent_size=latent_size,
             time_steps=in_channels,
         )
