@@ -7,6 +7,7 @@ import typing
 from neuralop.models import FNO
 from torch.nn import Module
 
+from operator_aliasing.models.cno2d import CNO2d
 from operator_aliasing.models.crop2d import CROPFNO2d
 
 
@@ -23,6 +24,19 @@ def get_model(**model_args: typing.Any) -> Module:
     # in_size = model_args['img_size']
     latent_size = model_args['latent_size']
 
+    if model_name == 'CNO2D':
+        # NOTE (MS): default recommended from
+        # original repo
+        # https://github.com/camlab-ethz/ConvolutionalNeuralOperator/blob/main/CNO2d_vanilla_torch_version/CNO2d.py#L203 # noqa
+        model = CNO2d(
+            in_dim=in_channels,
+            out_dim=out_channels,
+            n_layers=1,
+            n_res=4,
+            n_res_neck=4,
+            channel_multiplier=hidden_channels,
+            use_bn=True,
+        )
     if model_name == 'CROP2D':
         starting_modes: typing.Any = (max_modes, max_modes)
         model = CROPFNO2d(
