@@ -286,6 +286,11 @@ class CROPFNO2d(nn.Module):
         x: input dim (batch_size, time_steps, x_dim, y_dim)
         """
         self.in_size = x.shape[-1]
+        # NOTE (MS): when the original authors evaluate CROP,
+        # they manually update in_size to match the resolution
+        # of the current input. Therefore, we simply dynamically
+        # determine in_size based on the input_shape at inference time.
+        # https://github.com/wenhangao21/ICLR25-CROP/blob/main/original_code_and_trained_models/Sec5_1_NS_with_low_Reynolds/CROP/CROP_measure_errors.py#L246 #noqa
         self.CROP_to_latent = CropToLatentSize(self.in_size, self.latent_size)
         self.CROP_back = CropToLatentSize(self.latent_size, self.in_size)
         # x = x.permute(0, 3, 1, 2)

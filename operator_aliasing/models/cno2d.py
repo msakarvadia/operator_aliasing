@@ -36,17 +36,18 @@ from torch import nn
 class CNOLReLUeLu(nn.Module):
     """CNO activation function."""
 
-    def __init__(self, in_size: int, out_size: int) -> None:
+    def __init__(self) -> None:
         """Initialize activation function."""
         # super(CNOLReLUeLu, self).__init__()
         super().__init__()
 
-        self.in_size = in_size
-        self.out_size = out_size
+        # self.in_size = in_size
+        # self.out_size = out_size
         self.act = nn.LeakyReLU()
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         """Forward method for activation function."""
+        self.in_size = self.out_size = x.shape[-1]
         x = f.interpolate(
             x,
             size=(2 * self.in_size, 2 * self.in_size),
@@ -75,8 +76,8 @@ class CNOBlock(nn.Module):
         self,
         in_channels: int,
         out_channels: int,
-        in_size: int,
-        out_size: int,
+        # in_size: int,
+        # out_size: int,
         use_bn: bool = True,
     ) -> None:
         """Initialize function."""
@@ -85,8 +86,8 @@ class CNOBlock(nn.Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.in_size = in_size
-        self.out_size = out_size
+        # self.in_size = in_size
+        # self.out_size = out_size
 
         # -----------------------------------------
 
@@ -104,7 +105,8 @@ class CNOBlock(nn.Module):
             self.batch_norm = nn.BatchNorm2d(self.out_channels)
         else:
             self.batch_norm = nn.Identity()
-        self.act = CNOLReLUeLu(in_size=self.in_size, out_size=self.out_size)
+        self.act = CNOLReLUeLu()
+        # self.act = CNOLReLUeLu(in_size=self.in_size, out_size=self.out_size)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method."""
@@ -125,7 +127,6 @@ class LiftProjectBlock(nn.Module):
         self,
         in_channels: int,
         out_channels: int,
-        size: int,
         latent_dim: int = 64,
     ) -> None:
         """Initialize function."""
@@ -135,8 +136,6 @@ class LiftProjectBlock(nn.Module):
         self.inter_CNOBlock = CNOBlock(
             in_channels=in_channels,
             out_channels=latent_dim,
-            in_size=size,
-            out_size=size,
             use_bn=False,
         )
 
@@ -162,13 +161,13 @@ class LiftProjectBlock(nn.Module):
 class ResidualBlock(nn.Module):
     """Residual Block."""
 
-    def __init__(self, channels: int, size: int, use_bn: bool = True) -> None:
+    def __init__(self, channels: int, use_bn: bool = True) -> None:
         """Initialize function."""
         # super(ResidualBlock, self).__init__()
         super().__init__()
 
         self.channels = channels
-        self.size = size
+        # self.size = size
 
         # -----------------------------------------
 
@@ -198,7 +197,8 @@ class ResidualBlock(nn.Module):
             self.batch_norm1 = nn.Identity()
             self.batch_norm2 = nn.Identity()
 
-        self.act = CNOLReLUeLu(in_size=self.size, out_size=self.size)
+        self.act = CNOLReLUeLu()
+        # self.act = CNOLReLUeLu(in_size=self.size, out_size=self.size)
 
     def forward(self, x: torch.tensor) -> torch.Tensor:
         """Forward method."""
@@ -219,20 +219,19 @@ class ResNet(nn.Module):
     """ResNet backbone."""
 
     def __init__(
-        self, channels: int, size: int, num_blocks: int, use_bn: bool = True
+        self, channels: int, num_blocks: int, use_bn: bool = True
     ) -> None:
         """Initialize function."""
         # super(ResNet, self).__init__()
         super().__init__()
 
         self.channels = channels
-        self.size = size
         self.num_blocks = num_blocks
 
         self.res_nets = []
         for _ in range(self.num_blocks):
             self.res_nets.append(
-                ResidualBlock(channels=channels, size=size, use_bn=use_bn)
+                ResidualBlock(channels=channels, use_bn=use_bn)
             )
 
         self.res_nets = torch.nn.Sequential(*self.res_nets)
@@ -278,7 +277,7 @@ class CNO2d(nn.Module):
         """
         in_dim = model_args['in_dim']
         out_dim = model_args['out_dim']
-        size = model_args['size']
+        # size = model_args['size']
         n_layers = model_args['n_layers']
         n_res = model_args['n_res']
         n_res_neck = model_args['n_res_neck']
@@ -320,25 +319,25 @@ class CNO2d(nn.Module):
 
         ######## Spatial sizes of channels - evolution ########
 
+        """
         self.encoder_sizes = []
         self.decoder_sizes = []
         for i in range(self.n_layers + 1):
             self.encoder_sizes.append(size // 2**i)
             self.decoder_sizes.append(size // 2 ** (self.n_layers - i))
+        """
 
         ######## Define Lift and Project blocks ########
 
         self.lift = LiftProjectBlock(
             in_channels=in_dim,
             out_channels=self.encoder_features[0],
-            size=size,
         )
 
         self.project = LiftProjectBlock(
             in_channels=self.encoder_features[0]
             + self.decoder_features_out[-1],
             out_channels=out_dim,
-            size=size,
         )
 
         ######## Define Encoder, ED Linker and Decoder networks ########
@@ -349,8 +348,8 @@ class CNO2d(nn.Module):
                     CNOBlock(
                         in_channels=self.encoder_features[i],
                         out_channels=self.encoder_features[i + 1],
-                        in_size=self.encoder_sizes[i],
-                        out_size=self.encoder_sizes[i + 1],
+                        # in_size=self.encoder_sizes[i],
+                        # out_size=self.encoder_sizes[i + 1],
                         use_bn=use_bn,
                     )
                 )
@@ -367,8 +366,8 @@ class CNO2d(nn.Module):
                     CNOBlock(
                         in_channels=self.encoder_features[i],
                         out_channels=self.encoder_features[i],
-                        in_size=self.encoder_sizes[i],
-                        out_size=self.decoder_sizes[self.n_layers - i],
+                        # in_size=self.encoder_sizes[i],
+                        # out_size=self.decoder_sizes[self.n_layers - i],
                         use_bn=use_bn,
                     )
                 )
@@ -382,8 +381,6 @@ class CNO2d(nn.Module):
                     CNOBlock(
                         in_channels=self.decoder_features_in[i],
                         out_channels=self.decoder_features_out[i],
-                        in_size=self.decoder_sizes[i],
-                        out_size=self.decoder_sizes[i + 1],
                         use_bn=use_bn,
                     )
                 )
@@ -408,7 +405,7 @@ class CNO2d(nn.Module):
             self.res_nets.append(
                 ResNet(
                     channels=self.encoder_features[layer],
-                    size=self.encoder_sizes[layer],
+                    # size=self.encoder_sizes[layer],
                     num_blocks=self.n_res,
                     use_bn=use_bn,
                 )
@@ -416,7 +413,7 @@ class CNO2d(nn.Module):
 
         self.res_net_neck = ResNet(
             channels=self.encoder_features[self.n_layers],
-            size=self.encoder_sizes[self.n_layers],
+            # size=self.encoder_sizes[self.n_layers],
             num_blocks=self.n_res_neck,
             use_bn=use_bn,
         )
