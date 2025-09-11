@@ -1,4 +1,24 @@
-"""Public implementation of CNO from camlab."""
+"""Public implementation of CNO from camlab.
+
+Original code:
+https://github.com/camlab-ethz/ConvolutionalNeuralOperator/blob/main/CNO2d_vanilla_torch_version/CNO2d.py
+
+NOTE: We have modified the anti-activation function to dynamically check
+its input size and to upsample 2x an then downsample 2x
+We chose to do this, so that a single model can dynamically serve
+multi-resolution inference as claimed in
+https://arxiv.org/pdf/2305.19913
+https://arxiv.org/pdf/2302.01178
+
+Otherwise, when you change the inference resolution from train resolution,
+the signal gets consistantly mapped into the train resolution in the activation
+If this happens when doing inference on higher-resolution data,
+you effectively truncate out all high-frequency content
+(in which case you should have compressed model input down before inference)
+
+To learn more about anti-alias activation functions see
+https://arxiv.org/abs/2106.12423
+"""
 # https://github.com/camlab-ethz/ConvolutionalNeuralOperator/blob/main/CNO2d_vanilla_torch_version/CNO2d.py
 # The CNO2d code has been modified from a tutorial featured in the
 # ETH Zurich course "AI in the Sciences and Engineering."
