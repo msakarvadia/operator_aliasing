@@ -1,3 +1,5 @@
+source: https://github.com/camlab-ethz/ConvolutionalNeuralOperator/tree/main/CNO2d_original_version
+
 # CNO2d - original version
 #### In this folder, one can find the original CNO code from the NeurIPS 2023.
 
