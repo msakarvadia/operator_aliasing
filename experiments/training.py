@@ -7,6 +7,7 @@ import typing
 
 import parsl
 from get_train_args import get_filter_downsample_args
+from get_train_args import get_hp_search_alias_free
 from get_train_args import get_hp_search_args
 from get_train_args import get_multi_res_args
 from get_train_args import get_pino_args
@@ -65,7 +66,13 @@ if __name__ == '__main__':
         '--experiment_name',
         type=str,
         default='filter_downsample',
-        choices=['filter_downsample', 'hp_search', 'pino', 'multi_res'],
+        choices=[
+            'filter_downsample',
+            'hp_search',
+            'pino',
+            'multi_res',
+            'alias_free',
+        ],
         help='Name of training data.',
     )
     parser.add_argument(
@@ -78,7 +85,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--ckpt_dir',
         type=str,
-        default='ns_ckpts',
+        default='ckpts',
         choices=['ns_ckpts', 'ckpts'],
         help='Name of dir to store all experiments in.',
     )
@@ -111,6 +118,8 @@ if __name__ == '__main__':
         training_args = get_multi_res_args()
     if args.experiment_name == 'pino':
         training_args = get_pino_args()
+    if args.experiment_name == 'alias_free':
+        training_args = get_hp_search_alias_free()
 
     config = get_parsl_config(
         walltime=args.walltime,
