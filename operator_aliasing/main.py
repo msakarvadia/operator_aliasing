@@ -244,7 +244,7 @@ if __name__ == '__main__':
         '--model_name',
         type=str,
         default='FNO2D',
-        choices=['FNO2D', 'FNO1D', 'CROP2D'],
+        choices=['FNO2D', 'FNO1D', 'CROP2D', 'CNO2D'],
         help='Type of model.',
     )
     parser.add_argument(
