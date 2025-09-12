@@ -53,8 +53,32 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
     --initial_steps {kwargs['initial_steps']} \
     --pinn_loss_weight {kwargs['pinn_loss_weight']} \
     --test_res {kwargs['test_res']} \
-    --resolution_ratios {kwargs['resolution_ratios']}
+    --resolution_ratios {kwargs['resolution_ratios']}\
     """
+
+    if 'latent_size' in kwargs:
+        exec_str += f"""pwd;
+        python main.py --filter_lim {kwargs['filter_lim']} \
+        --downsample_dim {kwargs['downsample_dim']} \
+        --lr {kwargs['lr']} \
+        --weight_decay {kwargs['weight_decay']} \
+        --step_size {kwargs['step_size']} \
+        --gamma {kwargs['gamma']} \
+        --dataset_name {kwargs['dataset_name']} \
+        --ckpt_path {ckpt_dir}/{ckpt_name} \
+        --loss_name {kwargs['loss_name']} \
+        --max_modes {kwargs['max_mode']} \
+        --batch_size {kwargs['batch_size']} \
+        --model_name {kwargs['model_name']}\
+        --out_channels {kwargs['out_channels']} \
+        --in_channels {kwargs['in_channels']} \
+        --initial_steps {kwargs['initial_steps']} \
+        --pinn_loss_weight {kwargs['pinn_loss_weight']} \
+        --test_res {kwargs['test_res']} \
+        --resolution_ratios {kwargs['resolution_ratios']}\
+        --latent_size {kwargs['latent_size']}\
+        --img_size {kwargs['img_size']}\
+        """
 
     return exec_str
 
