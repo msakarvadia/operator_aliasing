@@ -309,8 +309,8 @@ def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
                     ratio: list[float] = [0, 0, 0, 0]
                     ratio[res] = 1
                     ratio_formatted = str(ratio).replace(' ', '')
-                    for lr in [1e-2, 1e-3, 1e-4, 1e-5]:
-                        for wd in [1e-5, 1e-6, 1e-7]:
+                    for lr in [1e-2, 1e-3, 1e-4]:
+                        for wd in [1e-5]:
                             hp_args = {
                                 'lr': lr,
                                 'weight_decay': wd,
@@ -321,13 +321,14 @@ def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
                                 'dataset_name': dataset_name,
                                 'downsample_dim': -1,
                                 'filter_lim': -1,
-                                'max_mode': img_size // 2,
+                                # CROP mode limit:
+                                'max_mode': latent_size // 2,
                                 'model_name': model_name,
                                 'in_channels': in_channels,
                                 'out_channels': out_channels,
                                 'pinn_loss_weight': 0.5,
                                 'initial_steps': initial_steps,
-                                'test_res': 'single',
+                                'test_res': 'multi',
                                 # high to low
                                 'resolution_ratios': ratio_formatted,
                                 'latent_size': latent_size,
