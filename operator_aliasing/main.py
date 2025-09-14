@@ -102,9 +102,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '--dataset_name',
         type=str,
-        default='darcy',
+        default='darcy_pdebench',
         choices=[
-            'darcy',
+            #'darcy',
             'random',
             'darcy_pdebench',
             'random_fluid',
