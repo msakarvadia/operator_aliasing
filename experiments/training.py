@@ -109,8 +109,8 @@ if __name__ == '__main__':
     parser.add_argument(
         '--ckpt_dir',
         type=str,
-        default='ckpts',
-        choices=['ns_ckpts', 'ckpts'],
+        default='timing_ckpts',
+        choices=['timing_ckpts', 'ns_ckpts', 'ckpts'],
         help='Name of dir to store all experiments in.',
     )
     parser.add_argument(
