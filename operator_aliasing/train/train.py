@@ -40,6 +40,7 @@ def train_model(**train_args: typing.Any) -> Module:
             'epoch',
             'train_loss',
             'train_time',
+            'train_time_no_data_load',
             *list(test_dataloaders.keys()),
         ]
     )
