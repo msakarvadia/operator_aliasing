@@ -7,6 +7,97 @@ import typing
 from operator_aliasing.utils import get_dataset_info
 
 
+def get_timing_multi_res_args() -> list[dict[str, typing.Any]]:
+    """Get Training Params for basic multi res experiment."""
+    hyper_param_search_args = []
+    for dataset_name in [
+        'incomp_ns_pdebench',
+        'darcy_pdebench',
+        'burgers_pdebench',
+        #'ns_pdebench',
+    ]:
+        (
+            model_name,
+            in_channels,
+            out_channels,
+            initial_steps,
+            loss_name,
+            batch_size,
+            lr,
+            wd,
+            _,
+        ) = get_dataset_info(dataset_name, 'mse')
+
+        img_size = 510
+
+        # NOTE(MS): testing a lower batch size to see if memory error goes away
+        if dataset_name == 'incomp_ns_pdebench':
+            batch_size = 1
+            lr = 1e-5
+
+        if dataset_name == 'ns_pdebench':
+            img_size = 512
+
+        if dataset_name == 'darcy_pdebench':
+            img_size = 128
+
+        if dataset_name == 'burgers_pdebench':
+            img_size = 1024
+
+        # make res ratios
+        res_ratios = [
+            '[1,0,0,0]',
+            '[0,1,0,0]',
+            '[0,0,1,0]',
+            '[0,0,0,1]',
+            '[0.25,0.25,0.25,0.25]',
+            '[0.1,0.1,0.1,0.7]',
+            '[0.02,0.03,0.05,0.9]',
+        ]
+        # NOTE(MS): truncated experiment for NS
+        # for rat in [0.25, 0.5, 0.75]:
+        for rat in [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]:
+            for first_idx, second_idx in [
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (1, 2),
+                (1, 3),
+                (2, 3),
+            ]:
+                ratio: list[float] = [0, 0, 0, 0]
+                ratio[first_idx] = rat
+                ratio[second_idx] = round(1 - rat, 2)
+                ratio_formatted = str(ratio).replace(' ', '')
+                res_ratios.append(ratio_formatted)
+
+        # Add hyper-parameter search:
+        for res_ratio in res_ratios:
+            hp_args = {
+                'lr': lr,
+                'weight_decay': wd,
+                'step_size': 15,
+                'gamma': 0.5,
+                'loss_name': 'mse',
+                'batch_size': batch_size,
+                'dataset_name': dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': -1,
+                'max_mode': img_size // 2,
+                'model_name': model_name,
+                'in_channels': in_channels,
+                'out_channels': out_channels,
+                'pinn_loss_weight': 0.5,  # irrelavent arg
+                'initial_steps': initial_steps,
+                'test_res': 'single',
+                'resolution_ratios': res_ratio,  # high to low
+                'epochs': 10,
+            }
+            hyper_param_search_args.append(hp_args)
+
+    return hyper_param_search_args
+
+
 def get_multi_res_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic multi res experiment."""
     hyper_param_search_args = []

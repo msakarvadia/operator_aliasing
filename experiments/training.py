@@ -11,6 +11,7 @@ from get_train_args import get_hp_search_alias_free
 from get_train_args import get_hp_search_args
 from get_train_args import get_multi_res_args
 from get_train_args import get_pino_args
+from get_train_args import get_timing_multi_res_args
 from parsl.app.app import bash_app
 from parsl_setup import get_parsl_config
 
@@ -26,6 +27,10 @@ def hello_world() -> str:
 @bash_app
 def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
     """Train a model."""
+    epochs = 150
+    if 'epochs' in kwargs:
+        epochs = kwargs['epochs']
+        kwargs.pop('epochs')
     arg_path = '_'.join(map(str, list(kwargs.values())))
     # Need to remove any . or / to
     # ensure a single continuous file path
@@ -54,6 +59,7 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
     --pinn_loss_weight {kwargs['pinn_loss_weight']} \
     --test_res {kwargs['test_res']} \
     --resolution_ratios {kwargs['resolution_ratios']}\
+    --epochs {epochs}\
     """
 
     if 'latent_size' in kwargs:
@@ -78,6 +84,7 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
         --resolution_ratios {kwargs['resolution_ratios']}\
         --latent_size {kwargs['latent_size']}\
         --img_size {kwargs['img_size']}\
+        --epochs {epochs}\
         """
 
     return exec_str
@@ -96,6 +103,7 @@ if __name__ == '__main__':
             'pino',
             'multi_res',
             'alias_free',
+            'timing',
         ],
         help='Name of training data.',
     )
@@ -140,6 +148,8 @@ if __name__ == '__main__':
         training_args = get_hp_search_args()
     if args.experiment_name == 'multi_res':
         training_args = get_multi_res_args()
+    if args.experiment_name == 'timing':
+        training_args = get_timing_multi_res_args()
     if args.experiment_name == 'pino':
         training_args = get_pino_args()
     if args.experiment_name == 'alias_free':
