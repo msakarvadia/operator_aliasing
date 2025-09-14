@@ -75,6 +75,8 @@ def train_model(**train_args: typing.Any) -> Module:
     for epoch in range(starting_epoch, epochs + 1):
         train_loss = 0.0
         start_time = time.time()
+        # timing to exclude potential data loading
+        forward_back_time = 0.0
         for _step, batch in enumerate(tqdm(train_dataloader)):
             # NOTE(MS): must remove outer batch dim from dataloader
             # because we pre-batch data due to multi-res training
@@ -84,6 +86,7 @@ def train_model(**train_args: typing.Any) -> Module:
             # print(f"{input_batch.shape=}, {output_batch.shape=}")
 
             optimizer.zero_grad()
+            start_fb_time = time.time()
             if initial_steps == 1:
                 # for Darcy flow
                 output_pred_batch = model(input_batch)
@@ -97,6 +100,8 @@ def train_model(**train_args: typing.Any) -> Module:
                 )
 
             loss_f.backward()
+            end_fb_time = time.time()
+            forward_back_time += end_fb_time - start_fb_time
             optimizer.step()
             train_loss += loss_f.item()
         scheduler.step()
@@ -115,6 +120,7 @@ def train_model(**train_args: typing.Any) -> Module:
             'epoch': epoch,
             'train_loss': train_loss / len(train_dataloader),
             'train_time': end_time - start_time,
+            'train_time_no_data_load': forward_back_time,
         } | test_dict
 
         if epoch % train_args['ckpt_freq'] == 0:
