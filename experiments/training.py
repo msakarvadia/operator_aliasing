@@ -63,7 +63,7 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
     """
 
     if 'latent_size' in kwargs:
-        exec_str += f"""pwd;
+        exec_str = f"""
         python main.py --filter_lim {kwargs['filter_lim']} \
         --downsample_dim {kwargs['downsample_dim']} \
         --lr {kwargs['lr']} \
