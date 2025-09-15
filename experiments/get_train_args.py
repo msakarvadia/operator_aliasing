@@ -377,10 +377,9 @@ def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
+        'incomp_ns_pdebench',
+        'burgers_pdebench',
     ]:
-        if dataset_name == 'darcy_pdebench':
-            img_sizes = [128, 64, 32, 16]
-
         # Add hyper-parameter search:
         (
             model_name,
@@ -393,8 +392,19 @@ def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
             _,
             _,
         ) = get_dataset_info(dataset_name, 'mse')
+
+        if dataset_name == 'incomp_ns_pdebench':
+            img_sizes = [510, 255, 128, 64]
+            batch_size = 1
+
+        if dataset_name == 'darcy_pdebench':
+            img_sizes = [128, 64, 32, 16]
+
+        if dataset_name == 'burgers_pdebench':
+            img_sizes = [1024, 512, 256, 128]
+
         for model_name in ['CROP2D', 'CNO2D']:
-            for latent_size in [64, 32]:
+            for latent_size in [64]:  # 32
                 for res in range(4):
                     img_size = img_sizes[res]
                     ratio: list[float] = [0, 0, 0, 0]
@@ -440,8 +450,8 @@ def get_hp_search_args() -> list[dict[str, typing.Any]]:
         'darcy_pdebench',
         'burgers_pdebench',
     ]:
-        # if dataset_name == 'incomp_ns_pdebench':
-        img_size = 255
+        if dataset_name == 'incomp_ns_pdebench':
+            img_size = 255
 
         if dataset_name == 'ns_pdebench':
             img_size = 256
