@@ -235,7 +235,7 @@ class CNO1d(nn.Module):
         super(CNO1d, self).__init__()
 
         self.N_layers = int(N_layers)  # Number od (D) & (U) Blocks
-        self.n_dim = 2
+        self.n_dim = 1
         self.lift_dim = (
             channel_multiplier // 2
         )  # Input is lifted to the half of channel_multiplier dimension

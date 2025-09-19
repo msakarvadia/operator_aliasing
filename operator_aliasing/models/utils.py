@@ -8,6 +8,7 @@ from neuralop.models import FNO
 from torch.nn import Module
 
 from operator_aliasing.models.CNO2d_original_version.CNOModule import CNO
+from operator_aliasing.models.cno1d import CNO1d
 from operator_aliasing.models.crop2d import CROPFNO2d
 
 
@@ -50,6 +51,17 @@ def get_model(**model_args: typing.Any) -> Module:
             add_inv=True,  # Add invariant block (I) after the intermediate connections? # noqa
             activation='cno_lrelu_torch',  # Activation function can be 'cno_lrelu' or 'lrelu' # noqa
             # activation='lrelu'
+        )
+    if model_name == 'CNO1D':
+        model = CNO1d(
+            in_dim=in_channels,  # Number of input channels.
+            out_dim=out_channels,  # Target dimension
+            size=in_size,  # Input spatial size
+            N_layers=1,  # Number of (D) or (U) blocks in the network
+            N_res=1,  # Number of (R) blocks per level (except the neck)
+            N_res_neck=6,  # Number of (R) blocks in the neck
+            channel_multiplier=32,  # How the number of channels evolve?
+            use_bn=True,
         )
     if model_name == 'CROP2D':
         starting_modes: typing.Any = (max_modes, max_modes)
