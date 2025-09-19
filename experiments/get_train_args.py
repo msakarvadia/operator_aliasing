@@ -377,8 +377,8 @@ def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
-        'incomp_ns_pdebench',
         'burgers_pdebench',
+        'incomp_ns_pdebench',
     ]:
         # Add hyper-parameter search:
         (
@@ -404,15 +404,20 @@ def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
             img_sizes = [1024, 512, 256, 128]
 
         for model_name in ['CROP2D', 'CNO2D']:
+            if ('CROP' in model_name) and ('burgers' in dataset_name):
+                continue
+            if ('CNO' in model_name) and ('burgers' in dataset_name):
+                model_name = 'CNO1D'
             for latent_size in [64]:  # 32
-                for res in range(4):
+                # on tune on second to largest dim
+                for res in [1]:  # range(4):
                     img_size = img_sizes[res]
                     ratio: list[float] = [0, 0, 0, 0]
                     ratio[res] = 1
                     ratio_formatted = str(ratio).replace(' ', '')
                     # max_mode doesn't matter for cno
                     # img_size doesn't matter for crop
-                    for lr in [1e-2, 1e-3, 1e-4]:
+                    for lr in [1e-3, 1e-4, 1e-5]:  # 1e-5
                         for wd in [1e-5]:
                             hp_args = {
                                 'lr': lr,
