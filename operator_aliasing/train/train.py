@@ -101,7 +101,8 @@ def train_model(**train_args: typing.Any) -> Module:
                 )
 
             loss_f.backward()
-            torch.cuda.synchronize()
+            # NOTE(MS): for accurate timing use synchronize
+            # torch.cuda.synchronize()
             end_fb_time = time.time()
             forward_back_time += end_fb_time - start_fb_time
             optimizer.step()
