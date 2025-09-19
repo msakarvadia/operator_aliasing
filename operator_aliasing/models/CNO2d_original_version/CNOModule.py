@@ -344,6 +344,8 @@ class CNO(nn.Module):
 
         ###################### Define the parameters & specifications #################################################
 
+        self.n_dim = 2
+
         # trian resolution
         self.in_size = in_size
 

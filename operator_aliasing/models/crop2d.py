@@ -211,9 +211,9 @@ class CropToLatentSize(nn.Module):
             :, :, -self.temp_size // 2 :, : self.temp_size // 2 + 1
         ] = fu1[:, :, -self.temp_size // 2 :, : self.temp_size // 2 + 1]
         # Inverse FFT and scaling
-        u1_recover = torch.fft.irfft2(fu1_recover, norm='ortho') * (
-            self.out_size / self.in_size
-        )
+        u1_recover = torch.fft.irfft2(
+            fu1_recover, norm='ortho', s=(self.out_size, self.out_size)
+        ) * (self.out_size / self.in_size)
         return u1_recover
 
 
@@ -244,6 +244,7 @@ class CROPFNO2d(nn.Module):
         """
         super().__init__()
 
+        self.n_dim = 2
         self.modes1 = modes[0]
         self.modes2 = modes[1]
         self.width = width
