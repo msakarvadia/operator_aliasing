@@ -12,6 +12,7 @@ from get_train_args import get_hp_search_args
 from get_train_args import get_multi_res_args
 from get_train_args import get_pino_args
 from get_train_args import get_timing_multi_res_args
+from get_train_args import get_train_alias_free
 from parsl.app.app import bash_app
 from parsl_setup import get_parsl_config
 
@@ -103,6 +104,7 @@ if __name__ == '__main__':
             'pino',
             'multi_res',
             'alias_free',
+            'alias_free_train',
             'timing',
         ],
         help='Name of training data.',
@@ -154,6 +156,8 @@ if __name__ == '__main__':
         training_args = get_pino_args()
     if args.experiment_name == 'alias_free':
         training_args = get_hp_search_alias_free()
+    if args.experiment_name == 'alias_free_train':
+        training_args = get_train_alias_free()
 
     config = get_parsl_config(
         walltime=args.walltime,

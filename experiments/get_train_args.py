@@ -371,6 +371,82 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
                     hyper_param_search_args.append(hp_args)
     return hyper_param_search_args
 
+def get_train_alias_free() -> list[dict[str, typing.Any]]:
+    """Get Training Params for CNO/CROP search."""
+    hyper_param_search_args = []
+    for dataset_name in [
+        'darcy_pdebench',
+        'burgers_pdebench',
+        #'incomp_ns_pdebench',
+    ]:
+        # Add hyper-parameter search:
+        (
+            model_name,
+            in_channels,
+            out_channels,
+            initial_steps,
+            loss_name,
+            batch_size,
+            _,
+            _,
+            _,
+        ) = get_dataset_info(dataset_name, 'mse')
+
+        for model_name in ['CROP2D', 'CNO2D']:
+            if dataset_name == 'incomp_ns_pdebench':
+                img_sizes = [510, 255, 128, 64]
+                batch_size = 1
+
+            if dataset_name == 'darcy_pdebench':
+                if "CROP" in model_name:
+                    lr = 0.001
+                if "CNO" in model_name:
+                    lr = 0.0001
+                img_sizes = [128, 64, 32, 16]
+
+            if dataset_name == 'burgers_pdebench':
+                if "CROP" in model_name:
+                    continue
+                if "CNO" in model_name:
+                    model_name = "CNO1D"
+                    lr = 0.001
+                img_sizes = [1024, 512, 256, 128]
+
+            for latent_size in [64]:  # 32
+                # on tune on second to largest dim
+                for res in range(4):
+                    img_size = img_sizes[res]
+                    ratio: list[float] = [0, 0, 0, 0]
+                    ratio[res] = 1
+                    ratio_formatted = str(ratio).replace(' ', '')
+                    # max_mode doesn't matter for cno
+                    # img_size doesn't matter for crop
+                    for wd in [1e-5]:
+                        hp_args = {
+                            'lr': lr,
+                            'weight_decay': wd,
+                            'step_size': 15,
+                            'gamma': 0.5,
+                            'loss_name': loss_name,
+                            'batch_size': batch_size,
+                            'dataset_name': dataset_name,
+                            'downsample_dim': -1,
+                            'filter_lim': -1,
+                            # CROP mode limit:
+                            'max_mode': latent_size // 2,
+                            'model_name': model_name,
+                            'in_channels': in_channels,
+                            'out_channels': out_channels,
+                            'pinn_loss_weight': 0.5,
+                            'initial_steps': initial_steps,
+                            'test_res': 'multi',
+                            # high to low
+                            'resolution_ratios': ratio_formatted,
+                            'latent_size': latent_size,
+                            'img_size': img_size,
+                        }
+                        hyper_param_search_args.append(hp_args)
+    return hyper_param_search_args
 
 def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
     """Get Training Params for CNO/CROP search."""
