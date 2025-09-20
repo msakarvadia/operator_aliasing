@@ -371,13 +371,14 @@ def get_pino_args() -> list[dict[str, typing.Any]]:
                     hyper_param_search_args.append(hp_args)
     return hyper_param_search_args
 
+
 def get_train_alias_free() -> list[dict[str, typing.Any]]:
     """Get Training Params for CNO/CROP search."""
     hyper_param_search_args = []
     for dataset_name in [
-        'darcy_pdebench',
-        'burgers_pdebench',
-        #'incomp_ns_pdebench',
+        #'darcy_pdebench',
+        #'burgers_pdebench',
+        'incomp_ns_pdebench',
     ]:
         # Add hyper-parameter search:
         (
@@ -396,20 +397,25 @@ def get_train_alias_free() -> list[dict[str, typing.Any]]:
             if dataset_name == 'incomp_ns_pdebench':
                 img_sizes = [510, 255, 128, 64]
                 batch_size = 1
+                if 'CROP' in model_name:
+                    lr = 0.0001
+                if 'CNO' in model_name:
+                    lr = 0.0001
 
             if dataset_name == 'darcy_pdebench':
-                if "CROP" in model_name:
+                if 'CROP' in model_name:
                     lr = 0.001
-                if "CNO" in model_name:
+                if 'CNO' in model_name:
                     lr = 0.0001
                 img_sizes = [128, 64, 32, 16]
 
             if dataset_name == 'burgers_pdebench':
-                if "CROP" in model_name:
+                if 'CROP' in model_name:
                     continue
-                if "CNO" in model_name:
-                    model_name = "CNO1D"
-                    lr = 0.001
+                if 'CNO' in model_name:
+                    model_name = 'CNO1D'
+                    lr = 0.0001
+                    # lr = 0.001
                 img_sizes = [1024, 512, 256, 128]
 
             for latent_size in [64]:  # 32
@@ -447,6 +453,7 @@ def get_train_alias_free() -> list[dict[str, typing.Any]]:
                         }
                         hyper_param_search_args.append(hp_args)
     return hyper_param_search_args
+
 
 def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
     """Get Training Params for CNO/CROP search."""
@@ -486,13 +493,14 @@ def get_hp_search_alias_free() -> list[dict[str, typing.Any]]:
                 model_name = 'CNO1D'
             for latent_size in [64]:  # 32
                 # on tune on second to largest dim
-                for res in [1]:  # range(4):
+                for res in range(4):
                     img_size = img_sizes[res]
                     ratio: list[float] = [0, 0, 0, 0]
                     ratio[res] = 1
                     ratio_formatted = str(ratio).replace(' ', '')
                     # max_mode doesn't matter for cno
                     # img_size doesn't matter for crop
+                    # for lr in [1e-4]:  # 1e-5
                     for lr in [1e-3, 1e-4, 1e-5]:  # 1e-5
                         for wd in [1e-5]:
                             hp_args = {
