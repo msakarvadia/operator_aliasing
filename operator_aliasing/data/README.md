@@ -5,4 +5,3 @@ Download PDEBench Data from [original repo.](https://github.com/pdebench/PDEBenc
 - [`incomp_ns_pdebench.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/data/incomp_ns_pdebench.py): 2d incompressible navier-stokes dataset from PDEBench.
 - [`transforms.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/data/transforms.py): implements the downsampling and low-pass filter transformations used for experiments
 - [`utils.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/data/utils.py): dataset instantiation utilities
-
