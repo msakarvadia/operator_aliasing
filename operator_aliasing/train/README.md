@@ -1,3 +1,3 @@
-- [`train.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/train/train.py) training/test evaluate loops
-- [`pinn_losses.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/train/pinn_losses.py) loss defnitions for different PDE modeling problems
-- [`utils.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/train/utils.py) general training utility functions
+- [`train.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/train/train.py) training/test evaluate loops
+- [`pinn_losses.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/train/pinn_losses.py) loss defnitions for different PDE modeling problems
+- [`utils.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/train/utils.py) general training utility functions
