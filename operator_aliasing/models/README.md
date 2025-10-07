@@ -1,0 +1,6 @@
+- [`utils.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/models/utils.py) utilty to instantiate FNO/CNO/CROP models
+- CNO Models (from [original repo](https://github.com/camlab-ethz/ConvolutionalNeuralOperator/tree/main/CNO2d_time_dependent_%26_foundation_model)):
+  - [`cno1d.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/models/cno1d.py): 1D CNO model
+  - [`CNO2d_original_version/CNOModule.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/models/CNO2d_original_version/CNOModule.py): 2D CNO model
+- CROP Model (from [original_repo](https://github.com/wenhangao21/ICLR25-CROP/tree/main))
+  - [`crop2d.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/models/crop2d.py) 1d CROP model
