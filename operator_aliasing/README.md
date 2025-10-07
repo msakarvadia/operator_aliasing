@@ -1,5 +1,5 @@
-- [`main.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/main.py) allows you to run a single experiment w/ custom experimental configurations. Do `python main.py --help` for details. Running `python main.py` will train an FNO on a darcy flow dataset from PDEBench.
-- [`utils.py`](https://github.com/msakarvadia/operator_aliasing/blob/train/operator_aliasing/utils.py) general utility functions
-- [`train`](https://github.com/msakarvadia/operator_aliasing/tree/train/operator_aliasing/train) contains training utility codes
-- [`models`](https://github.com/msakarvadia/operator_aliasing/tree/train/operator_aliasing/models) contains model definitions and the utilities to instantiate them
-- [`data`](https://github.com/msakarvadia/operator_aliasing/tree/train/operator_aliasing/data) data processing scritps
+- [`main.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/main.py) allows you to run a single experiment w/ custom experimental configurations. Do `python main.py --help` for details. Running `python main.py` will train an FNO on a darcy flow dataset from PDEBench.
+- [`utils.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/utils.py) general utility functions
+- [`train`](https://github.com/msakarvadia/operator_aliasing/tree/main/operator_aliasing/train) contains training utility codes
+- [`models`](https://github.com/msakarvadia/operator_aliasing/tree/main/operator_aliasing/models) contains model definitions and the utilities to instantiate them
+- [`data`](https://github.com/msakarvadia/operator_aliasing/tree/main/operator_aliasing/data) data processing scritps
