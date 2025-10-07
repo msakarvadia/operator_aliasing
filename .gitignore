@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# parsl
+runinfo/
+*cmd_parsl*
+
+#ckpts
+*ckpt*

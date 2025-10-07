@@ -25,6 +25,7 @@ dependencies = [
     "ipykernel",
     "pandas",
     "seaborn",
+    "parsl",
 ]
 
 [project.urls]
