@@ -196,9 +196,10 @@
 		We study if physics-informed optimization constraints are capable of enabling <em>zero-shot multi-resolution inference</em>.
 		We optimize each set of model parameters θ with a dual optimization objective L(θ) = (1 − w) ∗ ℓdata(θ) + w ∗ ℓphys(θ), where ℓdata is the original data-driven loss (mean squared error), and where ℓphys is an additional physics-informed loss, which explicitly enforces that the governing PDE is satisfied. 
 		First, we find that the data-driven loss always outperforms any training objective that includes a physics constraint.
+		<br><br>
 		<img src="static/images/pinns_weight_barplot.png" alt="PINN weighting coefficients."/></img>
 		<br><br>
-		To further illustrate this, we use the smallest non-zero w = 0.1, to train a model at resolution 256 and compare the physics-informed optimization with solely data-driven optimization. 
+		To further illustrate this, we use the smallest non-zero w = 0.1, to train a model at resolution 256 (indicated by *) and compare the physics-informed optimization with solely data-driven optimization. 
 		In the following figure, we find that the predicted spectra of data from models optimized with a physics loss generally diverge more substantially across test resolutions than models optimized with only a data loss. 
 		Models optimized with physics constraints even fail to accurately fit their training distributions (subfigure (c)), and they fail to generalize to both super- and sub-resolution data (subfigure (a,b,d)). 
 		<br><br>
