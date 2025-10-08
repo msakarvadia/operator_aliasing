@@ -163,7 +163,7 @@ For example, when modeling fluid flow, scientists often use adaptive mesh refine
 of turbulence), and coarsens the resolution in less critical regions.
 		<br><br>
 		
-		<b>Machine-learned operators (MLOs)</b>, are a class of data-driven machine learning (ML) models which parameterize the solution operator to families of PDEs, and can be used to do inference at arbitrary discretizations. 
+		<b>Machine-learned operators (MLOs)</b> are a class of data-driven machine learning (ML) models which parameterize the solution operator to families of PDEs, and can be used to do inference at arbitrary discretizations. 
 		<b>Although querying MLOs at arbitrary discretization is computationally inexpensive, it is not obvious that this can be done accurately.</b>
 		<br><br>
 		</p>
@@ -209,7 +209,6 @@ model prediction. Bottom Row: Average residual spectrum normalized by label spec
 		  <li><b>Resolution Interpolation (subfigure (b).)</b> How do models behave when the frequency information in the data remains fixed, but its sampling rate changes from training to inference? Can the model interpolate the fully-resolved signal to varying resolutions?</li> 
 		  <li><b>Information Extrapolation (subfigure (c).)</b> How do models behave when the resolution remains fixed, but the number of fully resolved frequency components changes from training to inference? For super-resolution, this means can the model extrapolate beyond the frequencies in its training data and model higher frequency information?</li>
 		</ol>
-		<br><br>
 		We find, via experiment, that MLOs are not able to interpolate or extrapolate in a <em>zero-shot</em> manner, and instead are suseptible to aliasing (subfigure (e).)
 		</p>
 	</div>
@@ -217,9 +216,15 @@ model prediction. Bottom Row: Average residual spectrum normalized by label spec
 	<h2 class="title is-3">Zero-shot Multi-Resolution or Aliasing?</h2>
 	<div class="content has-text-justified">
 		<p>
-			...
+		We study whether FNOs are capable of spatial multi-resolution inference: simultaneously changing the sampling rate and frequency information. 
+		We train an FNO on a Navier-Stokes dataset at resolution 255 (indicated by *) and evaluate it at resolution 510, 255, 128. Results are in the figure below. 
+			Top Row: Ground truth, prediction at resolutions 510 (super-resolution), resolution 255 (same as train resolution), and resolution 128 (sub-resolution). 
+			Bottom Row: Average energy spectra over test data.
 		<br><br>
-		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		<img src="static/images/incomp_ns_pdebench_super_sub_res_example.png" alt="Aliasing rather than zero-shot super and sub resolution."/></img>
+		<br><br>
+		We observe a failure to generalize, and instead observe high-frequency artifacts in the model predictions in multi-resolution settings.
+		<b>Therefore, we conclude that FNOs are not capable of consistent zero-shot super- or sub-resolution.</b>
 		</p>
 	</div>
 	
