@@ -153,14 +153,6 @@
 <section class="section">
 	<div class="container is-max-desktop">	
 	
-	<h2 class="title is-3">Band-limited Learning</h2>
-	<div class="content has-text-justified">
-		<p>
-			...
-		<br><br>
-		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-		</p>
-	</div>
 	
 	<h2 class="title is-3">Challenge: Discretely Modeling Continuous Systems</h2>
 	<div class="content has-text-justified">
@@ -171,7 +163,7 @@
 		</p>
 	</div>
 	
-	<h2 class="title is-3">What are Machine Learned Operators</h2>
+	<h2 class="title is-3">What are Machine Learned Operators?</h2>
 	<div class="content has-text-justified">
 		<p>
 			...
@@ -219,9 +211,21 @@
 	<h2 class="title is-3">Proposed: Multi-Resolution Training</h2>
 	<div class="content has-text-justified">
 		<p>
-			...
+		We hypothesize that the reason models struggle to do zero-shot multi-resolution inference is because data representing a physical system at varying resolutions is sufficiently out-of-distribution to the model’s fixed-resolution training data. To remedy this, we propose a data-driven solution: multi-resolution training (i.e., training on more than one resolution).
 		<br><br>
-		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		We do an experiment where we train an FNO on multi-resolution data. The results are shown in the figure below. The bottom row shows the test loss across different resolutions.
+		The middle row shows the ratios of training data within each resolution bucket. 
+		The top row shows the the average number of pixels in a data sample in the training set; lower number of pixels enables faster data generation and model training.
+		<br><br>
+		We first study what happens when you include two resolution in the training data: In subfigures (a-f), we observe for pair-wise training, the test performance for data that corresponds to the two training resolutions is generally better, but we also note that there are not consistent gains for the two non-training resolutions.
+		This indicates that models perform best on the data resolutions on which they are trained.
+		<br><br>
+		To improve multi-resolution capabilities, we investigate the impact of including data from all resolutions. 
+		We first assess an equal number of samples across resolutions. 
+		In subfigure (g), the test performance across all resolutions improves, which confirms that multi-resolution training benefits multi-resolution inference. 
+		Next, we ask: *Can we improve the computationally efficiency of multi-resolution training?*
+		To do this, the training dataset must be composed of primarily low resolution data, as it is both the cheapest to generate and the cheapest to train over. We compose two additional multi-resolution datasets and observe in subfigures (h, i) that models remain competitive across test resolutions, even as we decrease the amount of high-resolution data. 
+		<img src="static/images/darcy_pdebench_0.5_all_less_0_multi_res.png" alt="Multi-Resolution Training."/></img>
 		</p>
 	</div>
 	
