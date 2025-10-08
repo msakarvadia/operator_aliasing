@@ -149,90 +149,97 @@
 </section>
 <!-- End paper abstract -->
 
-<h2 class="title is-3">Band-limited Learning</h2>
-<div class="content has-text-justified">
-	<p>
-		...
-	<br><br>
-	<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-	</p>
-</div>
-
-<h2 class="title is-3">Challenge: Discretely Modeling Continuous Systems</h2>
-<div class="content has-text-justified">
-	<p>
-		...
-	<br><br>
-	<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-	</p>
-</div>
-
-<h2 class="title is-3">What are Machine Learned Operators</h2>
-<div class="content has-text-justified">
-	<p>
-		...
-	<br><br>
-	<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-	</p>
-</div>
-
-<h2 class="title is-3">Breaking Down Multi-Resolution Inference</h2>
-<div class="content has-text-justified">
-	<p>
-		...
-	<br><br>
-	<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-	</p>
-</div>
-
-<h2 class="title is-3">Zero-shot Multi-Resolution or Aliasing?</h2>
-<div class="content has-text-justified">
-	<p>
-		...
-	<br><br>
-	<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-	</p>
-</div>
-
-<h2 class="title is-3">Physical Optimization Constraints</h2>
-<div class="content has-text-justified">
-	<p>
-		...
-	<br><br>
-	<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-	</p>
-</div>
-
-<h2 class="title is-3">Band-limited Learning</h2>
-<div class="content has-text-justified">
-	<p>
-		...
-	<br><br>
-	<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-	</p>
-</div>
-
-<h2 class="title is-3">Proposed: Multi-Resolution Training</h2>
-<div class="content has-text-justified">
-	<p>
-		...
-	<br><br>
-	<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-	</p>
-</div>
-
-<h2 class="title is-3">Conclusion</h2>
+<!--Paper Discussion-->
+<section class="section">
+	<div class="container is-max-desktop">	
+	
+	<h2 class="title is-3">Band-limited Learning</h2>
 	<div class="content has-text-justified">
 		<p>
-		For MLOs to be as versatile as numerical methods-based approaches for modeling PDEs, they must be able to perform accurate multi-resolution inference. To better understand an MLO’s abilities, we break down the task of multi-resolution inference by assessing a trained model’s ability both to extrapolate to higher/lower frequency information in data and to interpolate across varying data resolutions. We find that models trained on low resolution data and used for inference on high-resolution data can neither extrapolate nor interpolate; and, more generally, they fail to achieve accurate multi-resolution inference. Changing the resolution of data at inference time is akin to out-of-distribution inference: models have not learned how to generalize in such settings. We document that models used in a zero-shot multi-resolution setting are prone to aliasing. We study the utility of two existing solutions–physics-informed constrains and learning band-limited learning–and find that neither enable accurate multi-resolution inference.
+			...
 		<br><br>
-		Based on these results, we introduce a simple, intuitive, and principled approach to enable accurate multi-resolution inference: multi-resolution training. We show that models perform best at resolutions on which they have been trained; and we demonstrate that one can computationally efficiently achieve the benefits of multi-resolution training via datasets composed with mostly low-resolution data and small amounts of high-resolution data. This enables accurate multi-resolution learning, with the added benefit of low data-generation and model training cost. A promising future direction remains the automated selection of multi-resolution training data using strategies like active learning.
-		<br><br>
-		Further details about all experiments and figures discussed in this blog can be found in the main paper. If there are any questions feel free to email the first author for clarification.
+		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
 		</p>
 	</div>
+	
+	<h2 class="title is-3">Challenge: Discretely Modeling Continuous Systems</h2>
+	<div class="content has-text-justified">
+		<p>
+			...
+		<br><br>
+		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		</p>
+	</div>
+	
+	<h2 class="title is-3">What are Machine Learned Operators</h2>
+	<div class="content has-text-justified">
+		<p>
+			...
+		<br><br>
+		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		</p>
+	</div>
+	
+	<h2 class="title is-3">Breaking Down Multi-Resolution Inference</h2>
+	<div class="content has-text-justified">
+		<p>
+			...
+		<br><br>
+		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		</p>
+	</div>
+	
+	<h2 class="title is-3">Zero-shot Multi-Resolution or Aliasing?</h2>
+	<div class="content has-text-justified">
+		<p>
+			...
+		<br><br>
+		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		</p>
+	</div>
+	
+	<h2 class="title is-3">Physical Optimization Constraints</h2>
+	<div class="content has-text-justified">
+		<p>
+			...
+		<br><br>
+		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		</p>
+	</div>
+	
+	<h2 class="title is-3">Band-limited Learning</h2>
+	<div class="content has-text-justified">
+		<p>
+			...
+		<br><br>
+		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		</p>
+	</div>
+	
+	<h2 class="title is-3">Proposed: Multi-Resolution Training</h2>
+	<div class="content has-text-justified">
+		<p>
+			...
+		<br><br>
+		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		</p>
+	</div>
+	
+	<h2 class="title is-3">Conclusion</h2>
+		<div class="content has-text-justified">
+			<p>
+			For MLOs to be as versatile as numerical methods-based approaches for modeling PDEs, they must be able to perform accurate multi-resolution inference. To better understand an MLO’s abilities, we break down the task of multi-resolution inference by assessing a trained model’s ability both to extrapolate to higher/lower frequency information in data and to interpolate across varying data resolutions. We find that models trained on low resolution data and used for inference on high-resolution data can neither extrapolate nor interpolate; and, more generally, they fail to achieve accurate multi-resolution inference. Changing the resolution of data at inference time is akin to out-of-distribution inference: models have not learned how to generalize in such settings. We document that models used in a zero-shot multi-resolution setting are prone to aliasing. We study the utility of two existing solutions–physics-informed constrains and learning band-limited learning–and find that neither enable accurate multi-resolution inference.
+			<br><br>
+			Based on these results, we introduce a simple, intuitive, and principled approach to enable accurate multi-resolution inference: multi-resolution training. We show that models perform best at resolutions on which they have been trained; and we demonstrate that one can computationally efficiently achieve the benefits of multi-resolution training via datasets composed with mostly low-resolution data and small amounts of high-resolution data. This enables accurate multi-resolution learning, with the added benefit of low data-generation and model training cost. A promising future direction remains the automated selection of multi-resolution training data using strategies like active learning.
+			<br><br>
+			Further details about all experiments and figures discussed in this blog can be found in the main paper. If there are any questions feel free to email the first author for clarification.
+			</p>
+		</div>
+	</div>
 
-
+</section>
+<!--End Paper Discussion-->
+	
 <!--BibTex citation -->
   <section class="section" id="BibTeX">
     <div class="container is-max-desktop content">
