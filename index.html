@@ -202,9 +202,16 @@
 	<h2 class="title is-3">Band-limited Learning</h2>
 	<div class="content has-text-justified">
 		<p>
-			...
+		We study two approaches which propose learning band-limited representations of data (i.e., convolutional neural operators (CNO), Cross-Resolution Operator-Learning (CROP)) and assess if they are capable of enabling <em>zero-shot multi-resolution inference</em>.
+		We do an experiment where we train models (CNO and CROP) on resolution 16 data (indicated by *) and evaluate the model at resolutions 16, 32, 64, 128. 
+		We visualize the average test 2D energy spectra of model predictions and ground truth in the figure below.
+		We notice that the predicted spectra from both CROP and CNO diverge from the ground truth after frequency 8.
 		<br><br>
-		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
+		<img src="static/images/all_methods_aliasing_overview_experiment.png" alt="Band-limited learning."/></img>
+		<br><br>
+		We note more broadly that the design of band-limiting a model’s training data and predictive capacity is counter-intuitive to the goal of multi-resolution inference, in which, a broad range of frequencies must be modeled accurately. 
+		<b>Band-limiting a model’s predictive capacity may enable accurate fixed-resolution representations, but it ensures that high-frequency information is not predicted accurately (or at all).</b>
+		We conclude that band-limited learning limits a model’s utility for multi-resolution inference.
 		</p>
 	</div>
 	
