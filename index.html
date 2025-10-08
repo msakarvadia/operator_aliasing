@@ -153,33 +153,76 @@
 <section class="section">
 	<div class="container is-max-desktop">	
 	
-	
-	<h2 class="title is-3">Challenge: Discretely Modeling Continuous Systems</h2>
-	<div class="content has-text-justified">
-		<p>
-			...
-		<br><br>
-		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
-		</p>
-	</div>
-	
 	<h2 class="title is-3">What are Machine Learned Operators?</h2>
 	<div class="content has-text-justified">
 		<p>
-			...
+		Modeling physical systems governed by partial differential equations (PDEs) is critical to many computational science workflows.
+		Central to this problem formulation is that <em>continuous</em> physical systems must be sampled and, therefore, modeled <em>discretely</em>.
+		For discrete models to be useful in representing phenomena of different scales, scientists require the ability to use it at different resolutions accurately.
+For example, when modeling fluid flow, scientists often use adaptive mesh refinement, a technique that increases simulation resolution in areas that require high accuracy (e.g., regions
+of turbulence), and coarsens the resolution in less critical regions.
+		<br><br>
+		Traditionally, these discrete models are numerical methods which, by design, can be employed at arbitrary discretization. 
+		However, numerical methods are computationally expensive.
+		Alternatively, <b>machine-learned operators (MLOs)</b>, a class of data-driven machine learning (ML) models which parameterize the solution operator to families of PDEs, have been proposed. 
+		Although querying MLOs at arbitrary discretization is computationally inexpensive, it is not obvious that this can be done accurately.
+		<br><br>
+		In this work we systematically show that the current manner in which MLOs are trained does not enable them to do accurate multi-resolution inference. 
+			We then propose a data-driven solution, namely, multi-resolution training, which elicits the desired behavior.
 		<br><br>
 		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
 		</p>
 	</div>
+		
+	<h2 class="title is-3">Challenge: Discretely Modeling Continuous Systems</h2>
+	<div class="content has-text-justified">
+		<p>
+		
+			
+		The fundamental challenge in discretely representing continuous systems lies in the choice of sampling rate. 
+		The Whittaker–Nyquist–Shannon sampling theorem established that, given a sampling rate r, the largest resolved frequency is r/2. 
+		Thus, ML models will be trained on discrete representations, where only some of the frequencies are fully resolved. 
+		Resolving higher-order frequencies greater than r/2, consequently, becomes an out-of-distribution task. 
+		<b>Aligning these discrete models’ predictions with the underlying continuous system is a non-trivial open problem.</b>
+		<br><br>
+		Within an ML context, when inferring at different discretizations of a given signal, <em>aliasing</em> can manifest as the divergence between the energy spectrum of the model prediction and the expected output.
+		Aliasing indicates a model’s failure to fit the underlying continuous system.
+
+		
+			
+		In the figure below we represent the true signal via the dashed blue line and the representation of the true signal that we actually measure via the dotted red line.
+		Notice that the rate at which I collect measurements of the true signal impacts the type of signal we actually measure.
+		<b>Original:</b> Signal is sampled at a rate greater than its <em>Nyquist</em> frequency. 
+		<b>Interpolation:</b> Adapting to new sampling rates of a given signal. 
+		<b>Extrapolation:</b> Adapting to new frequency information under constant sampling rate. 
+		<b>Super-Resolution:</b> Sampling a system at a higher rate, which enables the capture of higher frequency information (interpolation and extrapolation). 
+		<b>Aliasing:</b> High-frequency information is misrepresented as a low-frequency information due to insufficient sampling.
+		<br><br>
+		<img src="static/images/signal_process_overview_w_super_res.png" alt="Signal Processing Overview."/></img>
+		<br><br>
+
+		
+		</p>
+	</div>
+	
+	
 	
 	<h2 class="title is-3">Breaking Down Multi-Resolution Inference</h2>
 	<div class="content has-text-justified">
 		<p>
-			...
+		We define multi-resolution inference as the ability to do inference at multiple resolutions (e.g., sub-resolution and super-resolution). 
+		The <em>zero-shot</em> multi-resolution task employs an ML model, which is trained on data with some resolution, and then tested on data with a different resolution. 
+		Zero-shot multi-resolution inference raises two important questions with respect to the generalization abilities of trained models:
+		<ol>
+		  <li><b>Resolution Interpolation.</b></li> How do models behave when the frequency information in the data remains fixed, but its sampling rate changes from training to inference? Can the model interpolate the fully-resolved signal to varying resolutions?
+		  <li><b>Information Extrapolation.</b></li> How do models behave when the resolution remains fixed, but the number of fully resolved frequency components changes from training to inference? For super-resolution, this means can the model extrapolate beyond the frequencies in its training data and model higher frequency information?
+		</ol>
 		<br><br>
 		<img src="static/images/topo_aware_v_unaware.png" alt="Topology Aware vs. Unaware Aggregation."/></img>
 		</p>
 	</div>
+
+	First, we study <b>resolution interpolation</b>
 	
 	<h2 class="title is-3">Zero-shot Multi-Resolution or Aliasing?</h2>
 	<div class="content has-text-justified">
