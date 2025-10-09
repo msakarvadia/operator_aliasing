@@ -55,7 +55,7 @@ Please cite this work as:
       title={The False Promise of Zero-Shot Super-Resolution in Machine-Learned Operators}, 
       author={Mansi Sakarvadia and Kareem Hegazy and Amin Totounferoush and Kyle Chard and Yaoqing Yang and Ian Foster and Michael W. Mahoney},
       year={2025},
-      eprint={...},
-      url={...}, 
+      eprint={2510.06646},
+      url={https://arxiv.org/abs/2510.06646}, 
 }
 ```
