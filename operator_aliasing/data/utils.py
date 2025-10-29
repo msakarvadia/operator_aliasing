@@ -99,6 +99,7 @@ def get_dataset(
             batch_size=batch_size,
             resolution_proportions=resolution_ratios,
             seed=seed,
+            downsample_method=data_args['downsample_method'],
         )
     if dataset_name == 'burgers_pdebench':
         dataset = BurgersPDEBench(

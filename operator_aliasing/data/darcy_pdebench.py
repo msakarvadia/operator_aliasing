@@ -77,39 +77,84 @@ class DarcyPDEBench(Dataset):
             # shuffle indexes
             self.rng.shuffle(self.data_idxs)
 
-        for res_factor, ratio in enumerate(resolution_proportions):
-            reduced_resolution = 2**res_factor
-            with h5py.File(root_path, 'r') as f:
-                # number of points in this resolution set
-                res_idx = int(self.num_samples * ratio)
-                # sort all indexes
-                set_indexes = np.sort(self.data_idxs[:res_idx])
-                # u: label
-                label = np.array(
-                    f['tensor'][
+        if kwargs['downsample_method'] == 'basic':
+            for res_factor, ratio in enumerate(resolution_proportions):
+                reduced_resolution = 2**res_factor
+                with h5py.File(root_path, 'r') as f:
+                    # number of points in this resolution set
+                    res_idx = int(self.num_samples * ratio)
+                    # sort all indexes
+                    set_indexes = np.sort(self.data_idxs[:res_idx])
+                    # u: label
+                    label = np.array(
+                        f['tensor'][
+                            set_indexes,
+                            :,
+                            ::reduced_resolution,
+                            ::reduced_resolution,
+                        ],
+                        dtype=np.float32,
+                    )
+
+                    # batch, time, x,...
+                    _data = np.array(f['nu'], dtype=np.float32)
+                    # nu: input
+                    model_input = _data[
                         set_indexes,
-                        :,
+                        None,
                         ::reduced_resolution,
                         ::reduced_resolution,
-                    ],
-                    dtype=np.float32,
+                    ]
+
+                    self.model_inputs.append(torch.tensor(model_input))
+                    self.labels.append(torch.tensor(label))
+
+                    # remove already used indexes
+                    self.data_idxs = self.data_idxs[res_idx:]
+
+        if kwargs['downsample_method'] == 'avg_pool':
+            for res_factor, ratio in enumerate(resolution_proportions):
+                # Create an AvgPool2d layer with
+                # stride equal to kernel_size for non-strided pooling
+                non_strided_avg_pool = torch.nn.AvgPool2d(
+                    kernel_size=2**res_factor, stride=2**res_factor
                 )
+                with h5py.File(root_path, 'r') as f:
+                    # number of points in this resolution set
+                    res_idx = int(self.num_samples * ratio)
+                    # sort all indexes
+                    set_indexes = np.sort(self.data_idxs[:res_idx])
+                    # u: label
+                    label = np.array(
+                        f['tensor'][
+                            set_indexes,
+                            :,
+                            :,
+                            :,
+                        ],
+                        dtype=np.float32,
+                    )
 
-                # batch, time, x,...
-                _data = np.array(f['nu'], dtype=np.float32)
-                # nu: input
-                model_input = _data[
-                    set_indexes,
-                    None,
-                    ::reduced_resolution,
-                    ::reduced_resolution,
-                ]
+                    # batch, time, x,...
+                    _data = np.array(f['nu'], dtype=np.float32)
+                    # nu: input
+                    model_input = _data[
+                        set_indexes,
+                        None,
+                        :,
+                        :,
+                    ]
 
-                self.model_inputs.append(torch.tensor(model_input))
-                self.labels.append(torch.tensor(label))
+                    # apply avg pooling
+                    self.model_inputs.append(
+                        non_strided_avg_pool(torch.tensor(model_input))
+                    )
+                    self.labels.append(
+                        non_strided_avg_pool(torch.tensor(label))
+                    )
 
-                # remove already used indexes
-                self.data_idxs = self.data_idxs[res_idx:]
+                    # remove already used indexes
+                    self.data_idxs = self.data_idxs[res_idx:]
 
     def __len__(self) -> int:
         """Returns len of dataset.
