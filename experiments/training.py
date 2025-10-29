@@ -10,6 +10,7 @@ from get_train_args import get_filter_downsample_args
 from get_train_args import get_hp_search_alias_free
 from get_train_args import get_hp_search_args
 from get_train_args import get_hp_search_args_just_darcy
+from get_train_args import get_hp_search_args_just_darcy_avg_pool
 from get_train_args import get_multi_res_args
 from get_train_args import get_pino_args
 from get_train_args import get_timing_multi_res_args
@@ -64,6 +65,30 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
     --epochs {epochs}\
     """
 
+    if 'downsample_method' in kwargs:
+        exec_str = f"""pwd;
+        python main.py --filter_lim {kwargs['filter_lim']} \
+        --downsample_dim {kwargs['downsample_dim']} \
+        --lr {kwargs['lr']} \
+        --weight_decay {kwargs['weight_decay']} \
+        --step_size {kwargs['step_size']} \
+        --gamma {kwargs['gamma']} \
+        --dataset_name {kwargs['dataset_name']} \
+        --ckpt_path {ckpt_dir}/{ckpt_name} \
+        --loss_name {kwargs['loss_name']} \
+        --max_modes {kwargs['max_mode']} \
+        --batch_size {kwargs['batch_size']} \
+        --model_name {kwargs['model_name']}\
+        --out_channels {kwargs['out_channels']} \
+        --in_channels {kwargs['in_channels']} \
+        --initial_steps {kwargs['initial_steps']} \
+        --pinn_loss_weight {kwargs['pinn_loss_weight']} \
+        --test_res {kwargs['test_res']} \
+        --resolution_ratios {kwargs['resolution_ratios']}\
+        --epochs {epochs}\
+        --downsample_method {kwargs['downsample_method']}\
+        """
+
     if 'latent_size' in kwargs:
         exec_str = f"""
         python main.py --filter_lim {kwargs['filter_lim']} \
@@ -108,6 +133,7 @@ if __name__ == '__main__':
             'alias_free_train',
             'timing',
             'darcy_hp_search',
+            'darcy_hp_search_avg_pool',
         ],
         help='Name of training data.',
     )
@@ -122,7 +148,7 @@ if __name__ == '__main__':
         '--ckpt_dir',
         type=str,
         default='timing_ckpts',
-        choices=['timing_ckpts', 'ns_ckpts', 'ckpts'],
+        choices=['timing_ckpts', 'ns_ckpts', 'ckpts', 'avg_pool_ckpts'],
         help='Name of dir to store all experiments in.',
     )
     parser.add_argument(
@@ -162,6 +188,8 @@ if __name__ == '__main__':
         training_args = get_train_alias_free()
     if args.experiment_name == 'darcy_hp_search':
         training_args = get_hp_search_args_just_darcy()
+    if args.experiment_name == 'darcy_hp_search_avg_pool':
+        training_args = get_hp_search_args_just_darcy_avg_pool()
 
     config = get_parsl_config(
         walltime=args.walltime,
