@@ -9,6 +9,7 @@ import parsl
 from get_train_args import get_filter_downsample_args
 from get_train_args import get_hp_search_alias_free
 from get_train_args import get_hp_search_args
+from get_train_args import get_hp_search_args_just_darcy
 from get_train_args import get_multi_res_args
 from get_train_args import get_pino_args
 from get_train_args import get_timing_multi_res_args
@@ -106,6 +107,7 @@ if __name__ == '__main__':
             'alias_free',
             'alias_free_train',
             'timing',
+            'darcy_hp_search',
         ],
         help='Name of training data.',
     )
@@ -158,6 +160,8 @@ if __name__ == '__main__':
         training_args = get_hp_search_alias_free()
     if args.experiment_name == 'alias_free_train':
         training_args = get_train_alias_free()
+    if args.experiment_name == 'darcy_hp_search':
+        training_args = get_hp_search_args_just_darcy()
 
     config = get_parsl_config(
         walltime=args.walltime,
