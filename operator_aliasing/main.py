@@ -159,6 +159,20 @@ if __name__ == '__main__':
             n = downsample to n x n img.""",
     )
     parser.add_argument(
+        '--downsample_method',
+        type=str,
+        default='basic',
+        choices=['basic', 'avg_pool'],
+        help="""Method to sample the original data directly
+            not a downsampling transformation applied after low-pass-filtering
+            currently, only supported for darcy_pdebench data
+            n = downsample to n x n img.
+            basic = x[::n] (default method)
+            avg_pool = average pooling w/ kernel size = n, stride = n
+            avg_pool only supported for darcy_pdebench
+            """,
+    )
+    parser.add_argument(
         '--initial_steps',
         type=int,
         default=1,
