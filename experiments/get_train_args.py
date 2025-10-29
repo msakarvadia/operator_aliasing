@@ -606,8 +606,15 @@ def get_hp_search_args_just_darcy() -> list[dict[str, typing.Any]]:
         if dataset_name == 'darcy_pdebench':
             img_sizes = [128, 64, 32, 16]
 
+        res_ratios = [
+                        '[1,0,0,0]',
+                        '[0,1,0,0]',
+                        '[0,0,1,0]',
+                        '[0,0,0,1]',
+                    ]
         # Add hyper-parameter search:
-        for img_size in img_sizes:
+        for res_idx, img_size in enumerate(img_sizes):
+            res_ratio = res_ratios[res_idx]
             l_name = 'mse'
             (
                 model_name,
@@ -625,8 +632,6 @@ def get_hp_search_args_just_darcy() -> list[dict[str, typing.Any]]:
             # if loss_name == 'n/a':
             #    continue
             pinn_loss_weights = [0.5]
-            if 'pinn' in loss_name:
-                pinn_loss_weights += [0.25, 0.1]  # 0.75 was too high
             for pinn_loss_weight in pinn_loss_weights:
                 for lr in [1e-2, 1e-3, 1e-4, 1e-5]:
                     for wd in [1e-5]:
@@ -647,7 +652,7 @@ def get_hp_search_args_just_darcy() -> list[dict[str, typing.Any]]:
                             'pinn_loss_weight': pinn_loss_weight,
                             'initial_steps': initial_steps,
                             'test_res': 'single',
-                            'resolution_ratios': '[0,1,0,0]',  # high to low
+                            'resolution_ratios': res_ratio,  # high to low
                             'epochs': 4000,
                         }
                         hyper_param_search_args.append(hp_args)
