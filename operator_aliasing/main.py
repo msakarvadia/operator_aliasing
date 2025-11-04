@@ -75,7 +75,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--ckpt_freq',
         type=int,
-        default=5,
+        default=10,
         help='The number of epochs between ckpts.',
     )
     parser.add_argument(
