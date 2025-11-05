@@ -189,7 +189,7 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     train_args = []
     for dataset_name in [
         'burgers_pdebench',
-        'darcy_pdebench',
+        #'darcy_pdebench',
         #'incomp_ns_pdebench',
         #'ns_pdebench',
     ]:
@@ -280,6 +280,10 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
                 train_args.append(training_args)
             # study effect of filtering
             for filter_lim in filter_lims:
+                # NOTE(MS): rn filter out max_modes exp
+                # add these experiments back in when time permits
+                if max_mode != img_size // 2:
+                    continue
                 training_args = {
                     'lr': lr,
                     'weight_decay': wd,
