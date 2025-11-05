@@ -188,10 +188,10 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
     train_args = []
     for dataset_name in [
-        'darcy_pdebench',
-        'incomp_ns_pdebench',
-        #'ns_pdebench',
         'burgers_pdebench',
+        'darcy_pdebench',
+        #'incomp_ns_pdebench',
+        #'ns_pdebench',
     ]:
         (
             model_name,
@@ -223,7 +223,13 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             fixed_lim = 64
             filter_lims = [64, 128, 256, -1]  # -1 finished
             downsample_dims = [128, 256, 512, -1]  # 128 finished
-            max_modes = [img_size // 2]
+            # max_modes = [img_size // 2]
+            max_modes = [
+                img_size // 16,
+                img_size // 8,
+                img_size // 4,
+                img_size // 2,
+            ]
 
         if dataset_name == 'incomp_ns_pdebench':
             # TODO(MS): waiting for HP search
@@ -231,7 +237,13 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
             fixed_lim = 32  # half of 64 // 2
             filter_lims = [8, 16, 32, -1]  # -1 finished
             downsample_dims = [64, 128, 255, -1]  # 85 finished
-            max_modes = [img_size // 2]
+            # max_modes = [img_size // 2]
+            max_modes = [
+                img_size // 16,
+                img_size // 8,
+                img_size // 4,
+                img_size // 2,
+            ]
             # fixed_lim = 85 // 2  # half of 85 // 2
             # filter_lims = [85 // 2, 255 // 2, -1]  # -1 finished
             # downsample_dims = [85, 255, -1]  # 85 finished
@@ -715,7 +727,7 @@ def get_hp_search_args_just_darcy_avg_pool() -> list[dict[str, typing.Any]]:
                             'initial_steps': initial_steps,
                             'test_res': 'single',
                             'resolution_ratios': res_ratio,  # high to low
-                            'epochs': 4000,
+                            'epochs': 1000,
                             'downsample_method': 'avg_pool',
                         }
                         hyper_param_search_args.append(hp_args)
