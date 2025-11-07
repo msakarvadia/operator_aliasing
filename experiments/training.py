@@ -11,6 +11,7 @@ from get_train_args import get_hp_search_alias_free
 from get_train_args import get_hp_search_args
 from get_train_args import get_hp_search_args_just_darcy
 from get_train_args import get_hp_search_args_just_darcy_avg_pool
+from get_train_args import get_lr_scheduler_args
 from get_train_args import get_multi_res_args
 from get_train_args import get_pino_args
 from get_train_args import get_timing_multi_res_args
@@ -134,6 +135,7 @@ if __name__ == '__main__':
             'timing',
             'darcy_hp_search',
             'darcy_hp_search_avg_pool',
+            'lr_scheduler',
         ],
         help='Name of training data.',
     )
@@ -190,6 +192,8 @@ if __name__ == '__main__':
         training_args = get_hp_search_args_just_darcy()
     if args.experiment_name == 'darcy_hp_search_avg_pool':
         training_args = get_hp_search_args_just_darcy_avg_pool()
+    if args.experiment_name == 'lr_scheduler':
+        training_args = get_lr_scheduler_args()
 
     config = get_parsl_config(
         walltime=args.walltime,
