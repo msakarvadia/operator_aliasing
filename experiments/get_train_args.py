@@ -188,9 +188,9 @@ def get_filter_downsample_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for basic filter/downsample experiment."""
     train_args = []
     for dataset_name in [
-        'burgers_pdebench',
+        #'burgers_pdebench',
         #'darcy_pdebench',
-        #'incomp_ns_pdebench',
+        'incomp_ns_pdebench',
         #'ns_pdebench',
     ]:
         (
@@ -674,6 +674,76 @@ def get_hp_search_args_just_darcy() -> list[dict[str, typing.Any]]:
                         hyper_param_search_args.append(hp_args)
     return hyper_param_search_args
 
+def get_lr_scheduler_args() -> list[dict[str, typing.Any]]:
+    """Get Training Params for PINO w/ HP search."""
+    hyper_param_search_args = []
+    for dataset_name in [
+        'darcy_pdebench',
+        'burgers_pdebench',
+        'incomp_ns_pdebench',
+    ]:
+        l_name = 'mse'
+        (
+            model_name,
+            in_channels,
+            out_channels,
+            initial_steps,
+            loss_name,
+            batch_size,
+            _,
+            _,
+            _,
+        ) = get_dataset_info(dataset_name, l_name)
+
+        if dataset_name == 'incomp_ns_pdebench':
+            img_sizes = [510, 255, 128, 64]
+            batch_size = 1
+
+        if dataset_name == 'darcy_pdebench':
+            img_sizes = [128, 64, 32, 16]
+
+        if dataset_name == 'burgers_pdebench':
+            img_sizes = [1024, 512, 256, 128]
+
+        res_ratios = [
+            '[1,0,0,0]',
+            '[0,1,0,0]',
+            '[0,0,1,0]',
+            '[0,0,0,1]',
+        ]
+        # Add hyper-parameter search:
+        for res_idx, img_size in enumerate(img_sizes):
+            res_ratio = res_ratios[res_idx]
+            # NOTE(MS): we don't do pinns loss for compressible NS
+            # we will just let the pinns loss error out for NS
+            # if loss_name == 'n/a':
+            #    continue
+            pinn_loss_weight = 0.5
+            for step_size in [15, 50, 100]:
+                for lr in [1e-3]:
+                    for wd in [1e-5]:
+                        hp_args = {
+                            'lr': lr,
+                            'weight_decay': wd,
+                            'step_size':step_size,
+                            'gamma': 0.5,
+                            'loss_name': loss_name,
+                            'batch_size': batch_size,
+                            'dataset_name': dataset_name,
+                            'downsample_dim': -1,
+                            'filter_lim': -1,
+                            'max_mode': img_size // 2,
+                            'model_name': model_name,
+                            'in_channels': in_channels,
+                            'out_channels': out_channels,
+                            'pinn_loss_weight': pinn_loss_weight,
+                            'initial_steps': initial_steps,
+                            'test_res': 'single',
+                            'resolution_ratios': res_ratio,  # high to low
+                            'epochs': 501,
+                        }
+                        hyper_param_search_args.append(hp_args)
+    return hyper_param_search_args
 
 def get_hp_search_args_just_darcy_avg_pool() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
