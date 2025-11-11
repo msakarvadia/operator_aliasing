@@ -674,6 +674,7 @@ def get_hp_search_args_just_darcy() -> list[dict[str, typing.Any]]:
                         hyper_param_search_args.append(hp_args)
     return hyper_param_search_args
 
+
 def get_lr_scheduler_args() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
     hyper_param_search_args = []
@@ -721,11 +722,13 @@ def get_lr_scheduler_args() -> list[dict[str, typing.Any]]:
             pinn_loss_weight = 0.5
             for step_size in [15, 50, 100]:
                 for lr in [1e-3]:
+                    if dataset_name == 'incomp_ns_pdebench':
+                        lr = 1e-5
                     for wd in [1e-5]:
                         hp_args = {
                             'lr': lr,
                             'weight_decay': wd,
-                            'step_size':step_size,
+                            'step_size': step_size,
                             'gamma': 0.5,
                             'loss_name': loss_name,
                             'batch_size': batch_size,
@@ -744,6 +747,7 @@ def get_lr_scheduler_args() -> list[dict[str, typing.Any]]:
                         }
                         hyper_param_search_args.append(hp_args)
     return hyper_param_search_args
+
 
 def get_hp_search_args_just_darcy_avg_pool() -> list[dict[str, typing.Any]]:
     """Get Training Params for PINO w/ HP search."""
