@@ -118,7 +118,10 @@ if __name__ == '__main__':
         '--img_size',
         type=int,
         default=32,
-        help='Resolution of training data.',
+        help="""Resolution of training data.
+              CNO parameter for interpolation dim.
+              DeepONet parameter of input size.
+            """,
     )
     # NOTE(MS): w/ parsl, the nargs are not all recognized, hack below
     # parser.add_argument(
@@ -258,7 +261,7 @@ if __name__ == '__main__':
         '--model_name',
         type=str,
         default='FNO2D',
-        choices=['FNO2D', 'FNO1D', 'CROP2D', 'CNO2D', 'CNO1D'],
+        choices=['FNO2D', 'FNO1D', 'CROP2D', 'CNO2D', 'CNO1D', 'DeepONet2D'],
         help='Type of model.',
     )
     parser.add_argument(
@@ -266,6 +269,13 @@ if __name__ == '__main__':
         type=int,
         default=32,
         help='Latent projection dimention for CROP.',
+    )
+    parser.add_argument(
+        '--non_linearity',
+        type=str,
+        default='gelu',
+        choices=['gelu', 'anti_alias'],
+        help='FNO activation function (not supported for other models).',
     )
 
     args = parser.parse_args()
