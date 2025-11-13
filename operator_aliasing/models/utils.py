@@ -4,12 +4,70 @@ from __future__ import annotations
 
 import typing
 
+import torch
+import torch.nn.functional as f
 from neuralop.models import FNO
+from torch import nn
 from torch.nn import Module
 
-from operator_aliasing.models.CNO2d_original_version.CNOModule import CNO
 from operator_aliasing.models.cno1d import CNO1d
+from operator_aliasing.models.CNO2d_original_version.CNOModule import CNO
 from operator_aliasing.models.crop2d import CROPFNO2d
+
+
+class AntiAliasLReLu2d(Module):
+    """Anti Alias Act Function."""
+
+    def __init__(self) -> None:
+        """Anti-alias activation function."""
+        # Inspired by: https://github.com/camlab-ethz/ConvolutionalNeuralOperator/blob/main/CNO2d_vanilla_torch_version/CNO2d.py#L31 # noqa
+        super().__init__()
+        self.act = nn.LeakyReLU()
+
+    def forward(self, x: torch.tensor) -> torch.tensor:
+        """Forward Method for anti-alias act. function."""
+        self.in_size = x.shape[-1]
+        self.out_size = self.in_size
+        x = f.interpolate(
+            x,
+            size=(2 * self.in_size, 2 * self.in_size),
+            mode='bicubic',
+            antialias=True,
+        )
+        x = self.act(x)
+        x = f.interpolate(
+            x,
+            size=(self.out_size, self.out_size),
+            mode='bicubic',
+            antialias=True,
+        )
+        return x
+
+
+class AntiAliasLReLu1d(Module):
+    """Anti Alias Act Function."""
+
+    def __init__(self) -> None:
+        """Anti-alias activation function."""
+        # Inspired by: https://github.com/camlab-ethz/ConvolutionalNeuralOperator/blob/main/CNO1d_vanilla_torch_version/CNO1d.py#L31 # noqa
+        super().__init__()
+        self.act = nn.LeakyReLU()
+
+    def forward(self, x: torch.tensor) -> torch.tensor:
+        """Forward Method for anti-alias act. function."""
+        self.in_size = x.shape[-1]
+        self.out_size = self.in_size
+        x = f.interpolate(
+            x.unsqueeze(2),
+            size=(1, 2 * self.in_size),
+            mode='bicubic',
+            antialias=True,
+        )
+        x = self.act(x)
+        x = f.interpolate(
+            x, size=(1, self.out_size), mode='bicubic', antialias=True
+        )
+        return x[:, :, 0]
 
 
 def get_model(**model_args: typing.Any) -> Module:
@@ -20,6 +78,11 @@ def get_model(**model_args: typing.Any) -> Module:
     hidden_channels = model_args['hidden_channels']
     in_channels = model_args['in_channels']
     out_channels = model_args['out_channels']
+
+    # FNO specific params
+    non_linearity = model_args['non_linearity']
+    if non_linearity == 'gelu':
+        act_func = f.gelu
 
     # crop + CNO specific params
     latent_size = model_args['latent_size']
@@ -73,20 +136,26 @@ def get_model(**model_args: typing.Any) -> Module:
             time_steps=in_channels,
         )
     if model_name == 'FNO2D':
+        if non_linearity == 'anti_alias':
+            act_func = AntiAliasLReLu2d()
         starting_modes = (max_modes, max_modes)
         model = FNO(
             n_modes=starting_modes,
             hidden_channels=hidden_channels,
             in_channels=in_channels,
             out_channels=out_channels,
+            non_linearity=act_func,
         )
     if model_name == 'FNO1D':
+        if non_linearity == 'anti_alias':
+            act_func = AntiAliasLReLu1d()
         starting_modes = (max_modes,)
         model = FNO(
             n_modes=starting_modes,
             hidden_channels=hidden_channels,
             in_channels=in_channels,
             out_channels=out_channels,
+            non_linearity=act_func,
         )
 
     return model
