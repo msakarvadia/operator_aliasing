@@ -15,59 +15,50 @@ from operator_aliasing.models.CNO2d_original_version.CNOModule import CNO
 from operator_aliasing.models.crop2d import CROPFNO2d
 
 
-class AntiAliasLReLu2d(Module):
+class AntiAliasLReLu(Module):
     """Anti Alias Act Function."""
 
     def __init__(self) -> None:
         """Anti-alias activation function."""
+        super().__init__()
+        self.act = nn.LeakyReLU()
+
+    def forward(self, x: torch.tensor) -> torch.tensor:
+        """Forward Method for anti-alias act. function."""
+        n_dim = len(x.shape)
+        self.in_size = x.shape[-1]
+        self.out_size = self.in_size
+        # handle 2d inputs
         # Inspired by: https://github.com/camlab-ethz/ConvolutionalNeuralOperator/blob/main/CNO2d_vanilla_torch_version/CNO2d.py#L31 # noqa
-        super().__init__()
-        self.act = nn.LeakyReLU()
-
-    def forward(self, x: torch.tensor) -> torch.tensor:
-        """Forward Method for anti-alias act. function."""
-        self.in_size = x.shape[-1]
-        self.out_size = self.in_size
-        x = f.interpolate(
-            x,
-            size=(2 * self.in_size, 2 * self.in_size),
-            mode='bicubic',
-            antialias=True,
-        )
-        x = self.act(x)
-        x = f.interpolate(
-            x,
-            size=(self.out_size, self.out_size),
-            mode='bicubic',
-            antialias=True,
-        )
-        return x
-
-
-class AntiAliasLReLu1d(Module):
-    """Anti Alias Act Function."""
-
-    def __init__(self) -> None:
-        """Anti-alias activation function."""
+        if n_dim == 4:
+            print(f'{x.shape=}, {self.in_size=}')
+            x = f.interpolate(
+                x,
+                size=(2 * self.in_size, 2 * self.in_size),
+                mode='bicubic',
+                antialias=True,
+            )
+            x = self.act(x)
+            x = f.interpolate(
+                x,
+                size=(self.out_size, self.out_size),
+                mode='bicubic',
+                antialias=True,
+            )
+        # handle 1d inputs
         # Inspired by: https://github.com/camlab-ethz/ConvolutionalNeuralOperator/blob/main/CNO1d_vanilla_torch_version/CNO1d.py#L31 # noqa
-        super().__init__()
-        self.act = nn.LeakyReLU()
-
-    def forward(self, x: torch.tensor) -> torch.tensor:
-        """Forward Method for anti-alias act. function."""
-        self.in_size = x.shape[-1]
-        self.out_size = self.in_size
-        x = f.interpolate(
-            x.unsqueeze(2),
-            size=(1, 2 * self.in_size),
-            mode='bicubic',
-            antialias=True,
-        )
-        x = self.act(x)
-        x = f.interpolate(
-            x, size=(1, self.out_size), mode='bicubic', antialias=True
-        )
-        return x[:, :, 0]
+        if n_dim == 3:
+            x = f.interpolate(
+                x.unsqueeze(2),
+                size=(1, 2 * self.in_size),
+                mode='bicubic',
+                antialias=True,
+            )
+            x = self.act(x)
+            x = f.interpolate(
+                x, size=(1, self.out_size), mode='bicubic', antialias=True
+            )[:, :, 0]
+        return x
 
 
 def get_model(**model_args: typing.Any) -> Module:
@@ -83,6 +74,8 @@ def get_model(**model_args: typing.Any) -> Module:
     non_linearity = model_args['non_linearity']
     if non_linearity == 'gelu':
         act_func = f.gelu
+    if non_linearity == 'anti_alias':
+        act_func = AntiAliasLReLu()
 
     # crop + CNO specific params
     latent_size = model_args['latent_size']
@@ -136,8 +129,6 @@ def get_model(**model_args: typing.Any) -> Module:
             time_steps=in_channels,
         )
     if model_name == 'FNO2D':
-        if non_linearity == 'anti_alias':
-            act_func = AntiAliasLReLu2d()
         starting_modes = (max_modes, max_modes)
         model = FNO(
             n_modes=starting_modes,
@@ -147,8 +138,6 @@ def get_model(**model_args: typing.Any) -> Module:
             non_linearity=act_func,
         )
     if model_name == 'FNO1D':
-        if non_linearity == 'anti_alias':
-            act_func = AntiAliasLReLu1d()
         starting_modes = (max_modes,)
         model = FNO(
             n_modes=starting_modes,
