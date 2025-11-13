@@ -14,6 +14,7 @@ from get_train_args import get_hp_search_args_just_darcy
 from get_train_args import get_hp_search_args_just_darcy_avg_pool
 from get_train_args import get_lr_scheduler_args
 from get_train_args import get_multi_res_args
+from get_train_args import get_multi_seed_args
 from get_train_args import get_pino_args
 from get_train_args import get_timing_multi_res_args
 from get_train_args import get_train_alias_free
@@ -67,6 +68,29 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
     --epochs {epochs}\
     """
 
+    if 'seed' in kwargs:
+        exec_str = f"""pwd;
+        python main.py --filter_lim {kwargs['filter_lim']} \
+        --downsample_dim {kwargs['downsample_dim']} \
+        --lr {kwargs['lr']} \
+        --weight_decay {kwargs['weight_decay']} \
+        --step_size {kwargs['step_size']} \
+        --gamma {kwargs['gamma']} \
+        --dataset_name {kwargs['dataset_name']} \
+        --ckpt_path {ckpt_dir}/{ckpt_name} \
+        --loss_name {kwargs['loss_name']} \
+        --max_modes {kwargs['max_mode']} \
+        --batch_size {kwargs['batch_size']} \
+        --model_name {kwargs['model_name']}\
+        --out_channels {kwargs['out_channels']} \
+        --in_channels {kwargs['in_channels']} \
+        --initial_steps {kwargs['initial_steps']} \
+        --pinn_loss_weight {kwargs['pinn_loss_weight']} \
+        --test_res {kwargs['test_res']} \
+        --resolution_ratios {kwargs['resolution_ratios']}\
+        --epochs {epochs}\
+        --seed {kwargs['seed']}\
+        """
     if 'non_linearity' in kwargs:
         exec_str = f"""pwd;
         python main.py --filter_lim {kwargs['filter_lim']} \
@@ -161,6 +185,7 @@ if __name__ == '__main__':
             'darcy_hp_search_avg_pool',
             'lr_scheduler',
             'anti_alias',
+            'multi_seed',
         ],
         help='Name of training data.',
     )
@@ -221,6 +246,8 @@ if __name__ == '__main__':
         training_args = get_lr_scheduler_args()
     if args.experiment_name == 'anti_alias':
         training_args = get_anti_alias_args()
+    if args.experiment_name == 'multi_seed':
+        training_args = get_multi_seed_args()
 
     config = get_parsl_config(
         walltime=args.walltime,
