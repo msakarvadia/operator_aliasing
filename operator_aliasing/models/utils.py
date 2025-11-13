@@ -13,6 +13,7 @@ from torch.nn import Module
 from operator_aliasing.models.cno1d import CNO1d
 from operator_aliasing.models.CNO2d_original_version.CNOModule import CNO
 from operator_aliasing.models.crop2d import CROPFNO2d
+from operator_aliasing.models.deeponet import DeepONetCP
 
 
 class AntiAliasLReLu(Module):
@@ -80,7 +81,7 @@ def get_model(**model_args: typing.Any) -> Module:
     # crop + CNO specific params
     latent_size = model_args['latent_size']
 
-    # CNO params
+    # CNO + DeepONet params
     in_size = model_args['img_size']
 
     if model_name == 'CNO2D':
@@ -145,6 +146,25 @@ def get_model(**model_args: typing.Any) -> Module:
             in_channels=in_channels,
             out_channels=out_channels,
             non_linearity=act_func,
+        )
+    if model_name == 'DeepONet2D':
+        network_properties = {
+            'branch_layers': 4,
+            'trunk_layers': 4,
+            'branch_width': 128,
+            'trunk_width': 128,
+        }
+        branch_layers = network_properties['branch_layers']
+        trunk_layers = network_properties['trunk_layers']
+        branch_width = network_properties['branch_width']
+        trunk_width = network_properties['trunk_width']
+
+        branch = [branch_width] * branch_layers
+        trunk = [trunk_width] * trunk_layers
+        model = DeepONetCP(
+            branch_layer=[in_size**2] + branch,
+            trunk_layer=[2] + trunk,
+            model_dim=in_size,
         )
 
     return model
