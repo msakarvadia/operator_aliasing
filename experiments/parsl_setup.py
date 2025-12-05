@@ -31,7 +31,7 @@ def get_parsl_config(
         account='m4790',
         worker_init="""
 module load conda
-conda activate /pscratch/sd/m/mansisak/operator_aliasing/env/
+conda activate /pscratch/sd/m/mansisak/operator_aliasing/new_env/
 cd /pscratch/sd/m/mansisak/operator_aliasing/operator_aliasing/
 
 # Print to stdout to for easier debugging

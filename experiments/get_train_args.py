@@ -812,8 +812,8 @@ def get_hp_search_args_just_darcy_avg_pool() -> list[dict[str, typing.Any]]:
     return hyper_param_search_args
 
 
-def get_anti_alias_args() -> list[dict[str, typing.Any]]:
-    """Get Training Params for PINO w/ HP search."""
+def get_cpu_train_args_just_darcy() -> list[dict[str, typing.Any]]:
+    """Get Training Params for CPU."""
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
@@ -828,6 +828,78 @@ def get_anti_alias_args() -> list[dict[str, typing.Any]]:
             '[0,0,0,1]',
         ]
         # Add hyper-parameter search:
+        for res_idx, img_size in enumerate(img_sizes):
+            res_ratio = res_ratios[res_idx]
+            l_name = 'mse'
+            (
+                model_name,
+                in_channels,
+                out_channels,
+                initial_steps,
+                loss_name,
+                batch_size,
+                _,
+                _,
+                _,
+            ) = get_dataset_info(dataset_name, l_name)
+            # NOTE(MS): we don't do pinns loss for compressible NS
+            # we will just let the pinns loss error out for NS
+            # if loss_name == 'n/a':
+            #    continue
+            pinn_loss_weights = [0.5]
+            for pinn_loss_weight in pinn_loss_weights:
+                for lr in [1e-3]:
+                    for wd in [1e-5]:
+                        hp_args = {
+                            'lr': lr,
+                            'weight_decay': wd,
+                            'step_size': 15,
+                            'gamma': 0.5,
+                            'loss_name': loss_name,
+                            'batch_size': batch_size,
+                            'dataset_name': dataset_name,
+                            'downsample_dim': -1,
+                            'filter_lim': -1,
+                            'max_mode': img_size // 2,
+                            'model_name': model_name,
+                            'in_channels': in_channels,
+                            'out_channels': out_channels,
+                            'pinn_loss_weight': pinn_loss_weight,
+                            'initial_steps': initial_steps,
+                            'test_res': 'single',
+                            'resolution_ratios': res_ratio,  # high to low
+                            'epochs': 150,
+                            'device': 'cpu',
+                        }
+                        hyper_param_search_args.append(hp_args)
+    return hyper_param_search_args
+
+
+def get_anti_alias_args() -> list[dict[str, typing.Any]]:
+    """Get Training Params for PINO w/ HP search."""
+    hyper_param_search_args = []
+    for dataset_name in [
+        'darcy_pdebench',
+    ]:
+        if dataset_name == 'darcy_pdebench':
+            img_sizes = [128, 64, 32, 16]
+            fixed_lim = 8
+            filter_lims = [8, 16, 32, -1]  # -1 finished
+            downsample_dims = [16, 32, 64, -1]  # 16 finished
+            max_modes = [
+                img_sizes[0] // 16,
+                img_sizes[0] // 8,
+                img_sizes[0] // 4,
+                img_sizes[0] // 2,
+            ]
+
+        res_ratios = [
+            '[1,0,0,0]',
+            '[0,1,0,0]',
+            '[0,0,1,0]',
+            '[0,0,0,1]',
+        ]
+        # Add super/sub-res analysis
         for res_idx, img_size in enumerate(img_sizes):
             res_ratio = res_ratios[res_idx]
             l_name = 'mse'
@@ -869,17 +941,75 @@ def get_anti_alias_args() -> list[dict[str, typing.Any]]:
                     'non_linearity': 'anti_alias',
                 }
                 hyper_param_search_args.append(hp_args)
+
+        for max_mode in max_modes:
+            # study effect of downsampling
+            for downsample_dim in downsample_dims:
+                training_args = {
+                    'lr': lr,
+                    'weight_decay': wd,
+                    'step_size': 15,
+                    'gamma': 0.5,
+                    'loss_name': 'mse',
+                    'batch_size': batch_size,
+                    'dataset_name': dataset_name,
+                    'downsample_dim': downsample_dim,
+                    'filter_lim': fixed_lim,
+                    'max_mode': max_mode,
+                    'model_name': model_name,
+                    'in_channels': in_channels,
+                    'out_channels': out_channels,
+                    'pinn_loss_weight': 0.5,  # irrelavent arg
+                    'initial_steps': initial_steps,
+                    'test_res': 'single',
+                    'resolution_ratios': '[1,0,0,0]',  # high to low
+                    'non_linearity': 'anti_alias',
+                }
+                hyper_param_search_args.append(training_args)
+        # study effect of filtering
+        max_mode = img_sizes[0] // 2
+        for filter_lim in filter_lims:
+            training_args = {
+                'lr': lr,
+                'weight_decay': wd,
+                'step_size': 15,
+                'gamma': 0.5,
+                'loss_name': 'mse',
+                'batch_size': batch_size,
+                'dataset_name': dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': filter_lim,
+                'max_mode': max_mode,
+                'model_name': model_name,
+                'in_channels': in_channels,
+                'out_channels': out_channels,
+                'pinn_loss_weight': 0.5,  # irrelavent arg
+                'initial_steps': initial_steps,
+                'test_res': 'single',
+                'resolution_ratios': '[1,0,0,0]',  # high to low
+                'non_linearity': 'anti_alias',
+            }
+            hyper_param_search_args.append(training_args)
     return hyper_param_search_args
 
 
 def get_multi_seed_args() -> list[dict[str, typing.Any]]:
-    """Get Training Params for PINO w/ HP search."""
+    """Get Training Params for multi seeded experiments."""
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
     ]:
         if dataset_name == 'darcy_pdebench':
             img_sizes = [128, 64, 32, 16]
+            fixed_lim = 8
+            filter_lims = [8, 16, 32, -1]  # -1 finished
+            downsample_dims = [16, 32, 64, -1]  # 16 finished
+            max_modes = [
+                img_sizes[0] // 16,
+                img_sizes[0] // 8,
+                img_sizes[0] // 4,
+                img_sizes[0] // 2,
+            ]
 
         res_ratios = [
             '[1,0,0,0]',
@@ -888,8 +1018,7 @@ def get_multi_seed_args() -> list[dict[str, typing.Any]]:
             '[0,0,0,1]',
         ]
         # Add hyper-parameter search:
-        for res_idx, img_size in enumerate(img_sizes):
-            res_ratio = res_ratios[res_idx]
+        for seed in [0, 1, 2]:
             l_name = 'mse'
             (
                 model_name,
@@ -907,7 +1036,8 @@ def get_multi_seed_args() -> list[dict[str, typing.Any]]:
             # if loss_name == 'n/a':
             #    continue
             pinn_loss_weight = 0.5
-            for seed in [0, 1, 2]:
+            for res_idx, img_size in enumerate(img_sizes):
+                res_ratio = res_ratios[res_idx]
                 hp_args = {
                     'lr': lr,
                     'weight_decay': wd,
@@ -929,4 +1059,226 @@ def get_multi_seed_args() -> list[dict[str, typing.Any]]:
                     'seed': seed,
                 }
                 hyper_param_search_args.append(hp_args)
+            for max_mode in max_modes:
+                # study effect of downsampling
+                for downsample_dim in downsample_dims:
+                    training_args = {
+                        'lr': lr,
+                        'weight_decay': wd,
+                        'step_size': 15,
+                        'gamma': 0.5,
+                        'loss_name': 'mse',
+                        'batch_size': batch_size,
+                        'dataset_name': dataset_name,
+                        'downsample_dim': downsample_dim,
+                        'filter_lim': fixed_lim,
+                        'max_mode': max_mode,
+                        'model_name': model_name,
+                        'in_channels': in_channels,
+                        'out_channels': out_channels,
+                        'pinn_loss_weight': 0.5,  # irrelavent arg
+                        'initial_steps': initial_steps,
+                        'test_res': 'single',
+                        'resolution_ratios': '[1,0,0,0]',  # high to low
+                        'seed': seed,
+                    }
+                    hyper_param_search_args.append(training_args)
+                # study effect of filtering
+                for filter_lim in filter_lims:
+                    training_args = {
+                        'lr': lr,
+                        'weight_decay': wd,
+                        'step_size': 15,
+                        'gamma': 0.5,
+                        'loss_name': 'mse',
+                        'batch_size': batch_size,
+                        'dataset_name': dataset_name,
+                        'downsample_dim': -1,
+                        'filter_lim': filter_lim,
+                        'max_mode': max_mode,
+                        'model_name': model_name,
+                        'in_channels': in_channels,
+                        'out_channels': out_channels,
+                        'pinn_loss_weight': 0.5,  # irrelavent arg
+                        'initial_steps': initial_steps,
+                        'test_res': 'single',
+                        'resolution_ratios': '[1,0,0,0]',  # high to low
+                        'seed': seed,
+                    }
+                    hyper_param_search_args.append(training_args)
+    return hyper_param_search_args
+
+
+def get_deeponet_args() -> list[dict[str, typing.Any]]:
+    """Get Training Params for deeponet experiments."""
+    hyper_param_search_args = []
+    for dataset_name in [
+        'darcy_pdebench',
+    ]:
+        if dataset_name == 'darcy_pdebench':
+            img_sizes = [128, 64, 32, 16]
+            fixed_lim = 8
+            filter_lims = [8, 16, 32, -1]  # -1 finished
+            downsample_dims = [16, 32, 64, -1]  # 16 finished
+
+        res_ratios = [
+            '[1,0,0,0]',
+            '[0,1,0,0]',
+            '[0,0,1,0]',
+            '[0,0,0,1]',
+        ]
+        # Add hyper-parameter search:
+        for res_idx, img_size in enumerate(img_sizes):
+            res_ratio = res_ratios[res_idx]
+            l_name = 'mse'
+            model_name = 'DeepONet2D'
+            (
+                _model_name,
+                in_channels,
+                out_channels,
+                initial_steps,
+                loss_name,
+                batch_size,
+                lr,
+                wd,
+                _,
+            ) = get_dataset_info(dataset_name, l_name)
+            # NOTE(MS): we don't do pinns loss for compressible NS
+            # we will just let the pinns loss error out for NS
+            # if loss_name == 'n/a':
+            #    continue
+            pinn_loss_weight = 0.5
+            for lr in [1e-2, 1e-3, 1e-4, 1e-5]:
+                hp_args = {
+                    'lr': lr,
+                    'weight_decay': wd,
+                    'step_size': 15,
+                    'gamma': 0.5,
+                    'loss_name': loss_name,
+                    'batch_size': batch_size,
+                    'dataset_name': dataset_name,
+                    'downsample_dim': -1,
+                    'filter_lim': -1,
+                    'max_mode': img_size // 2,
+                    'model_name': model_name,
+                    'in_channels': in_channels,
+                    'out_channels': out_channels,
+                    'pinn_loss_weight': pinn_loss_weight,
+                    'initial_steps': initial_steps,
+                    'test_res': 'single',
+                    'resolution_ratios': res_ratio,  # high to low
+                    'img_size': img_size,
+                }
+                hyper_param_search_args.append(hp_args)
+        # after HP search, we find that Deeponet
+        # has same optimal param as fno for darcy
+        (
+            _model_name,
+            in_channels,
+            out_channels,
+            initial_steps,
+            loss_name,
+            batch_size,
+            lr,
+            wd,
+            _,
+        ) = get_dataset_info(dataset_name, l_name)
+        # study effect of downsampling
+        for idx, downsample_dim in enumerate(downsample_dims):
+            img_size = downsample_dim
+            if downsample_dim == -1:
+                img_size = img_sizes[0]
+            training_args = {
+                'lr': lr,
+                'weight_decay': wd,
+                'step_size': 15,
+                'gamma': 0.5,
+                'loss_name': 'mse',
+                'batch_size': batch_size,
+                'dataset_name': dataset_name,
+                'downsample_dim': downsample_dim,
+                'filter_lim': fixed_lim,
+                'max_mode': img_size // 2,
+                'model_name': model_name,
+                'in_channels': in_channels,
+                'out_channels': out_channels,
+                'pinn_loss_weight': 0.5,  # irrelavent arg
+                'initial_steps': initial_steps,
+                'test_res': 'single',
+                'resolution_ratios': '[1,0,0,0]',  # high to low
+                'img_size': img_size,
+            }
+            hyper_param_search_args.append(training_args)
+        # study effect of filtering
+        for filter_lim in filter_lims:
+            img_size = img_sizes[0]
+            training_args = {
+                'lr': lr,
+                'weight_decay': wd,
+                'step_size': 15,
+                'gamma': 0.5,
+                'loss_name': 'mse',
+                'batch_size': batch_size,
+                'dataset_name': dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': filter_lim,
+                'max_mode': img_size // 2,
+                'model_name': model_name,
+                'in_channels': in_channels,
+                'out_channels': out_channels,
+                'pinn_loss_weight': 0.5,  # irrelavent arg
+                'initial_steps': initial_steps,
+                'test_res': 'single',
+                'resolution_ratios': '[1,0,0,0]',  # high to low
+                'img_size': img_size,
+            }
+            hyper_param_search_args.append(training_args)
+
+        # make res ratios
+        res_ratios = [
+            '[0.25,0.25,0.25,0.25]',
+            '[0.1,0.1,0.1,0.7]',
+            '[0.02,0.03,0.05,0.9]',
+        ]
+        # NOTE(MS): truncated experiment for NS
+        # for rat in [0.25, 0.5, 0.75]:
+        for rat in [0.5]:
+            for first_idx, second_idx in [
+                (0, 1),
+                (0, 2),
+                (0, 3),
+                (1, 2),
+                (1, 3),
+                (2, 3),
+            ]:
+                ratio: list[float] = [0, 0, 0, 0]
+                ratio[first_idx] = rat
+                ratio[second_idx] = round(1 - rat, 2)
+                ratio_formatted = str(ratio).replace(' ', '')
+                res_ratios.append(ratio_formatted)
+
+        # Add hyper-parameter search:
+        for res_ratio in res_ratios:
+            img_size = img_sizes[-1]
+            hp_args = {
+                'lr': lr,
+                'weight_decay': wd,
+                'step_size': 15,
+                'gamma': 0.5,
+                'loss_name': 'mse',
+                'batch_size': batch_size,
+                'dataset_name': dataset_name,
+                'downsample_dim': -1,
+                'filter_lim': -1,
+                'max_mode': img_size // 2,
+                'model_name': model_name,
+                'in_channels': in_channels,
+                'out_channels': out_channels,
+                'pinn_loss_weight': 0.5,  # irrelavent arg
+                'initial_steps': initial_steps,
+                'test_res': 'multi',
+                'resolution_ratios': res_ratio,  # high to low
+                'img_size': img_size,
+            }
+            hyper_param_search_args.append(hp_args)
     return hyper_param_search_args

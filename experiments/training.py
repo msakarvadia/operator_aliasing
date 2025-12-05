@@ -7,6 +7,8 @@ import typing
 
 import parsl
 from get_train_args import get_anti_alias_args
+from get_train_args import get_cpu_train_args_just_darcy
+from get_train_args import get_deeponet_args
 from get_train_args import get_filter_downsample_args
 from get_train_args import get_hp_search_alias_free
 from get_train_args import get_hp_search_args
@@ -68,6 +70,29 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
     --epochs {epochs}\
     """
 
+    if 'device' in kwargs:
+        exec_str = f"""pwd;
+        python main.py --filter_lim {kwargs['filter_lim']} \
+        --downsample_dim {kwargs['downsample_dim']} \
+        --lr {kwargs['lr']} \
+        --weight_decay {kwargs['weight_decay']} \
+        --step_size {kwargs['step_size']} \
+        --gamma {kwargs['gamma']} \
+        --dataset_name {kwargs['dataset_name']} \
+        --ckpt_path {ckpt_dir}/{ckpt_name} \
+        --loss_name {kwargs['loss_name']} \
+        --max_modes {kwargs['max_mode']} \
+        --batch_size {kwargs['batch_size']} \
+        --model_name {kwargs['model_name']}\
+        --out_channels {kwargs['out_channels']} \
+        --in_channels {kwargs['in_channels']} \
+        --initial_steps {kwargs['initial_steps']} \
+        --pinn_loss_weight {kwargs['pinn_loss_weight']} \
+        --test_res {kwargs['test_res']} \
+        --resolution_ratios {kwargs['resolution_ratios']}\
+        --epochs {epochs}\
+        --device {kwargs['device']}\
+        """
     if 'seed' in kwargs:
         exec_str = f"""pwd;
         python main.py --filter_lim {kwargs['filter_lim']} \
@@ -138,7 +163,7 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
         --downsample_method {kwargs['downsample_method']}\
         """
 
-    if 'latent_size' in kwargs:
+    if ('latent_size' in kwargs) and ('img_size' in kwargs):
         exec_str = f"""
         python main.py --filter_lim {kwargs['filter_lim']} \
         --downsample_dim {kwargs['downsample_dim']} \
@@ -159,6 +184,31 @@ def train(ckpt_dir: str = 'ckpts', **kwargs: typing.Any) -> str:
         --test_res {kwargs['test_res']} \
         --resolution_ratios {kwargs['resolution_ratios']}\
         --latent_size {kwargs['latent_size']}\
+        --img_size {kwargs['img_size']}\
+        --epochs {epochs}\
+        """
+
+    # deeponet
+    if 'latent_size' not in kwargs and ('img_size' in kwargs):
+        exec_str = f"""
+        python main.py --filter_lim {kwargs['filter_lim']} \
+        --downsample_dim {kwargs['downsample_dim']} \
+        --lr {kwargs['lr']} \
+        --weight_decay {kwargs['weight_decay']} \
+        --step_size {kwargs['step_size']} \
+        --gamma {kwargs['gamma']} \
+        --dataset_name {kwargs['dataset_name']} \
+        --ckpt_path {ckpt_dir}/{ckpt_name} \
+        --loss_name {kwargs['loss_name']} \
+        --max_modes {kwargs['max_mode']} \
+        --batch_size {kwargs['batch_size']} \
+        --model_name {kwargs['model_name']}\
+        --out_channels {kwargs['out_channels']} \
+        --in_channels {kwargs['in_channels']} \
+        --initial_steps {kwargs['initial_steps']} \
+        --pinn_loss_weight {kwargs['pinn_loss_weight']} \
+        --test_res {kwargs['test_res']} \
+        --resolution_ratios {kwargs['resolution_ratios']}\
         --img_size {kwargs['img_size']}\
         --epochs {epochs}\
         """
@@ -186,6 +236,8 @@ if __name__ == '__main__':
             'lr_scheduler',
             'anti_alias',
             'multi_seed',
+            'deeponet',
+            'cpu',
         ],
         help='Name of training data.',
     )
@@ -248,6 +300,10 @@ if __name__ == '__main__':
         training_args = get_anti_alias_args()
     if args.experiment_name == 'multi_seed':
         training_args = get_multi_seed_args()
+    if args.experiment_name == 'deeponet':
+        training_args = get_deeponet_args()
+    if args.experiment_name == 'cpu':
+        training_args = get_cpu_train_args_just_darcy()
 
     config = get_parsl_config(
         walltime=args.walltime,
