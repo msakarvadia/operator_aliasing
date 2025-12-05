@@ -32,7 +32,6 @@ class AntiAliasLReLu(Module):
         # handle 2d inputs
         # Inspired by: https://github.com/camlab-ethz/ConvolutionalNeuralOperator/blob/main/CNO2d_vanilla_torch_version/CNO2d.py#L31 # noqa
         if n_dim == 4:
-            print(f'{x.shape=}, {self.in_size=}')
             x = f.interpolate(
                 x,
                 size=(2 * self.in_size, 2 * self.in_size),
