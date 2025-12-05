@@ -17,6 +17,17 @@ if __name__ == '__main__':
 
     # Train args
     parser.add_argument(
+        '--device',
+        type=str,
+        default='adaptive',
+        choices=['adaptive', 'cpu'],
+        help="""Device to use for training.
+                adaptive - choose GPU if avail,
+                            otherwise CPU
+                cpu - choose CPU
+                """,
+    )
+    parser.add_argument(
         '--lr',
         type=float,
         default=1e-3,
@@ -281,8 +292,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # NOTE(MS): parsl workaround
     args.resolution_ratios = eval(args.resolution_ratios)
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    args.device = device
+    if args.device == 'adaptive':
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        args.device = device
     seed_everything(args.seed)
 
     # Get Model
