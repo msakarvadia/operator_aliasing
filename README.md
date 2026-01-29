@@ -52,10 +52,9 @@ pre-commit install
 Please cite this work as:
 
 ```bibtex
-@inproceedings{sakarvadia2025false,
+@inproceedings{sakarvadia2026false,
       title={The False Promise of Zero-Shot Super-Resolution in Machine-Learned Operators}, 
       author={Mansi Sakarvadia and Kareem Hegazy and Amin Totounferoush and Kyle Chard and Yaoqing Yang and Ian Foster and Michael W. Mahoney},
-      year={2025},
       booktitle={The Fourteenth International Conference on Learning Representations},
       year={2026},
       url={https://openreview.net/forum?id=hkF7ZM7fEp}
