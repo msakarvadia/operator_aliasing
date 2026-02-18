@@ -750,7 +750,7 @@ def get_lr_scheduler_args() -> list[dict[str, typing.Any]]:
 
 
 def get_hp_search_args_just_darcy_avg_pool() -> list[dict[str, typing.Any]]:
-    """Get Training Params for PINO w/ HP search."""
+    """Studying impact of data downsampling technique."""
     hyper_param_search_args = []
     for dataset_name in [
         'darcy_pdebench',
@@ -783,8 +783,8 @@ def get_hp_search_args_just_darcy_avg_pool() -> list[dict[str, typing.Any]]:
             # we will just let the pinns loss error out for NS
             # if loss_name == 'n/a':
             #    continue
-            pinn_loss_weights = [0.5]
-            for pinn_loss_weight in pinn_loss_weights:
+            pinn_loss_weight = 0.5
+            for downsample_method in ['bilinear_interp', 'avg_pool']:
                 for lr in [1e-2, 1e-3, 1e-4, 1e-5]:
                     for wd in [1e-5]:
                         hp_args = {
@@ -805,8 +805,8 @@ def get_hp_search_args_just_darcy_avg_pool() -> list[dict[str, typing.Any]]:
                             'initial_steps': initial_steps,
                             'test_res': 'single',
                             'resolution_ratios': res_ratio,  # high to low
-                            'epochs': 1000,
-                            'downsample_method': 'avg_pool',
+                            'epochs': 150,
+                            'downsample_method': downsample_method,
                         }
                         hyper_param_search_args.append(hp_args)
     return hyper_param_search_args
