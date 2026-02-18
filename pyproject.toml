@@ -26,6 +26,8 @@ dependencies = [
     "pandas",
     "seaborn",
     "parsl",
+    "torch",
+    "torchvision"
 ]
 
 [project.urls]

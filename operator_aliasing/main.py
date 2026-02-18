@@ -176,7 +176,7 @@ if __name__ == '__main__':
         '--downsample_method',
         type=str,
         default='basic',
-        choices=['basic', 'avg_pool'],
+        choices=['basic', 'avg_pool', 'bilinear_interp'],
         help="""Method to sample the original data directly
             not a downsampling transformation applied after low-pass-filtering
             currently, only supported for darcy_pdebench data
@@ -184,6 +184,8 @@ if __name__ == '__main__':
             basic = x[::n] (default method)
             avg_pool = average pooling w/ kernel size = n, stride = n
             avg_pool only supported for darcy_pdebench
+            bilinear_interp = bilinear interpolation w/ anti-aliasing
+            bilinear_interp only supported for darcy_pdebench
             """,
     )
     parser.add_argument(
