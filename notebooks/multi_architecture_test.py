@@ -13,14 +13,20 @@ from matplotlib import colors
 from matplotlib import ticker
 from torch import nn
 
-data_folder = '/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/DarcyFlow/'  # replace with your file path
+data_folder = '/pscratch/sd/m/mansisak/PDEBench/pdebench_data/2D/DarcyFlow/'  #NOTE(MS) replace with your file path
 file_name = '2D_DarcyFlow_beta1.0_Train.hdf5'
 
 FIG_DIR = '../figures'
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-device = 'cpu'
+# NOTE(MS): can also manually set device preference here
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
 
+print(f"Using device: {device}")
 
 # # Utils
 
@@ -568,7 +574,6 @@ fig.legend(
 )
 plt.tight_layout()
 plt.savefig(f'{FIG_DIR}/zero_{device}.pdf', bbox_inches='tight', dpi=300)
-plt.show()
 
 
 # # Resolution Interpolation
@@ -700,13 +705,14 @@ fig.legend(
 )
 plt.tight_layout()
 plt.savefig(f'{FIG_DIR}/multi_{device}.pdf', bbox_inches='tight', dpi=300)
-plt.show()
 
 
 # # Multi-Res Training vs. Zero-shot Super Resolution
 
 # In[ ]:
 
+# Create a new, empty figure
+fig = plt.figure() 
 
 res = ['16', '32', '64', '128']
 w = 0.4
@@ -724,7 +730,6 @@ plt.legend()
 plt.savefig(
     f'{FIG_DIR}/multi_v_zero_{device}.pdf', bbox_inches='tight', dpi=300
 )
-plt.show()
 
 # Use zip() to combine the lists, and then convert the result to a list
 zipped_data = list(zip(res, zero_shot_aucs, multi_res_aucs))
