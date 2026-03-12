@@ -5,3 +5,5 @@ All experiments are parallelized using the [`parsl`](https://parsl-project.org/)
 - [`training.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/experiments/training.py): script to run a specific set of expreiments.
   - By default `python training.py` will run the information extrapolation/resolution interpolation experiments from the paper.
   - Toggle `python training.py --help` to see all avaliable experiments.
+- [`multi_architecture_test.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/experiments/multi_architecture_test.py): experiment to run minimal zero-shot super-resolution vs. multi-resolution training experiment on Darcy flow. Intended to enable fast benchmarking across different computing architectures. 
+

@@ -10,8 +10,15 @@ striation artifacts at resolution 128. Middle Row: Average test set 2D energy sp
 
 We give a high-level overview of the code structure in this repository below. More detailed READMEs can be found in every subdirectory with pointers to any external repos we utilized or took inspiration from. If there are any questions or concerns, please feel free to open a github issue or email  `sakarvadia@uchicago.edu`.
 
+# Quickstart/ Getting Started
+- [`main.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/main.py) allows you to run a single experiment w/ custom experimental configurations. Do `python main.py --help` for descriptions of all experimental parameters and their defualt configurations. Running `python main.py` with default args will train an FNO w/ n-modes parameter = 16 on a multi-resolution darcy flow dataset (10% 128 resolution data, 10% 64 resolution data, 10% 32 resolution data, 70% 16 resolution data) from PDEBench.
+- [`demo.ipynb`](https://github.com/msakarvadia/operator_aliasing/blob/main/notebooks/demo.ipynb) is a self-contained demo notebook (minimal dependancies: `torch`+`neuraloperator`) which does a representative subset of experiments on the Darcy Flow dataset and produced corresponding figures:
+  - Zero-shot Super-Resolutin
+  - Information Extrapolation
+  - Resolution Interpolation
+  - Multi-Resolution Training
+
 # Training Models on PDE Data
-- [`main.py`](https://github.com/msakarvadia/operator_aliasing/blob/main/operator_aliasing/main.py) allows you to run a single experiment w/ custom experimental configurations. Do `python main.py --help` for details. Running `python main.py` will train an FNO on a darcy flow dataset from PDEBench.
 - [`train`](https://github.com/msakarvadia/operator_aliasing/tree/main/operator_aliasing/train) contains training utility codes
 
 # Data
