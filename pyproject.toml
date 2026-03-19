@@ -27,6 +27,7 @@ dependencies = [
     "seaborn",
     "parsl",
     "torch",
+    "tqdm",
     "torchvision"
 ]
 
