@@ -3,7 +3,7 @@ message: If you use this software, please cite it as below.
 authors:
   - family-names: Sakarvadia
     given-names: Mansi
-    orcid: https://orcid.org/XXXXX
+    orcid: https://orcid.org/0000-0002-0041-0160
 license: MIT
 repository-code: https://github.com/msakarvadia/operator_aliasing
 title: Operator Aliasing
